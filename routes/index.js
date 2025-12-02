@@ -10,4 +10,11 @@ router.get('/', function(req, res, next) {
   })
 });
 
+router.get('/test', function(req, res, next) {
+  res.json({
+    message: "API is running 🚀"
+  })
+});
+
+
 module.exports = router;
