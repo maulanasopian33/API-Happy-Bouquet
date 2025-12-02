@@ -1,0 +1,7 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/maulr34x/happy-bouquet/api
+    - cd $DEPLOYPATH
+    - npm install
+    - touch tmp/restart.txt
