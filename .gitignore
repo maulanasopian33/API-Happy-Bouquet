@@ -9,6 +9,9 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+.htaccess
+/tmp/
+
 # Environment variables
 .env
 .env.local
