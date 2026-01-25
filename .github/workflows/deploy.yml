@@ -28,9 +28,9 @@ jobs:
       - name: Build Project
         run: npm run build
 
-      # Remove devDependencies to save space
-      - name: Prune dev dependencies
-        run: npm prune --production
+      # Skip pruning to be safe - ensure all files are available
+      # - name: Prune dev dependencies
+      #   run: npm prune --production
 
       # Prepare deploy dir (Combine dist + node_modules + config)
       - name: Prepare deploy folder
@@ -40,6 +40,10 @@ jobs:
           cp -r node_modules deploy/node_modules
           cp package.json deploy/package.json
           cp package-lock.json deploy/package-lock.json
+          
+          # Verify node_modules content
+          echo "Checking node_modules size..."
+          du -sh deploy/node_modules
           
           # Migration files
           cp -r migrations deploy/migrations
