@@ -9,6 +9,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "@types/multer": "^2.0.0",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
     "dotenv": "^17.2.3",
@@ -16,6 +17,7 @@
     "express-rate-limit": "^8.2.1",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.3",
+    "multer": "^2.0.2",
     "mysql2": "^3.16.1",
     "sequelize": "^6.37.7",
     "winston": "^3.19.0",
@@ -33,10 +35,10 @@
     "nodemon": "^3.1.11",
     "sequelize": "^6.37.7",
     "sequelize-cli": "^6.6.5",
-    "winston": "^3.19.0",
     "supertest": "^7.2.2",
     "ts-jest": "^29.4.6",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "winston": "^3.19.0"
   }
 }

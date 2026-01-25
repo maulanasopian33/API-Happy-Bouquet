@@ -20,8 +20,12 @@ const limiter = rateLimit({
 app.use(limiter);
 
 import authRoutes from './routes/authRoutes';
+import materialRoutes from './routes/materialRoutes';
+import path from 'path';
 
+app.use('/public', express.static(path.join(__dirname, '../public')));
 app.use('/api/auth', authRoutes);
+app.use('/api/materials', materialRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to Happy Bouquet API' });

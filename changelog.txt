@@ -34,4 +34,10 @@ LATEST UPDATES - 25 Januari 2026
    - Auto-restart node.js via `tmp/restart.txt` (Passenger).
    - Implementasi Auto-Migration saat startup server (karena keterbatasan FTP).
 
-Timestamp: 2026-01-25 14:45:00
+5. MATERIAL MANAGEMENT (INVENTORY)
+   - Membuat `Material` model (Name, Photo, Stock, Unit, Price, MinStock, Category).
+   - Implementasi File Upload dengan `Multer` (lokal folder `public/uploads`).
+   - CRUD API Materials lengkap dengan validasi.
+   - Unit Test Material CRUD (Jest & Supertest).
+
+Timestamp: 2026-01-25 15:45:00

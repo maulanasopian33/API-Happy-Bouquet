@@ -1,6 +1,7 @@
 import { Sequelize } from 'sequelize';
-import { initUser } from './User';
 import dotenv from 'dotenv';
+import { initUser } from './User';
+import { initMaterial } from './Material';
 
 dotenv.config();
 
@@ -15,6 +16,7 @@ const db = {
   sequelize,
   Sequelize,
   User: initUser(sequelize),
+  Material: initMaterial(sequelize),
 };
 
 export default db;
