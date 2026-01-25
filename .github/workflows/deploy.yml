@@ -51,6 +51,10 @@ jobs:
           
           # Use Production .sequelizerc
           cp .sequelizerc.prod deploy/.sequelizerc
+          
+          # Create restart trigger (Passenger)
+          mkdir -p deploy/tmp
+          echo "restart $(date)" > deploy/tmp/restart.txt
 
       # Deploy via FTP
       - name: Upload build via FTP
@@ -63,22 +67,3 @@ jobs:
           protocol: ftp
           local-dir: "deploy/"
           server-dir: ${{ secrets.FTP_REMOTE_DIR }}
-
-      # ===== AUTO RESTART NODE.JS APP (Passenger) =====
-      - name: Generate restart trigger
-        run: |
-          mkdir -p restart-tmp
-          mkdir -p restart-tmp/tmp
-          echo "restart $(date)" > restart-tmp/tmp/restart.txt
-
-      - name: Upload restart trigger to FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
-        with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          port: ${{ secrets.FTP_PORT }}
-          protocol: ftp
-          local-dir: "restart-tmp/"
-          server-dir: ${{ secrets.FTP_REMOTE_DIR }}
-          dangerous-clean-slate: false
