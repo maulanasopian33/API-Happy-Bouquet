@@ -43,7 +43,11 @@ jobs:
           
           # Migration files
           cp -r migrations deploy/migrations
-          cp -r seeders deploy/seeders
+          if [ -d "seeders" ]; then
+            cp -r seeders deploy/seeders
+          else
+            echo "Seeders directory not found, skipping."
+          fi
           
           # Use Production .sequelizerc
           cp .sequelizerc.prod deploy/.sequelizerc
