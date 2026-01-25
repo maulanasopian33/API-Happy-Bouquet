@@ -56,6 +56,11 @@ jobs:
           mkdir -p deploy/tmp
           echo "restart $(date)" > deploy/tmp/restart.txt
 
+      # Force removal of .gitignore to ensure node_modules is uploaded
+      # FTP-Deploy-Action respects .gitignore by default, causing node_modules to be skipped
+      - name: Prepare for Upload
+        run: rm -f .gitignore
+
       # Deploy via FTP
       - name: Upload build via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.4
