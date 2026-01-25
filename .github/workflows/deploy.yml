@@ -28,9 +28,9 @@ jobs:
       - name: Build Project
         run: npm run build
 
-      # Skip pruning to be safe - ensure all files are available
-      # - name: Prune dev dependencies
-      #   run: npm prune --production
+      # Remove devDependencies to save space (Critical for FTP)
+      - name: Prune dev dependencies
+        run: npm prune --production
 
       # Prepare deploy dir (Combine dist + node_modules + config)
       - name: Prepare deploy folder
@@ -41,8 +41,8 @@ jobs:
           cp package.json deploy/package.json
           cp package-lock.json deploy/package-lock.json
           
-          # Verify node_modules content
-          echo "Checking node_modules size..."
+          # Verify node_modules content (debug)
+          echo "Node Modules size:"
           du -sh deploy/node_modules
           
           # Migration files
@@ -61,8 +61,7 @@ jobs:
           echo "restart $(date)" > deploy/tmp/restart.txt
 
       # Force removal of .gitignore to ensure node_modules is uploaded
-      # FTP-Deploy-Action respects .gitignore by default, causing node_modules to be skipped
-      - name: Prepare for Upload
+      - name: Remove .gitignore
         run: rm -f .gitignore
 
       # Deploy via FTP
@@ -76,3 +75,7 @@ jobs:
           protocol: ftp
           local-dir: "deploy/"
           server-dir: ${{ secrets.FTP_REMOTE_DIR }}
+          # Explicitly set exclude to minimal to force node_modules upload
+          exclude: |
+            **/.git*
+            **/.git*/**
