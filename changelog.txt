@@ -1,0 +1,37 @@
+LATEST UPDATES - 25 Januari 2026
+==============================
+
+1. INITIAL PROJECT ANALYSIS & PLANNING
+   - Menganalisis struktur project awal (Express Generator default).
+   - Membuat rencana modernisasi ke TypeScript & Clean Architecture.
+   - Membuat task list dan implementation plan.
+   - Inisialisasi changelog project.
+
+
+2. PROJECT INITIALIZATION & SETUP
+   - Installasi TypeScript & dependencies (Express, Sequelize, MySQL2, Helmet, Zod).
+   - Konfigurasi struktur project "Clean Architecture" (src/controllers, services, repositories).
+   - Inisialisasi Sequelize (config, models, migrations).
+   - Setup basic security middleware (Helmet, CORS, Rate Limit) di `app.ts`.
+   - Konfigurasi `package.json` scripts (dev, build, start).
+
+3. AUTHENTICATION SYSTEM
+   - Membuat `User` model & migration (Email, Password, Role, Phone, Address).
+   - Implementasi Auth Service & Controller (Register, Login).
+   - Setup JWT Authentication (Sign & Verify).
+   - Menambahkan Protected Route Middleware.
+   - Validasi input menggunakan Zod.
+   - Unit Test Authentication Endpoint (Jest & Supertest).
+
+   - Unit Test Authentication Endpoint (Jest & Supertest).
+   - Implementasi Global Response Format `{ status, message, data, error }`.
+
+   - Implementasi Global Response Format `{ status, message, data, error }`.
+
+4. DEPLOYMENT SETUP
+   - Setup GitHub Actions workflow untuk FTP Deployment.
+   - Konfigurasi `.sequelizerc.prod` untuk production path.
+   - Auto-restart node.js via `tmp/restart.txt` (Passenger).
+   - Implementasi Auto-Migration saat startup server (karena keterbatasan FTP).
+
+Timestamp: 2026-01-25 14:45:00
