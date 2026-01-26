@@ -5,8 +5,10 @@ import { initMaterial } from './Material';
 
 dotenv.config();
 
-const env = process.env.NODE_ENV || 'development';
-const config = require('../config/config.js')[env];
+import configData from '../config/config';
+
+const env = (process.env.NODE_ENV || 'development') as keyof typeof configData;
+const config = configData[env];
 
 const sequelize = config.use_env_variable
   ? new Sequelize(process.env[config.use_env_variable] as string, config)

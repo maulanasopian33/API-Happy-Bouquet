@@ -48,4 +48,14 @@ LATEST UPDATES - 25 Januari 2026
    - Controller Terpisah: `AdminController` & `CustomerController`.
    - API Routes: `/api/admins` & `/api/customers` (Protected & Role Based).
 
-Timestamp: 2026-01-25 16:15:00
+
+LATEST UPDATES - 26 Januari 2026
+==============================
+
+7. FIX PRODUCTION MODULE ERROR & DEPLOYMENT OPTIMIZATION
+   - Konversi `src/config/config.js` ke `src/config/config.ts` untuk memastikan file konfigurasi masuk ke build `dist`.
+   - Update `src/models/index.ts` menggunakan import ES6 yang kompatibel dengan TypeScript.
+   - Optimasi `deploy.yml` (GitHub Actions) untuk mengecualikan `node_modules/.bin` dan `.cache` saat upload FTP guna mempercepat proses.
+   - Penambahan verifikasi build lokal sebelum push.
+
+Timestamp: 2026-01-26 16:20:00

@@ -75,7 +75,13 @@ jobs:
           protocol: ftp
           local-dir: "deploy/"
           server-dir: ${{ secrets.FTP_REMOTE_DIR }}
-          # Explicitly set exclude to minimal to force node_modules upload
+          # Use incremental sync by excluding unchanged files if possible
+          # Note: SamKirkland/FTP-Deploy-Action uses git to determine changed files by default
+          # but since we are deploying a "deploy" folder that is recreated, 
+          # we should ensure it handles it efficiently.
           exclude: |
             **/.git*
             **/.git*/**
+            node_modules/.bin/**
+            node_modules/.cache/**
+

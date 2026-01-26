@@ -1,6 +1,7 @@
-require('dotenv').config();
+import dotenv from 'dotenv';
+dotenv.config();
 
-module.exports = {
+const config: any = {
   development: {
     username: process.env.DB_USERNAME || 'root',
     password: process.env.DB_PASSWORD || null,
@@ -23,3 +24,6 @@ module.exports = {
     dialect: 'mysql',
   }
 };
+
+export default config;
+
