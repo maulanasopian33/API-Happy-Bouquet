@@ -38,6 +38,14 @@ LATEST UPDATES - 25 Januari 2026
    - Membuat `Material` model (Name, Photo, Stock, Unit, Price, MinStock, Category).
    - Implementasi File Upload dengan `Multer` (lokal folder `public/uploads`).
    - CRUD API Materials lengkap dengan validasi.
+   - CRUD API Materials lengkap dengan validasi.
    - Unit Test Material CRUD (Jest & Supertest).
+   - Unit Test Material CRUD (Jest & Supertest).
+   - Database Seeder untuk Admin & Customer.
 
-Timestamp: 2026-01-25 15:45:00
+6. USER MANAGEMENT
+   - Implementasi `UserService` (Reusable logic CRUD User).
+   - Controller Terpisah: `AdminController` & `CustomerController`.
+   - API Routes: `/api/admins` & `/api/customers` (Protected & Role Based).
+
+Timestamp: 2026-01-25 16:15:00

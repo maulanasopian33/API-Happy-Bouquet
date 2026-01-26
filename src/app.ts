@@ -21,11 +21,15 @@ app.use(limiter);
 
 import authRoutes from './routes/authRoutes';
 import materialRoutes from './routes/materialRoutes';
+import adminRoutes from './routes/adminRoutes';
+import customerRoutes from './routes/customerRoutes';
 import path from 'path';
 
 app.use('/public', express.static(path.join(__dirname, '../public')));
 app.use('/api/auth', authRoutes);
 app.use('/api/materials', materialRoutes);
+app.use('/api/admins', adminRoutes);
+app.use('/api/customers', customerRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to Happy Bouquet API' });
