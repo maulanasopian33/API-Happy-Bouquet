@@ -33,7 +33,7 @@ const runMigrations = () => {
 const startServer = async () => {
   try {
     // Run migrations before starting the server
-    await runMigrations();
+    // await runMigrations();
     
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
