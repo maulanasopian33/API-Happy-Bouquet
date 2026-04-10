@@ -1,5 +1,6 @@
 import app from './app';
 import dotenv from 'dotenv';
+import logger from './utils/logger';
 
 dotenv.config();
 
@@ -11,20 +12,20 @@ const runMigrations = () => {
     const { exec } = require('child_process');
     const command = 'npx sequelize-cli db:migrate';
     
-    console.log('Running database migrations...');
+    logger.info('Running database migrations...');
     
     // Add --config explicitly if needed, but .sequelizerc should handle it.
     // In production (dist), .sequelizerc.prod is copied to .sequelizerc, so it should work.
     
     exec(command, (error: any, stdout: any, stderr: any) => {
       if (error) {
-        console.error(`Migration error: ${error.message}`);
+        logger.error(`Migration error: ${error.message}`);
         return reject(error);
       }
       if (stderr) {
-        console.error(`Migration stderr: ${stderr}`);
+        logger.error(`Migration stderr: ${stderr}`);
       }
-      console.log(`Migration stdout: ${stdout}`);
+      logger.info(`Migration stdout: ${stdout}`);
       resolve(true);
     });
   });
@@ -36,10 +37,10 @@ const startServer = async () => {
     // await runMigrations();
     
     app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
+      logger.info(`Server is running on port ${PORT}`);
     });
   } catch (error) {
-    console.error('Failed to start server:', error);
+    logger.error('Failed to start server:', error);
     process.exit(1);
   }
 };

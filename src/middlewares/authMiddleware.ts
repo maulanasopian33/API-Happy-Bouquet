@@ -9,10 +9,10 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
-  if (!token) return res.status(401).json({ message: 'Access denied' });
+  if (!token || token === 'null') return res.status(401).json({ message: 'Access denied. Token missing.' });
 
   jwt.verify(token, process.env.JWT_SECRET as string, (err, user) => {
-    if (err) return res.status(403).json({ message: 'Invalid token' });
+    if (err) return res.status(401).json({ message: 'Invalid or expired token' });
     req.user = user;
     next();
   });

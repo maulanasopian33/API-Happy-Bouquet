@@ -1,4 +1,4 @@
-LATEST UPDATES - 25 Januari 2026
+LATEST UPDATES - 26 Januari 2026
 ==============================
 
 1. INITIAL PROJECT ANALYSIS & PLANNING
@@ -6,7 +6,6 @@ LATEST UPDATES - 25 Januari 2026
    - Membuat rencana modernisasi ke TypeScript & Clean Architecture.
    - Membuat task list dan implementation plan.
    - Inisialisasi changelog project.
-
 
 2. PROJECT INITIALIZATION & SETUP
    - Installasi TypeScript & dependencies (Express, Sequelize, MySQL2, Helmet, Zod).
@@ -22,24 +21,18 @@ LATEST UPDATES - 25 Januari 2026
    - Menambahkan Protected Route Middleware.
    - Validasi input menggunakan Zod.
    - Unit Test Authentication Endpoint (Jest & Supertest).
-
-   - Unit Test Authentication Endpoint (Jest & Supertest).
-   - Implementasi Global Response Format `{ status, message, data, error }`.
-
    - Implementasi Global Response Format `{ status, message, data, error }`.
 
 4. DEPLOYMENT SETUP
    - Setup GitHub Actions workflow untuk FTP Deployment.
    - Konfigurasi `.sequelizerc.prod` untuk production path.
    - Auto-restart node.js via `tmp/restart.txt` (Passenger).
-   - Implementasi Auto-Migration saat startup server (karena keterbatasan FTP).
+   - Implementasi Auto-Migration saat startup server.
 
 5. MATERIAL MANAGEMENT (INVENTORY)
    - Membuat `Material` model (Name, Photo, Stock, Unit, Price, MinStock, Category).
    - Implementasi File Upload dengan `Multer` (lokal folder `public/uploads`).
    - CRUD API Materials lengkap dengan validasi.
-   - CRUD API Materials lengkap dengan validasi.
-   - Unit Test Material CRUD (Jest & Supertest).
    - Unit Test Material CRUD (Jest & Supertest).
    - Database Seeder untuk Admin & Customer.
 
@@ -48,14 +41,96 @@ LATEST UPDATES - 25 Januari 2026
    - Controller Terpisah: `AdminController` & `CustomerController`.
    - API Routes: `/api/admins` & `/api/customers` (Protected & Role Based).
 
+7. FIX PRODUCTION MODULE ERROR & DEPLOYMENT OPTIMIZATION
+   - Konversi `src/config/config.js` ke `src/config/config.ts`.
+   - Update `src/models/index.ts` menggunakan import ES6.
+   - Optimasi `deploy.yml` (GitHub Actions) untuk mempercepat upload FTP.
+   - Implementasi `app.set('trust proxy', 1)` untuk production environment.
 
-LATEST UPDATES - 26 Januari 2026
+8. LOGGING SYSTEM IMPLEMENTATION
+   - Implementasi Logger menggunakan `winston` dan `winston-daily-rotate-file`.
+   - Konfigurasi Rotary Log harian di direktori `logs/`.
+   - API Log Management (`/api/logs`) untuk pembacaan log via Frontend.
+
+LATEST UPDATES - 25 Februari 2026
 ==============================
 
-7. FIX PRODUCTION MODULE ERROR & DEPLOYMENT OPTIMIZATION
-   - Konversi `src/config/config.js` ke `src/config/config.ts` untuk memastikan file konfigurasi masuk ke build `dist`.
-   - Update `src/models/index.ts` menggunakan import ES6 yang kompatibel dengan TypeScript.
-   - Optimasi `deploy.yml` (GitHub Actions) untuk mengecualikan `node_modules/.bin` dan `.cache` saat upload FTP guna mempercepat proses.
-   - Penambahan verifikasi build lokal sebelum push.
+13. PENGEMBANGAN SISTEM OAUTHPV2 (PHASE 1)
+   - Implementasi Provider OAuth 2.0 menggunakan Node.js, TypeScript, Sequelize.
+   - Fitur pendaftaran service (client apps) dan manajemen user akses.
+   - Implementasi plugin auth untuk integrasi antar aplikasi.
+   - Keamanan tingkat produksi dengan JWT dan middleware proteksi.
+   - Integrasi database d_karyawan untuk informasi user global.
 
-Timestamp: 2026-01-26 16:20:00
+LATEST UPDATES - 26 Februari 2026
+==============================
+
+11. ENHANCEMENT & PRODUCTION READY AUDIT
+   - Implementasi authenticateToken pada seluruh API Finance & Order
+   - Implementasi Interceptor Axios untuk otomatis redirect ke Login (401 Unauthorized)
+   - Pembatasan tombol "Allocate Profit" hanya untuk Administrator
+   - Otomatisasi pemotongan stok bahan baku (Inventory) saat konfirmasi pembayaran
+   - Implementasi PDF Export untuk Laporan Keuangan Global & Per-Order
+   - Implementasi Profit Trend Line Chart pada Dashboard Financial
+   - Fitur Cetak Invoice Thermal yang dioptimalkan untuk printer thermal 58mm/80mm
+   - Konfigurasi Router Vue untuk proteksi halaman berbasis Role
+
+12. FINAL PRODUCTION HARDENING & REFINEMENT
+   - Implementasi sistem Toast Notification global menggantikan alert() browser
+   - Proteksi Role-Based pada Menu Sidebar (hanya admin yang melihat Financial & Inventory)
+   - Implementasi Paginasi "Load More" pada daftar laporan profit per order
+   - Implementasi Inventory Guard: Validasi stok bahan baku di Frontend (warning) dan Backend (block)
+   - Penambahan widget "Total Orders Today" pada Dashboard utama
+   - Peningkatan Robustness: Perbaikan bug Lost Update pada saldo kas menggunakan Transaksi Sequelize + Pocking Lock
+   - Unit Test Coverage: Verifikasi otomatis alur stock deduction, financial logic, dan order lifecycle
+   - BUG FIX: Mengatasi "ReferenceError: useOrder is not defined" pada OrderDetailView.vue
+   - BUG FIX: Perbaikan TypeError (toLocaleString) dan Sinkronisasi snake_case Profit Data pada OrderDetailView.vue
+
+Timestamp: 2026-02-26 12:15:00
+
+13. ADVANCED FINANCIALS (REPORTING & MANUAL ENTRIES)
+   - Implementasi CRUD Transaksi Manual: Setoran modal & biaya operasional
+   - Service Logic: Saldo kas otomatis menyesuaikan saat transaksi manual diubah/dihapus
+   - Laporan Neraca (Balance Sheet): Tracking Aset, Kewajiban (Hutang Upah), dan Ekuitas
+   - General Ledger UI: Halaman buku besar per akun kas dengan filter riwayat
+   - Integrasi Routing & UI: Penambahan menu Ledger dan section Neraca di Dashboard Finance
+
+Timestamp: 2026-02-26 12:40:00
+
+14. ORDER FINANCIAL MANAGEMENT & PROFIT ALLOCATION SYSTEM
+   - Implementasi 8 tabel baru: Products, Cost Templates, Orders, Order Items, Cost Items, Fund Accounts, Transactions, Allocations.
+   - Otomatisasi siklus keuangan order: konfirmasi pembayaran otomatis mendebit COGS, mengkredit modal, dan snapshot biaya produksi.
+   - Kalkulasi profit dinamis (Revenue, COGS, Labor, Net Profit) per pesanan.
+   - Manajemen kas virtual (Fund Accounts) dengan sistem ledger (Fund Transactions).
+   - Fitur alokasi profit manual ke berbagai kas (Modal, Profit Pemilik, dll).
+   - Dashboard laporan keuangan global untuk ringkasan bisnis real-time.
+   - Integrasi penuh Vue 3 frontend dengan dashboard keuangan dan detail profit order.
+
+15. HOTFIX: AUTHENTICATION MIDDLEWARE
+   - Memperbaiki `authMiddleware.ts` untuk mengembalikan status 401 (Unauthorized) bukan 403 (Forbidden) saat token tidak valid atau kosong.
+   - Mencegah error crash/403 akibat header `Bearer null` dari frontend.
+
+16. ENHANCEMENTS: SECURITY, INVENTORY & REPORTING (PHASE 11)
+   - Mengembalikan keamanan endpoint API dengan JWT middleware (`authenticateToken`).
+   - Menerapkan fitur interceptor global di frontend untuk redirect ke `/login` saat session kedaluwarsa (HTTP 401).
+   - Menambahkan Role-Based Access Control (RBAC) pada frontend untuk membatasi fitur "Allocate Profit" hanya untuk Administrator.
+   - Mengotomatiskan pemotongan stok bahan baku (Material Inventory) saat pembayaran pesanan dikonfirmasi (`confirmPayment`).
+   - Menambahkan notifikasi _Low Stock Alert_ sederhana yang langsung terlihat di Dashboard Utama.
+   - Menerapkan fitur _Export PDF_ ekstensif pada Laporan Keuangan (`FinanceView.vue`) menggunakan `jspdf` & `jspdf-autotable`.
+   - Menambahkan grafik visualisasi (Line Chart) untuk tren keuntungan/Profit Margin menggunakan `vue3-apexcharts`.
+   - Menambahkan fitur format Cetak Thermal / Print Invoice menggunakan media query print-only CSS di dalam Order Detail.
+
+Timestamp: 2026-02-26 11:21:00
+
+
+LATEST UPDATES - 18 Maret 2026
+==============================
+
+17. DYNAMIC ECOMMERCE INFRASTRUCTURE
+   - Implementasi 3 model baru: Category, Promo, dan HeroBanner.
+   - Migrasi Database: Penambahan tabel Categories, Promos, HeroBanners, dan kolom category_id pada Products.
+   - Implementasi CRUD API lengkap (Service, Controller, Route) untuk Kategori, Promo, dan Banner.
+   - Validasi input menggunakan Zod pada seluruh endpoint baru.
+   - Penyesuaian `app.ts` untuk meregistrasi rute-rute dinamis baru.
+
+Timestamp: 2026-03-18 13:05:00

@@ -1,4 +1,6 @@
 import { Request, Response } from 'express';
+import logger from '../utils/logger';
+
 import * as userService from '../services/userService';
 import { successResponse, errorResponse } from '../utils/response';
 
@@ -29,6 +31,7 @@ export const updateCustomer = async (req: Request, res: Response) => {
     const { id } = req.params;
     const updateData = req.body;
     const customer = await userService.updateUser(Number(id), updateData);
+    logger.info(`Customer updated: ID ${id}`);
     return successResponse(res, 'Customer updated successfully', customer);
   } catch (error: any) {
     return errorResponse(res, error.message, null, 500);
@@ -39,6 +42,7 @@ export const deleteCustomer = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     await userService.deleteUser(Number(id));
+    logger.info(`Customer deleted: ID ${id}`);
     return successResponse(res, 'Customer deleted successfully');
   } catch (error: any) {
     return errorResponse(res, error.message, null, 500);

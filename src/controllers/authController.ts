@@ -1,4 +1,6 @@
 import { Request, Response } from 'express';
+import logger from '../utils/logger';
+
 import * as authService from '../services/authService';
 import { registerSchema } from '../utils/validation';
 import { successResponse, errorResponse } from '../utils/response';
@@ -7,6 +9,7 @@ export const register = async (req: Request, res: Response) => {
   try {
     const validatedData = registerSchema.parse(req.body);
     const user = await authService.register(validatedData);
+    logger.info(`User registered: ${user.email}`);
     return successResponse(res, 'User registered successfully', user, 201);
   } catch (error: any) {
     if (error.name === 'ZodError') {
@@ -21,6 +24,7 @@ export const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
     const result = await authService.login({ email, password });
+    logger.info(`User logged in: ${email}`);
     return successResponse(res, 'Login successful', result, 200);
   } catch (error: any) {
     return errorResponse(res, error.message, null, 401);

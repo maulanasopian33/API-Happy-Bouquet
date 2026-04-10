@@ -1,4 +1,5 @@
 import { Response } from 'express';
+import logger from './logger';
 
 interface ApiResponse {
   status: boolean;
@@ -24,5 +25,6 @@ export const errorResponse = (res: Response, message: string, error: any = null,
     data: null,
     error,
   };
+  logger.error(message, { error });
   return res.status(statusCode).json(response);
 };

@@ -1,4 +1,6 @@
 import { Request, Response } from 'express';
+import logger from '../utils/logger';
+
 import * as userService from '../services/userService';
 import { registerSchema } from '../utils/validation';
 import { successResponse, errorResponse } from '../utils/response';
@@ -17,6 +19,7 @@ export const createAdmin = async (req: Request, res: Response) => {
     const validatedData = registerSchema.parse(req.body);
     const adminData = { ...validatedData, role: 'admin' };
     const admin = await userService.createUser(adminData);
+    logger.info(`Admin created: ${admin.email}`);
     return successResponse(res, 'Admin created successfully', admin, 201);
   } catch (error: any) {
     if (error.name === 'ZodError') {
@@ -44,6 +47,7 @@ export const updateAdmin = async (req: Request, res: Response) => {
     const { id } = req.params;
     const updateData = req.body;
     const admin = await userService.updateUser(Number(id), updateData);
+    logger.info(`Admin updated: ID ${id}`);
     return successResponse(res, 'Admin updated successfully', admin);
   } catch (error: any) {
     return errorResponse(res, error.message, null, 500);
@@ -54,6 +58,7 @@ export const deleteAdmin = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     await userService.deleteUser(Number(id));
+    logger.info(`Admin deleted: ID ${id}`);
     return successResponse(res, 'Admin deleted successfully');
   } catch (error: any) {
     return errorResponse(res, error.message, null, 500);

@@ -1,4 +1,6 @@
 import { Request, Response } from 'express';
+import logger from '../utils/logger';
+
 import * as materialService from '../services/materialService';
 import { materialSchema } from '../utils/validation';
 import { successResponse, errorResponse } from '../utils/response';
@@ -36,6 +38,7 @@ export const createMaterial = async (req: Request, res: Response) => {
     };
 
     const material = await materialService.createMaterial(materialData);
+    logger.info(`Material created: ${material.name} (ID: ${material.id})`);
     return successResponse(res, 'Material created successfully', material, 201);
   } catch (error: any) {
     if (error.name === 'ZodError') {
@@ -57,6 +60,7 @@ export const updateMaterial = async (req: Request, res: Response) => {
     };
 
     const material = await materialService.updateMaterial(Number(id), updateData);
+    logger.info(`Material updated: ID ${id}`);
     return successResponse(res, 'Material updated successfully', material);
   } catch (error: any) {
     if (error.name === 'ZodError') {
@@ -70,6 +74,7 @@ export const deleteMaterial = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     await materialService.deleteMaterial(Number(id));
+    logger.info(`Material deleted: ID ${id}`);
     return successResponse(res, 'Material deleted successfully');
   } catch (error: any) {
     return errorResponse(res, error.message, null, 500);
