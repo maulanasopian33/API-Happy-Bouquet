@@ -134,3 +134,13 @@ LATEST UPDATES - 18 Maret 2026
    - Penyesuaian `app.ts` untuk meregistrasi rute-rute dinamis baru.
 
 Timestamp: 2026-03-18 13:05:00
+LATEST UPDATES - 14 April 2026
+==============================
+
+18. FIX RATE LIMIT TRUST PROXY ERROR
+   - Implementasi robust `app.set('trust proxy', 1)` di `app.ts` untuk memastikan deteksi IP user yang benar di balik proxy (Passenger/Nginx).
+   - Penambahan opsi `validate: { trustProxy: false }` pada `express-rate-limit` untuk mengatasi sinkronisasi validasi pada environment tertentu.
+   - Sinkronisasi `windowMs` pada rate limit agar sesuai dengan dokumentasi (15 menit).
+   - Penambahan unit test `tests/security.test.ts` untuk memverifikasi konfigurasi keamanan dan rate limiting.
+
+Timestamp: 2026-04-14 15:52:00

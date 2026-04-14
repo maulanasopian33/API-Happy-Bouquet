@@ -5,7 +5,8 @@ import rateLimit from 'express-rate-limit';
 
 const app = express();
 
-// Trust proxy for express-rate-limit behind Passenger/LSWS
+// Trust proxy for express-rate-limit behind Passenger/LSWS/Nginx
+// This is necessary for express-rate-limit to correctly identify user IPs
 app.set('trust proxy', 1);
 
 app.use(cors());
@@ -14,13 +15,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Rate limiting
-const limiter = rateLimit({
-  windowMs: 1 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-app.use(limiter);
+// const limiter = rateLimit({
+//   windowMs: 15 * 60 * 1000, // 15 minutes
+//   max: 100, // limit each IP to 100 requests per windowMs
+//   standardHeaders: true,
+//   legacyHeaders: false,
+//   validate: { trustProxy: false },
+// });
+// app.use(limiter);
 
 import authRoutes from './routes/authRoutes';
 import materialRoutes from './routes/materialRoutes';
