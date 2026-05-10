@@ -9,7 +9,10 @@ const router = Router();
 router.get('/', ctrl.getAllProducts);
 
 // GET  /api/products/:id      — detail produk
-router.get('/:id', ctrl.getProductById);
+router.get('/:id(\\d+)', ctrl.getProductById);
+
+// GET  /api/products/slug/:slug — detail produk berdasarkan slug
+router.get('/slug/:slug', ctrl.getProductBySlug);
 
 // POST /api/products          — buat produk baru (admin)
 router.post('/', authenticateToken, upload.single('photo'), ctrl.createProduct);

@@ -10,7 +10,7 @@ const app = express();
 app.set('trust proxy', 1);
 
 app.use(cors());
-app.use(helmet());
+app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

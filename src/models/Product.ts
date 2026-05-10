@@ -3,6 +3,7 @@ import { Model, DataTypes, Sequelize, Optional } from 'sequelize';
 interface ProductAttributes {
   id: number;
   name: string;
+  slug: string;
   description?: string;
   price: number;
   photo_url?: string;
@@ -17,6 +18,7 @@ interface ProductCreationAttributes extends Optional<ProductAttributes, 'id' | '
 class Product extends Model<ProductAttributes, ProductCreationAttributes> implements ProductAttributes {
   public id!: number;
   public name!: string;
+  public slug!: string;
   public description!: string;
   public price!: number;
   public photo_url!: string;
@@ -31,6 +33,7 @@ export const initProduct = (sequelize: Sequelize) => {
     {
       id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
       name: { type: DataTypes.STRING, allowNull: false },
+      slug: { type: DataTypes.STRING, allowNull: false, unique: true },
       description: { type: DataTypes.TEXT, allowNull: true },
       price: { type: DataTypes.DECIMAL(15, 2), allowNull: false },
       photo_url: { type: DataTypes.STRING, allowNull: true },

@@ -39,6 +39,15 @@ export const getProductById = async (req: Request, res: Response) => {
   }
 };
 
+export const getProductBySlug = async (req: Request, res: Response) => {
+  try {
+    const product = await productService.getProductBySlug(req.params.slug as string);
+    return successResponse(res, 'Produk berhasil diambil', product);
+  } catch (err: any) {
+    return errorResponse(res, err.message, null, 404);
+  }
+};
+
 export const createProduct = async (req: Request, res: Response) => {
   try {
     const data = createProductSchema.parse(req.body);

@@ -63,8 +63,10 @@ module.exports = {
   },
 
   down: async (queryInterface, Sequelize) => {
+    await queryInterface.sequelize.query('SET FOREIGN_KEY_CHECKS = 0');
     await queryInterface.bulkDelete('Categories', null, {});
     await queryInterface.bulkDelete('HeroBanners', null, {});
     await queryInterface.bulkDelete('Promos', null, {});
+    await queryInterface.sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
   }
 };

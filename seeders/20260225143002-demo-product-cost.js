@@ -8,6 +8,7 @@ module.exports = {
       {
         id: 1,
         name: 'Buket Mawar Merah Premium',
+        slug: 'buket-mawar-merah-premium',
         description: 'Buket 20 tangkai mawar merah dengan wrapping premium (Skenario Tutorial)',
         price: 350000,
         photo_url: null,
@@ -55,7 +56,9 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
+    await queryInterface.sequelize.query('SET FOREIGN_KEY_CHECKS = 0');
     await queryInterface.bulkDelete('ProductCostTemplates', null, {});
     await queryInterface.bulkDelete('Products', null, {});
+    await queryInterface.sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
   },
 };

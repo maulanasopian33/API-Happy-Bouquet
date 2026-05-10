@@ -30,6 +30,8 @@ module.exports = {
   },
 
   down: async (queryInterface, Sequelize) => {
-    return queryInterface.bulkDelete('Users', null, {});
+    await queryInterface.sequelize.query('SET FOREIGN_KEY_CHECKS = 0');
+    await queryInterface.bulkDelete('Users', null, {});
+    await queryInterface.sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
   }
 };

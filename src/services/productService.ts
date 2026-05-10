@@ -31,22 +31,43 @@ export const getProductById = async (id: number) => {
   return product;
 };
 
+export const getProductBySlug = async (slug: string) => {
+  const product = await Product.findOne({
+    where: { slug },
+    include: [
+      { model: ProductCostTemplate, as: 'costTemplates' },
+      { model: db.Category, as: 'category' }
+    ],
+  });
+  if (!product) throw new Error('Produk tidak ditemukan');
+  return product;
+};
+
 export const createProduct = async (data: {
   name: string;
+  slug?: string;
   description?: string;
   price: number;
   photo_url?: string;
   is_active?: boolean;
   category_id?: number;
 }) => {
-  const product = await Product.create(data);
+  if (!data.slug) {
+    data.slug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+  }
+  const product = await Product.create(data as any);
   logger.info('Produk berhasil dibuat', { productId: product.id, name: product.name });
   return product;
 };
 
-export const updateProduct = async (id: number, data: Partial<{ name: string; description: string; price: number; photo_url: string; is_active: boolean; category_id: number }>) => {
+export const updateProduct = async (id: number, data: Partial<{ name: string; slug: string; description: string; price: number; photo_url: string; is_active: boolean; category_id: number }>) => {
   const product = await Product.findByPk(id);
   if (!product) throw new Error('Produk tidak ditemukan');
+  
+  if (data.name && !data.slug) {
+    data.slug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+  }
+
   const updated = await product.update(data);
   logger.info('Produk diperbarui', { productId: id });
   return updated;

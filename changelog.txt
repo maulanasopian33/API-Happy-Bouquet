@@ -144,3 +144,41 @@ LATEST UPDATES - 14 April 2026
    - Penambahan unit test `tests/security.test.ts` untuk memverifikasi konfigurasi keamanan dan rate limiting.
 
 Timestamp: 2026-04-14 15:52:00
+
+LATEST UPDATES - 25 April 2026
+==============================
+
+19. PRODUCT SEEDING WITH IMAGES
+   - Membuat seeder baru (20260425000000-demo-products.js) untuk menambahkan 30 data produk awal.
+   - Mengenerate dan menambahkan 5 gambar produk buket bunga resolusi tinggi ke folder public/uploads/.
+   - Mengalokasikan kelima gambar tersebut secara merata ke 30 produk buket bunga beserta harga acak dan kategori dinamis.
+
+Timestamp: 2026-04-25 10:59:00
+
+
+20. SEEDER REVERT FIX (FOREIGN KEY CONSTRAINTS)
+   - Memperbaiki method down() pada seluruh file seeder untuk menonaktifkan sementara Foreign Key Checks (SET FOREIGN_KEY_CHECKS = 0).
+   - Mencegah error 'Cannot delete or update a parent row: a foreign key constraint fails' saat menjalankan perintah db:seed:undo:all.
+   - File yang diupdate: 20260425000000-demo-products.js, 20260318000005-dynamic-ecommerce-data.js, 20260225143002-demo-product-cost.js, 20260225143001-default-fund-accounts.js, 20260125084755-demo-users.js.
+
+Timestamp: 2026-04-25 11:05:00
+
+
+21. FIX SEEDER CATEGORY ID DYNAMIC FETCH
+   - Memperbarui seeder 20260425000000-demo-products.js agar mengambil daftar ID kategori secara dinamis dari database alih-alih melakukan hardcode ID 1 hingga 4.
+   - Hal ini mencegah error foreign key constraint apabila ID Categories berubah karena proses auto-increment setelah dilakukan eksekusi ulang (undo dan seed).
+   - Menjalankan ulang db:seed:undo:all untuk membersihkan sisa data lama secara tuntas dan berhasil mengeksekusi db:seed:all dengan sukses tanpa error duplikasi.
+
+Timestamp: 2026-04-25 11:15:00
+
+
+22. IMPLEMENT PRODUCT SLUGS FOR URL-FRIENDLY ACCESS
+   - Menambahkan kolom slug pada tabel Products melalui migrasi baru.
+   - Memperbarui model Product untuk mendukung field slug (unique & indexed).
+   - Mengimplementasikan logika auto-generate slug di productService (saat create/update).
+   - Menambahkan endpoint baru GET /api/products/slug/:slug untuk mengambil detail produk berdasarkan slug.
+   - Memperbarui seeder demo produk agar menyertakan slug unik untuk ke-30 produk.
+   - Menyesuaikan routing agar mendukung pencarian produk berdasarkan ID (numerik) maupun slug (string).
+
+Timestamp: 2026-04-25 12:20:00
+
