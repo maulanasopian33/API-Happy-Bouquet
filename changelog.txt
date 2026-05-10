@@ -182,3 +182,15 @@ Timestamp: 2026-04-25 11:15:00
 
 Timestamp: 2026-04-25 12:20:00
 
+
+LATEST UPDATES - 10 Mei 2026
+==============================
+
+23. FIX SEQUELIZE CONFIGURATION EXPORT
+   - Mengubah style export pada `src/config/config.ts` dari `export default` menjadi `export =` (CommonJS compatible).
+   - Memastikan `dist/config/config.js` mengekspor objek konfigurasi secara langsung menggunakan `module.exports`.
+   - Menghilangkan error "Dialect needs to be explicitly supplied" pada Sequelize CLI.
+   - Sinkronisasi `sequelize.config.js` dan `src/models/index.ts` dengan format export yang baru.
+
+Timestamp: 2026-05-10 10:35:00
+

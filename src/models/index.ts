@@ -15,7 +15,7 @@ import { initHeroBanner } from './HeroBanner';
 
 dotenv.config();
 
-import configData from '../config/config';
+import configData = require('../config/config');
 
 const env = (process.env.NODE_ENV || 'development') as keyof typeof configData;
 const config = configData[env];
