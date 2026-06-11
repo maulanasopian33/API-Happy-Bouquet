@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { authenticateToken } from '../middlewares/authMiddleware';
-import upload from '../middlewares/uploadMiddleware';
+import { createUploader } from '../middlewares/uploadMiddleware';
 import * as ctrl from '../controllers/productController';
 
 const router = Router();
@@ -15,10 +15,10 @@ router.get('/:id(\\d+)', ctrl.getProductById);
 router.get('/slug/:slug', ctrl.getProductBySlug);
 
 // POST /api/products          — buat produk baru (admin)
-router.post('/', authenticateToken, upload.single('photo'), ctrl.createProduct);
+router.post('/', authenticateToken, createUploader('products', 'product').single('photo'), ctrl.createProduct);
 
 // PUT  /api/products/:id      — update produk (admin)
-router.put('/:id', authenticateToken, upload.single('photo'), ctrl.updateProduct);
+router.put('/:id', authenticateToken, createUploader('products', 'product').single('photo'), ctrl.updateProduct);
 
 // DELETE /api/products/:id   — hapus produk (admin)
 router.delete('/:id', authenticateToken, ctrl.deleteProduct);
@@ -31,5 +31,8 @@ router.post('/:id/cost-templates', authenticateToken, ctrl.bulkAddCostTemplates)
 
 // DELETE /api/products/:id/cost-templates/:templateId — hapus 1 template
 router.delete('/:id/cost-templates/:templateId', authenticateToken, ctrl.deleteCostTemplate);
+
+// POST /api/products/:id/channels                — set order channels (whatsapp, shopee, dll)
+router.post('/:id/channels', authenticateToken, ctrl.setProductChannels);
 
 export default router;

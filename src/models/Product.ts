@@ -8,12 +8,14 @@ interface ProductAttributes {
   price: number;
   photo_url?: string;
   category_id?: number;
+  type: 'ready' | 'preorder';
+  preorder_duration?: number;
   is_active: boolean;
   createdAt?: Date;
   updatedAt?: Date;
 }
 
-interface ProductCreationAttributes extends Optional<ProductAttributes, 'id' | 'is_active'> {}
+interface ProductCreationAttributes extends Optional<ProductAttributes, 'id' | 'is_active' | 'type'> {}
 
 class Product extends Model<ProductAttributes, ProductCreationAttributes> implements ProductAttributes {
   public id!: number;
@@ -23,6 +25,8 @@ class Product extends Model<ProductAttributes, ProductCreationAttributes> implem
   public price!: number;
   public photo_url!: string;
   public category_id!: number;
+  public type!: 'ready' | 'preorder';
+  public preorder_duration!: number;
   public is_active!: boolean;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
@@ -42,6 +46,12 @@ export const initProduct = (sequelize: Sequelize) => {
         allowNull: true,
         references: { model: 'Categories', key: 'id' }
       },
+      type: {
+        type: DataTypes.ENUM('ready', 'preorder'),
+        allowNull: false,
+        defaultValue: 'ready'
+      },
+      preorder_duration: { type: DataTypes.INTEGER, allowNull: true },
       is_active: { type: DataTypes.BOOLEAN, defaultValue: true },
     },
     { sequelize, tableName: 'Products' }

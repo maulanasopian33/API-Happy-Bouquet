@@ -55,7 +55,7 @@ describe('Material API', () => {
     expect(res.body.status).toBe(true);
     expect(res.body.data).toHaveProperty('id');
     expect(res.body.data.name).toBe('Red Rose');
-    expect(res.body.data.photo_url).toContain('/uploads/materials/');
+    expect(res.body.data.photo_url).toContain('/public/uploads/materials/');
     
     materialId = res.body.data.id;
   });

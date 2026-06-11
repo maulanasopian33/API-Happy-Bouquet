@@ -30,7 +30,7 @@ export const getMaterialById = async (req: Request, res: Response) => {
 export const createMaterial = async (req: Request, res: Response) => {
   try {
     const validatedData = materialSchema.parse(req.body);
-    const photo_url = req.file ? `/uploads/materials/${req.file.filename}` : null;
+    const photo_url = req.file ? `/public/uploads/materials/${req.file.filename}` : null;
     
     const materialData = {
       ...validatedData,
@@ -52,7 +52,7 @@ export const updateMaterial = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const validatedData = materialSchema.partial().parse(req.body); // Allow partial updates
-    const photo_url = req.file ? `/uploads/materials/${req.file.filename}` : undefined;
+    const photo_url = req.file ? `/public/uploads/materials/${req.file.filename}` : undefined;
 
     const updateData = {
       ...validatedData,

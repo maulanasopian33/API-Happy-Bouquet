@@ -19,6 +19,7 @@ describe('Order Lifecycle and Financial Integration', () => {
 
     const product = await db.Product.create({
       name: 'Super Bouquet',
+      slug: 'super-bouquet',
       price: 200000,
       is_active: true
     });

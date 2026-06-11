@@ -23,6 +23,7 @@ describe('Profit Service Integration', () => {
     // 2. Create Product
     const product = await db.Product.create({
       name: 'Buket Mawar Test',
+      slug: 'buket-mawar-test',
       description: 'Test Description',
       price: 100000,
       is_active: true
@@ -72,9 +73,9 @@ describe('Profit Service Integration', () => {
 
     expect(profit.revenue).toBe(100000);
     expect(profit.cogs).toBe(45000);
-    expect(profit.laborCost).toBe(15000);
-    expect(profit.grossProfit).toBe(55000);
-    expect(profit.netProfit).toBe(40000);
+    expect(profit.labor_cost).toBe(15000);
+    expect(profit.gross_profit).toBe(55000);
+    expect(profit.net_profit).toBe(40000);
   });
 
   it('harus menghitung profit berlipat jika quantity > 1', async () => {
@@ -96,6 +97,6 @@ describe('Profit Service Integration', () => {
     // Net: 80,000
 
     expect(profit.revenue).toBe(200000);
-    expect(profit.netProfit).toBe(80000);
+    expect(profit.net_profit).toBe(80000);
   });
 });

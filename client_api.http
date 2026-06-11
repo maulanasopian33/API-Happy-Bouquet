@@ -1,0 +1,212 @@
+### Happy Bouquet API - REST Client
+@baseUrl = http://localhost:5000/api
+@authToken = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MjgsImVtYWlsIjoiYWRtaW5AaGFwcHlib3VxdWV0LmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc3ODg5NzU4MCwiZXhwIjoxNzc4OTgzOTgwfQ.z_lFvHsgBGKqgQNNjg7fvwNLJKWMKeN9BDrZTgEvs3o
+
+# ─── AUTHENTICATION ───
+
+# @name Register
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "admin@happybouquet.com",
+  "password": "password123",
+  "name": "Admin Happy Bouquet",
+  "phone": "08123456789",
+  "address": "Jl. Bunga No. 1",
+  "role": "admin"
+}
+
+###
+
+# @name Login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@happybouquet.com",
+  "password": "password123"
+}
+
+# ─── PRODUCTS ───
+
+### Get All Products (Public)
+GET {{baseUrl}}/products
+
+### Get All Products (With Costs - Admin)
+GET {{baseUrl}}/products?include_costs=true
+Authorization: {{authToken}}
+
+### Get Product Detail (ID)
+GET {{baseUrl}}/products/1
+
+### Get Product Detail (ID with Costs)
+GET {{baseUrl}}/products/1?include_costs=true
+Authorization: {{authToken}}
+
+### Get Product Detail (Slug)
+GET {{baseUrl}}/products/slug/buket-mawar-merah
+
+### Create Product (Ready Stock)
+POST {{baseUrl}}/products
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "name": "Buket Mawar Putih",
+  "price": 150000,
+  "stock": 10,
+  "category_id": 1,
+  "description": "Buket mawar putih segar",
+  "type": "ready"
+}
+
+### Create Product (Preorder)
+POST {{baseUrl}}/products
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "name": "Buket Custom Spesial",
+  "price": 250000,
+  "stock": 0,
+  "category_id": 1,
+  "description": "Buket custom sesuai permintaan",
+  "type": "preorder",
+  "preorder_duration": 7
+}
+
+### Set Product Order Channels
+POST {{baseUrl}}/products/1/channels
+Authorization: {{authToken}}
+Content-Type: application/json
+
+[
+  {
+    "channel_id": 1,
+    "store_url": "https://wa.me/628123456789?text=Halo%20saya%20ingin%20order%20produk%20ini"
+  },
+  {
+    "channel_id": 1,
+    "store_url": "https://shopee.co.id/product/123/456"
+  }
+]
+
+# ─── ORDER CHANNELS (SYSTEM ORDER) ───
+
+### Get All Channels
+GET {{baseUrl}}/channels
+
+### Create New Channel
+POST {{baseUrl}}/channels
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "name": "WhatsApp",
+  "icon_url": "https://cdn-icons-png.flaticon.com/512/733/733585.png"
+}
+
+### Create Shopee Channel
+POST {{baseUrl}}/channels
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "name": "Shopee",
+  "icon_url": "https://cdn-icons-png.flaticon.com/512/5968/5968968.png"
+}
+
+# ─── ORDERS ───
+
+### Get All Orders (Admin)
+GET {{baseUrl}}/orders
+Authorization: {{authToken}}
+
+### Create New Order
+POST {{baseUrl}}/orders
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "customer_id": 2,
+  "items": [
+    {
+      "product_id": 1,
+      "quantity": 2
+    }
+  ],
+  "total_price": 300000,
+  "payment_method": "transfer"
+}
+
+### Confirm Payment (Admin)
+PATCH {{baseUrl}}/orders/1/confirm-payment
+Authorization: {{authToken}}
+
+### Update Order Status
+PATCH {{baseUrl}}/orders/1/status
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "status": "processing"
+}
+
+# ─── FINANCIALS ───
+
+### Get All Fund Accounts
+GET {{baseUrl}}/financial/funds
+Authorization: {{authToken}}
+
+### Get Financial Summary
+GET {{baseUrl}}/financial/funds/summary
+Authorization: {{authToken}}
+
+### Get Fund Transactions
+GET {{baseUrl}}/financial/funds/1/transactions
+Authorization: {{authToken}}
+
+### Create Manual Transaction
+POST {{baseUrl}}/financial/transactions
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "fund_account_id": 1,
+  "type": "income",
+  "amount": 500000,
+  "description": "Setoran Modal Awal",
+  "transaction_date": "2026-05-16"
+}
+
+# ─── REPORTS ───
+
+### Global Financial Summary
+GET {{baseUrl}}/reports/summary
+Authorization: {{authToken}}
+
+### Balance Sheet
+GET {{baseUrl}}/reports/balance-sheet
+Authorization: {{authToken}}
+
+### Orders Profit List
+GET {{baseUrl}}/reports/orders
+Authorization: {{authToken}}
+
+# ─── MATERIALS (INVENTORY) ───
+
+### Get All Materials
+GET {{baseUrl}}/materials
+Authorization: {{authToken}}
+
+# ─── CATEGORIES, PROMOS, BANNERS ───
+
+### Get All Categories
+GET {{baseUrl}}/categories
+
+### Get All Promos
+GET {{baseUrl}}/promos
+
+### Get All Banners
+GET {{baseUrl}}/banners

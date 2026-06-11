@@ -194,3 +194,80 @@ LATEST UPDATES - 10 Mei 2026
 
 Timestamp: 2026-05-10 10:35:00
 
+
+LATEST UPDATES - 16 Mei 2026
+==============================
+
+24. PROJECT ANALYSIS & REST API CLIENT
+   - Melakukan analisis menyeluruh terhadap struktur project dan route API.
+   - Membuat file `client_api.http` untuk pengujian dan dokumentasi REST API.
+   - Menyediakan dokumentasi rute API untuk modul Auth, Products, Orders, Financials, Reports, Materials, dan Ecommerce.
+
+Timestamp: 2026-05-16 08:50:00
+
+LATEST UPDATES - 16 Mei 2026
+==============================
+
+25. PUBLIC PRODUCT API ENHANCEMENT
+   - Modifikasi productService untuk mendukung penyembunyian costTemplates pada endpoint publik.
+   - Implementasi query parameter include_costs=true pada endpoint GET /api/products dan detail produk.
+   - Default behavior sekarang menyembunyikan data biaya (costs) untuk keamanan dan privasi aplikasi publik.
+   - Penambahan unit test 	ests/product_public.test.ts untuk memverifikasi fungsionalitas.
+
+Timestamp: 2026-05-16 08:58:00
+
+LATEST UPDATES - 16 Mei 2026
+==============================
+
+26. PREORDER SYSTEM & ORDER CHANNELS MANAGEMENT
+   - Menambahkan field 	ype (ready/preorder) dan preorder_duration pada model Product.
+   - Implementasi modul Order Channels untuk mengelola platform pemesanan (WhatsApp, Shopee, dll).
+   - Implementasi relasi Many-to-Many antara Product dan Order Channel melalui tabel pivot.
+   - Menambahkan endpoint POST /api/products/:id/channels untuk mengatur opsi pemesanan per produk.
+   - Mengupdate client_api.http dengan dokumentasi endpoint baru.
+   - Penambahan unit test 	ests/product_preorder.test.ts untuk memverifikasi fungsionalitas.
+
+Timestamp: 2026-05-16 09:12:00
+
+LATEST UPDATES - 16 Mei 2026
+==============================
+
+27. FIX FOREIGN KEY CONSTRAINT ON PRODUCT CHANNELS
+   - Menambahkan validasi keberadaan channel_id sebelum melakukan penyimpanan ke tabel pivot ProductOrderChannels.
+   - Memberikan pesan error yang lebih informatif jika User mencoba menambahkan channel yang belum terdaftar di database.
+
+Timestamp: 2026-05-16 09:17:00
+
+LATEST UPDATES - 24 Mei 2026
+==============================
+
+28. ANALISIS API & PEMBUATAN KNOWLEDGE BASE
+   - Menganalisis seluruh routing dan struktur endpoint API yang tersedia.
+   - Membuat dokumentasi lengkap berupa Artifact Knowledge Base untuk memudahkan integrasi Frontend.
+   - Menyusun referensi payload, response, query param, dan method API secara komprehensif.
+
+Timestamp: 2026-05-24 19:48:00
+
+
+LATEST UPDATES - 27 Mei 2026
+==============================
+
+29. PEMBUATAN KNOWLEDGE BASE RUTE PRODUK UNTUK INTEGRASI FRONTEND
+   - Menganalisis rute produk, model data, query parameters, dan format respon API.
+   - Membuat panduan integrasi frontend komprehensif (docs/kb_routes_produk.md) berisi detail model data, parameter, endpoints public & admin, order channel, pre-order system, dan integrasi frontend.
+   - Menyediakan contoh nyata kode integrasi Axios dan implementasi komponen katalog di Vue 3.
+
+Timestamp: 2026-05-27 09:26:00
+
+LATEST UPDATES - 27 Mei 2026
+==============================
+
+30. IMPLEMENT SMART UPLOADER UNTUK PEMBEDA FOLDER IMAGE
+   - Mengubah uploadMiddleware.ts menjadi factory function createUploader(folderName, prefix).
+   - Mengarahkan upload foto produk ke public/uploads/products/ dengan prefix product-.
+   - Mengarahkan upload foto material ke public/uploads/materials/ dengan prefix material-.
+   - Memperbaiki URL feedback di productController dan materialController agar mengembalikan URL absolut yang valid (/public/uploads/...) dari sisi frontend.
+   - Memperbaiki unit test pada modul material agar sesuai dengan struktur URL feedback yang baru.
+
+Timestamp: 2026-05-27 15:00:00
+

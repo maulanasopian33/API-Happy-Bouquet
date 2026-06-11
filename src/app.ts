@@ -37,6 +37,8 @@ import reportRoutes from './routes/reportRoutes';
 import categoryRoutes from './routes/categoryRoutes';
 import promoRoutes from './routes/promoRoutes';
 import heroBannerRoutes from './routes/heroBannerRoutes';
+import orderChannelRoutes from './routes/orderChannelRoutes';
+import tiktokRoutes from './routes/tiktok.routes';
 import path from 'path';
 
 app.use('/public', express.static(path.join(__dirname, '../public')));
@@ -56,6 +58,8 @@ app.use('/api/reports', reportRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/promos', promoRoutes);
 app.use('/api/banners', heroBannerRoutes);
+app.use('/api/channels', orderChannelRoutes);
+app.use('/api/tiktok', tiktokRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to Happy Bouquet API' });

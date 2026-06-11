@@ -12,6 +12,9 @@ import { initProfitAllocation } from './ProfitAllocation';
 import { initCategory } from './Category';
 import { initPromo } from './Promo';
 import { initHeroBanner } from './HeroBanner';
+import { initOrderChannel } from './OrderChannel';
+import { initProductOrderChannel } from './ProductOrderChannel';
+import { initTiktokGlobalSetting } from './TiktokGlobalSetting';
 
 dotenv.config();
 
@@ -36,6 +39,9 @@ const FundTransaction = initFundTransaction(sequelize);
 const ProfitAllocation = initProfitAllocation(sequelize);
 const Promo = initPromo(sequelize);
 const HeroBanner = initHeroBanner(sequelize);
+const OrderChannel = initOrderChannel(sequelize);
+const ProductOrderChannel = initProductOrderChannel(sequelize);
+const TiktokGlobalSetting = initTiktokGlobalSetting(sequelize);
 
 // ─── ASOSIASI ────────────────────────────────────────────────────
 
@@ -71,7 +77,26 @@ ProfitAllocation.belongsTo(Order, { foreignKey: 'order_id', as: 'order' });
 FundAccount.hasMany(ProfitAllocation, { foreignKey: 'fund_account_id', as: 'profitAllocations' });
 ProfitAllocation.belongsTo(FundAccount, { foreignKey: 'fund_account_id', as: 'fundAccount' });
 
+// Product ←→ OrderChannel (Many-to-Many)
+Product.belongsToMany(OrderChannel, {
+  through: ProductOrderChannel,
+  foreignKey: 'product_id',
+  otherKey: 'channel_id',
+  as: 'orderChannels'
+});
+OrderChannel.belongsToMany(Product, {
+  through: ProductOrderChannel,
+  foreignKey: 'channel_id',
+  otherKey: 'product_id',
+  as: 'products'
+});
+
 // ─────────────────────────────────────────────────────────────────
+
+// User ←→ TiktokGlobalSetting
+User.hasOne(TiktokGlobalSetting, { foreignKey: 'updated_by', as: 'tiktokGlobalSetting' });
+TiktokGlobalSetting.belongsTo(User, { foreignKey: 'updated_by', as: 'updater' });
+
 
 const db = {
   sequelize,
@@ -88,6 +113,9 @@ const db = {
   ProfitAllocation,
   Promo,
   HeroBanner,
+  OrderChannel,
+  ProductOrderChannel,
+  TiktokGlobalSetting,
 };
 
 export default db;
