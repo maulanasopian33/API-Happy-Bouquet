@@ -24,6 +24,11 @@ export const initSocket = (server: HttpServer) => {
       broadcastActiveVisitors();
     });
 
+    socket.on('join_user', (userId: number) => {
+      socket.join(`user_${userId}`);
+      logger.info(`Socket ${socket.id} joined user_${userId} room`);
+    });
+
     socket.on('disconnect', () => {
       logger.info(`🔌 Socket disconnected: ${socket.id}`);
     });

@@ -1,6 +1,7 @@
 import db from '../models';
 import bcrypt from 'bcryptjs';
 import logger from '../utils/logger';
+import { sendInAppNotification } from './notificationService';
 
 const User = db.User;
 const Reseller = db.Reseller;
@@ -72,6 +73,14 @@ export const registerReseller = async (data: any) => {
 
     await transaction.commit();
     logger.info('Reseller registered successfully', { userId: user.id, resellerId: reseller.id });
+
+    // Send in-app notification to admins
+    try {
+      await sendInAppNotification(null, 'reseller_registered', { reseller_name: user.name });
+    } catch (notifErr) {
+      logger.error('Gagal mengirim notifikasi pendaftaran reseller', { error: notifErr });
+    }
+
     return reseller;
   } catch (error) {
     await transaction.rollback();

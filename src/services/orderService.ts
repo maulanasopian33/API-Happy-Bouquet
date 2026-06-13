@@ -1,6 +1,8 @@
 import db from '../models';
 import logger from '../utils/logger';
 import { creditFund, debitFund } from './fundService';
+import { createInvoice } from './invoiceService';
+import { sendInAppNotification, sendEmailNotification } from './notificationService';
 
 const Order = db.Order;
 const Product = db.Product;
@@ -102,10 +104,13 @@ export const getOrderById = async (id: number) => {
 export const confirmPayment = async (orderId: number) => {
   const t = await sequelize.transaction();
   try {
-    const order = await Order.findByPk(orderId, {
-      include: [{ model: Product, as: 'product' }],
+    const order = (await Order.findByPk(orderId, {
+      include: [
+        { model: Product, as: 'product' },
+        { model: db.User, as: 'customer', attributes: ['id', 'name', 'email', 'phone'] }
+      ],
       transaction: t,
-    });
+    })) as any;
     if (!order) throw new Error('Order tidak ditemukan');
     if (order.payment_status === 'paid') throw new Error('Pembayaran sudah dikonfirmasi sebelumnya');
     if (order.status === 'cancelled') throw new Error('Order sudah dibatalkan');
@@ -202,6 +207,31 @@ export const confirmPayment = async (orderId: number) => {
 
     await t.commit();
     logger.info('Pembayaran order dikonfirmasi & kas diperbarui', { orderId, revenue, totalCOGS, totalLabor });
+
+    // Generate Invoice and send notifications asynchronously
+    try {
+      const invoice = await createInvoice(orderId);
+      
+      const customer = order.customer;
+      if (customer) {
+        await sendInAppNotification(customer.id, 'order_confirmed', { order_code: order.order_code });
+        if (customer.email) {
+          await sendEmailNotification(
+            customer.email,
+            'order_invoice',
+            {
+              customer_name: customer.name,
+              invoice_number: invoice.invoice_number,
+              order_code: order.order_code,
+            },
+            customer.id
+          );
+        }
+      }
+    } catch (invErr: any) {
+      logger.error('Gagal generate invoice atau kirim notifikasi setelah konfirmasi pembayaran', { orderId, error: invErr });
+    }
+
     return await getOrderById(orderId);
   } catch (err) {
     await t.rollback();
@@ -213,15 +243,78 @@ export const confirmPayment = async (orderId: number) => {
 // ─── Update Status Order (produksi, selesai) ─────────────────────
 
 export const updateOrderStatus = async (orderId: number, status: 'in_production' | 'completed' | 'cancelled') => {
-  const order = await Order.findByPk(orderId);
-  if (!order) throw new Error('Order tidak ditemukan');
-  if (order.status === 'cancelled') throw new Error('Order sudah dibatalkan');
-  if (status === 'cancelled' && order.payment_status === 'paid') {
-    throw new Error('Order yang sudah dibayar tidak bisa dibatalkan langsung. Hubungi admin.');
+  const t = await sequelize.transaction();
+  try {
+    const order = await Order.findByPk(orderId, { transaction: t });
+    if (!order) throw new Error('Order tidak ditemukan');
+    if (order.status === 'cancelled') throw new Error('Order sudah dibatalkan');
+    if (status === 'cancelled' && order.payment_status === 'paid') {
+      throw new Error('Order yang sudah dibayar tidak bisa dibatalkan langsung. Hubungi admin.');
+    }
+
+    await order.update({ status }, { transaction: t });
+
+    // Handle reseller logic when status is updated
+    if (order.order_type === 'reseller') {
+      if (status === 'completed') {
+        // Update earning status to earned
+        const earning = await db.ResellerEarning.findOne({
+          where: { order_id: orderId },
+          transaction: t
+        });
+        if (earning) {
+          await earning.update({ status: 'earned', earned_at: new Date() }, { transaction: t });
+        }
+
+        // Increment reseller total_orders
+        if (order.reseller_id) {
+          const reseller = await db.Reseller.findByPk(order.reseller_id, { transaction: t });
+          if (reseller) {
+            await reseller.increment('total_orders', { by: 1, transaction: t });
+          }
+        }
+
+        // Increment client total_orders and set last_order_at
+        if (order.client_id) {
+          const client = await db.ResellerClient.findByPk(order.client_id, { transaction: t });
+          if (client) {
+            await client.update({
+              total_orders: client.total_orders + 1,
+              last_order_at: new Date()
+            }, { transaction: t });
+          }
+        }
+      } else if (status === 'cancelled') {
+        // Update earning status to cancelled
+        const earning = await db.ResellerEarning.findOne({
+          where: { order_id: orderId },
+          transaction: t
+        });
+        if (earning) {
+          await earning.update({ status: 'cancelled' }, { transaction: t });
+        }
+      }
+    }
+
+    await t.commit();
+    logger.info('Status order diperbarui', { orderId, status });
+
+    // Send status changed notification in-app
+    try {
+      await sendInAppNotification(order.customer_id, 'order_status_changed', {
+        order_code: order.order_code,
+        status: status,
+      });
+    } catch (notifErr) {
+      logger.error('Gagal kirim notifikasi status order', { orderId, error: notifErr });
+    }
+
+    return order;
+  } catch (err) {
+    await t.rollback();
+    logger.error('Gagal memperbarui status order', { orderId, error: err });
+    throw err;
   }
-  await order.update({ status });
-  logger.info('Status order diperbarui', { orderId, status });
-  return order;
 };
 
 // ─── Bayar Fee Pekerja untuk Order ──────────────────────────────

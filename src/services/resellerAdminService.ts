@@ -1,5 +1,6 @@
 import db from '../models';
 import logger from '../utils/logger';
+import { sendInAppNotification, sendEmailNotification } from './notificationService';
 
 const User = db.User;
 const Reseller = db.Reseller;
@@ -44,6 +45,28 @@ export const approveReseller = async (id: number, adminId: number) => {
     rejection_reason: null,
   });
 
+  // Send notifications
+  try {
+    const user = await User.findByPk(reseller.user_id);
+    if (user) {
+      await sendInAppNotification(reseller.user_id, 'reseller_approved', {});
+      if (user.email) {
+        const catalogUrl = `${process.env.APP_URL || 'http://localhost:3000'}/r/${reseller.slug}`;
+        await sendEmailNotification(
+          user.email,
+          'reseller_welcome',
+          {
+            reseller_name: user.name,
+            catalog_url: catalogUrl,
+          },
+          reseller.user_id
+        );
+      }
+    }
+  } catch (notifErr) {
+    logger.error('Gagal mengirim notifikasi approval reseller', { resellerId: id, error: notifErr });
+  }
+
   logger.info('Reseller approved', { resellerId: id, adminId });
   return reseller;
 };
@@ -60,6 +83,13 @@ export const rejectReseller = async (id: number, reason: string) => {
     approved_at: null,
     approved_by: null,
   });
+
+  // Send in-app notification
+  try {
+    await sendInAppNotification(reseller.user_id, 'reseller_rejected', { reason });
+  } catch (notifErr) {
+    logger.error('Gagal mengirim notifikasi rejection reseller', { resellerId: id, error: notifErr });
+  }
 
   logger.info('Reseller rejected', { resellerId: id, reason });
   return reseller;

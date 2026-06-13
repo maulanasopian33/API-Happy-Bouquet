@@ -25,6 +25,11 @@ import { initResellerCatalogSetting } from './ResellerCatalogSetting';
 import { initResellerEarning } from './ResellerEarning';
 import { initResellerProductVisibility } from './ResellerProductVisibility';
 
+// Invoice & Notification models
+import { initInvoice } from './Invoice';
+import { initNotificationTemplate } from './NotificationTemplate';
+import { initNotificationLog } from './NotificationLog';
+
 dotenv.config();
 
 import configData = require('../config/config');
@@ -60,6 +65,11 @@ const ResellerWhatsappTemplate = initResellerWhatsappTemplate(sequelize);
 const ResellerCatalogSetting = initResellerCatalogSetting(sequelize);
 const ResellerEarning = initResellerEarning(sequelize);
 const ResellerProductVisibility = initResellerProductVisibility(sequelize);
+
+// Initialize Invoice & Notification models
+const Invoice = initInvoice(sequelize);
+const NotificationTemplate = initNotificationTemplate(sequelize);
+const NotificationLog = initNotificationLog(sequelize);
 
 // ─── ASOSIASI ────────────────────────────────────────────────────
 
@@ -163,6 +173,16 @@ ResellerProductVisibility.belongsTo(Product, { foreignKey: 'product_id', as: 'pr
 Product.hasMany(ResellerEarning, { foreignKey: 'product_id', as: 'resellerEarnings' });
 ResellerEarning.belongsTo(Product, { foreignKey: 'product_id', as: 'product' });
 
+// ─── INVOICE & NOTIFICATION ASSOCIATIONS ─────────────────────────
+
+// Order ←→ Invoice
+Order.hasOne(Invoice, { foreignKey: 'order_id', as: 'invoice' });
+Invoice.belongsTo(Order, { foreignKey: 'order_id', as: 'order' });
+
+// User ←→ NotificationLog
+User.hasMany(NotificationLog, { foreignKey: 'user_id', as: 'notificationLogs' });
+NotificationLog.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
+
 // ─────────────────────────────────────────────────────────────────
 
 const db = {
@@ -190,6 +210,9 @@ const db = {
   ResellerCatalogSetting,
   ResellerEarning,
   ResellerProductVisibility,
+  Invoice,
+  NotificationTemplate,
+  NotificationLog,
 };
 
 export default db;

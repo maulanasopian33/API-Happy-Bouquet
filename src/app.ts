@@ -42,6 +42,8 @@ import tiktokRoutes from './routes/tiktok.routes';
 import analyticsRoutes from './routes/analyticsRoutes';
 import resellerRoutes from './routes/resellerRoutes';
 import resellerCatalogRoutes from './routes/resellerCatalogRoutes';
+import invoiceRoutes from './routes/invoiceRoutes';
+import notificationRoutes from './routes/notificationRoutes';
 import path from 'path';
 
 app.use('/public', express.static(path.join(__dirname, '../public')));
@@ -68,6 +70,8 @@ app.use('/api/v1/analytics', analyticsRoutes);
 // ─── Routes Baru: Reseller & Catalog ───────────────────────────
 app.use('/api', resellerRoutes);
 app.use('/api/catalog', resellerCatalogRoutes);
+app.use('/api/invoices', invoiceRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to Happy Bouquet API' });

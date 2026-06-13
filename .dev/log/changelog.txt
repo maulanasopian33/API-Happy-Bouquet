@@ -36,11 +36,21 @@ LATEST UPDATES - 13 Juni 2026
 
 Timestamp: 2026-06-13 12:42:00
 
-4. AUDIT PROYEK MENYELURUH & SINKRONISASI INFORMASI
+4. INTEGRASI KAS, GENERATOR INVOICE, DAN SISTEM NOTIFIKASI (SPRINT 3 & 4)
+   - Integrasi auto-generate invoice PDF via pdfkit ketika order payment dikonfirmasi di confirmPayment.
+   - Sinkronisasi status earning reseller (earned/cancelled) dan counter cache transaksi reseller/client.
+   - Implementasi notificationService untuk logging & push notifikasi (In-App via Socket.io dan Email via SMTP/nodemailer).
+   - Implementasi controller dan routes untuk Invoice (detail, download PDF) dan Notifications (log list).
+   - Seeder database default untuk master template notifikasi.
+   - Perbaikan compile-time typings Sequelize & PDFKit.
+   - Library/dependency baru: nodemailer, @types/nodemailer
+
+Timestamp: 2026-06-13 13:00:00
+
+5. AUDIT PROYEK MENYELURUH & SINKRONISASI INFORMASI
    - Melakukan audit komprehensif terhadap alur sistem, arsitektur database, dan struktur folder.
    - Mengidentifikasi gap backend (worker SQL sync masih berupa placeholder TODO dan belum terhubung ke tabel log DB).
    - Menyinkronkan status rate-limiting yang sudah diaktifkan di backend ke log known-issues.
    - File disentuh: `.dev/known-issues.md`, `changelog.txt`.
-Timestamp: 2026-06-13 12:51:00
 
 
