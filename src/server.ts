@@ -1,6 +1,9 @@
 import app from './app';
 import dotenv from 'dotenv';
 import logger from './utils/logger';
+import { createServer } from 'http';
+import { initSocket } from './socket';
+import { initAnalyticsWorker } from './workers/analyticsWorker';
 
 dotenv.config();
 
@@ -36,7 +39,11 @@ const startServer = async () => {
     // Run migrations before starting the server
     // await runMigrations();
     
-    app.listen(PORT, () => {
+    const server = createServer(app);
+    initSocket(server);
+    initAnalyticsWorker();
+
+    server.listen(PORT, () => {
       logger.info(`Server is running on port ${PORT}`);
     });
   } catch (error) {
@@ -46,3 +53,5 @@ const startServer = async () => {
 };
 
 startServer();
+
+// Trigger nodemon restart after resolving EADDRINUSE

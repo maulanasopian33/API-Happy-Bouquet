@@ -14,15 +14,15 @@ app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Rate limiting
-// const limiter = rateLimit({
-//   windowMs: 15 * 60 * 1000, // 15 minutes
-//   max: 100, // limit each IP to 100 requests per windowMs
-//   standardHeaders: true,
-//   legacyHeaders: false,
-//   validate: { trustProxy: false },
-// });
-// app.use(limiter);
+// Rate limiting (Re-enabled for production security)
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { trustProxy: false },
+});
+app.use(limiter);
 
 import authRoutes from './routes/authRoutes';
 import materialRoutes from './routes/materialRoutes';
@@ -39,6 +39,9 @@ import promoRoutes from './routes/promoRoutes';
 import heroBannerRoutes from './routes/heroBannerRoutes';
 import orderChannelRoutes from './routes/orderChannelRoutes';
 import tiktokRoutes from './routes/tiktok.routes';
+import analyticsRoutes from './routes/analyticsRoutes';
+import resellerRoutes from './routes/resellerRoutes';
+import resellerCatalogRoutes from './routes/resellerCatalogRoutes';
 import path from 'path';
 
 app.use('/public', express.static(path.join(__dirname, '../public')));
@@ -60,9 +63,17 @@ app.use('/api/promos', promoRoutes);
 app.use('/api/banners', heroBannerRoutes);
 app.use('/api/channels', orderChannelRoutes);
 app.use('/api/tiktok', tiktokRoutes);
+app.use('/api/v1/analytics', analyticsRoutes);
+
+// ─── Routes Baru: Reseller & Catalog ───────────────────────────
+app.use('/api', resellerRoutes);
+app.use('/api/catalog', resellerCatalogRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to Happy Bouquet API' });
 });
+
+import { errorHandler } from './middlewares/errorHandler';
+app.use(errorHandler);
 
 export default app;

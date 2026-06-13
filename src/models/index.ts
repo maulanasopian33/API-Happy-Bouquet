@@ -16,6 +16,15 @@ import { initOrderChannel } from './OrderChannel';
 import { initProductOrderChannel } from './ProductOrderChannel';
 import { initTiktokGlobalSetting } from './TiktokGlobalSetting';
 
+// Reseller models
+import { initReseller } from './Reseller';
+import { initResellerTierPrice } from './ResellerTierPrice';
+import { initResellerClient } from './ResellerClient';
+import { initResellerWhatsappTemplate } from './ResellerWhatsappTemplate';
+import { initResellerCatalogSetting } from './ResellerCatalogSetting';
+import { initResellerEarning } from './ResellerEarning';
+import { initResellerProductVisibility } from './ResellerProductVisibility';
+
 dotenv.config();
 
 import configData = require('../config/config');
@@ -42,6 +51,15 @@ const HeroBanner = initHeroBanner(sequelize);
 const OrderChannel = initOrderChannel(sequelize);
 const ProductOrderChannel = initProductOrderChannel(sequelize);
 const TiktokGlobalSetting = initTiktokGlobalSetting(sequelize);
+
+// Initialize Reseller models
+const Reseller = initReseller(sequelize);
+const ResellerTierPrice = initResellerTierPrice(sequelize);
+const ResellerClient = initResellerClient(sequelize);
+const ResellerWhatsappTemplate = initResellerWhatsappTemplate(sequelize);
+const ResellerCatalogSetting = initResellerCatalogSetting(sequelize);
+const ResellerEarning = initResellerEarning(sequelize);
+const ResellerProductVisibility = initResellerProductVisibility(sequelize);
 
 // ─── ASOSIASI ────────────────────────────────────────────────────
 
@@ -91,12 +109,61 @@ OrderChannel.belongsToMany(Product, {
   as: 'products'
 });
 
-// ─────────────────────────────────────────────────────────────────
-
 // User ←→ TiktokGlobalSetting
 User.hasOne(TiktokGlobalSetting, { foreignKey: 'updated_by', as: 'tiktokGlobalSetting' });
 TiktokGlobalSetting.belongsTo(User, { foreignKey: 'updated_by', as: 'updater' });
 
+// ─── RESELLER ASSOCIATIONS ───────────────────────────────────────
+
+// User ←→ Reseller
+User.hasOne(Reseller, { foreignKey: 'user_id', as: 'reseller' });
+Reseller.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
+
+// User (Admin) ←→ Reseller (Approved By)
+User.hasMany(Reseller, { foreignKey: 'approved_by', as: 'approvedResellers' });
+Reseller.belongsTo(User, { foreignKey: 'approved_by', as: 'approver' });
+
+// Reseller ←→ ResellerWhatsappTemplate
+Reseller.hasOne(ResellerWhatsappTemplate, { foreignKey: 'reseller_id', as: 'whatsappTemplate' });
+ResellerWhatsappTemplate.belongsTo(Reseller, { foreignKey: 'reseller_id', as: 'reseller' });
+
+// Reseller ←→ ResellerCatalogSetting
+Reseller.hasOne(ResellerCatalogSetting, { foreignKey: 'reseller_id', as: 'catalogSetting' });
+ResellerCatalogSetting.belongsTo(Reseller, { foreignKey: 'reseller_id', as: 'reseller' });
+
+// Reseller ←→ ResellerClient
+Reseller.hasMany(ResellerClient, { foreignKey: 'reseller_id', as: 'clients' });
+ResellerClient.belongsTo(Reseller, { foreignKey: 'reseller_id', as: 'reseller' });
+
+// Reseller ←→ Order
+Reseller.hasMany(Order, { foreignKey: 'reseller_id', as: 'orders' });
+Order.belongsTo(Reseller, { foreignKey: 'reseller_id', as: 'reseller' });
+
+// ResellerClient ←→ Order
+ResellerClient.hasMany(Order, { foreignKey: 'client_id', as: 'orders' });
+Order.belongsTo(ResellerClient, { foreignKey: 'client_id', as: 'client' });
+
+// Reseller ←→ ResellerEarning
+Reseller.hasMany(ResellerEarning, { foreignKey: 'reseller_id', as: 'earnings' });
+ResellerEarning.belongsTo(Reseller, { foreignKey: 'reseller_id', as: 'reseller' });
+
+// Order ←→ ResellerEarning
+Order.hasMany(ResellerEarning, { foreignKey: 'order_id', as: 'resellerEarnings' });
+ResellerEarning.belongsTo(Order, { foreignKey: 'order_id', as: 'order' });
+
+// Product ←→ ResellerTierPrice
+Product.hasMany(ResellerTierPrice, { foreignKey: 'product_id', as: 'tierPrices' });
+ResellerTierPrice.belongsTo(Product, { foreignKey: 'product_id', as: 'product' });
+
+// Product ←→ ResellerProductVisibility
+Product.hasOne(ResellerProductVisibility, { foreignKey: 'product_id', as: 'visibility' });
+ResellerProductVisibility.belongsTo(Product, { foreignKey: 'product_id', as: 'product' });
+
+// Product ←→ ResellerEarning
+Product.hasMany(ResellerEarning, { foreignKey: 'product_id', as: 'resellerEarnings' });
+ResellerEarning.belongsTo(Product, { foreignKey: 'product_id', as: 'product' });
+
+// ─────────────────────────────────────────────────────────────────
 
 const db = {
   sequelize,
@@ -116,6 +183,13 @@ const db = {
   OrderChannel,
   ProductOrderChannel,
   TiktokGlobalSetting,
+  Reseller,
+  ResellerTierPrice,
+  ResellerClient,
+  ResellerWhatsappTemplate,
+  ResellerCatalogSetting,
+  ResellerEarning,
+  ResellerProductVisibility,
 };
 
 export default db;

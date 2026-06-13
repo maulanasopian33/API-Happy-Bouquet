@@ -13,11 +13,35 @@ interface OrderAttributes {
   status: OrderStatus;
   payment_status: PaymentStatus;
   notes?: string;
+  order_type: 'direct' | 'reseller';
+  reseller_id?: number | null;
+  reseller_price?: number | null;
+  client_id?: number | null;
+  client_name?: string | null;
+  client_phone?: string | null;
+  client_address?: string | null;
+  payment_proof_url?: string | null;
+  reseller_notes?: string | null;
   createdAt?: Date;
   updatedAt?: Date;
 }
 
-interface OrderCreationAttributes extends Optional<OrderAttributes, 'id' | 'status' | 'payment_status'> {}
+interface OrderCreationAttributes
+  extends Optional<
+    OrderAttributes,
+    | 'id'
+    | 'status'
+    | 'payment_status'
+    | 'order_type'
+    | 'reseller_id'
+    | 'reseller_price'
+    | 'client_id'
+    | 'client_name'
+    | 'client_phone'
+    | 'client_address'
+    | 'payment_proof_url'
+    | 'reseller_notes'
+  > {}
 
 class Order extends Model<OrderAttributes, OrderCreationAttributes> implements OrderAttributes {
   public id!: number;
@@ -29,6 +53,15 @@ class Order extends Model<OrderAttributes, OrderCreationAttributes> implements O
   public status!: OrderStatus;
   public payment_status!: PaymentStatus;
   public notes!: string;
+  public order_type!: 'direct' | 'reseller';
+  public reseller_id!: number | null;
+  public reseller_price!: number | null;
+  public client_id!: number | null;
+  public client_name!: string | null;
+  public client_phone!: string | null;
+  public client_address!: string | null;
+  public payment_proof_url!: string | null;
+  public reseller_notes!: string | null;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -51,6 +84,43 @@ export const initOrder = (sequelize: Sequelize) => {
         defaultValue: 'unpaid',
       },
       notes: { type: DataTypes.TEXT, allowNull: true },
+      order_type: {
+        type: DataTypes.ENUM('direct', 'reseller'),
+        allowNull: false,
+        defaultValue: 'direct',
+      },
+      reseller_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+      reseller_price: {
+        type: DataTypes.DECIMAL(15, 2),
+        allowNull: true,
+      },
+      client_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+      client_name: {
+        type: DataTypes.STRING(255),
+        allowNull: true,
+      },
+      client_phone: {
+        type: DataTypes.STRING(20),
+        allowNull: true,
+      },
+      client_address: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      payment_proof_url: {
+        type: DataTypes.STRING(500),
+        allowNull: true,
+      },
+      reseller_notes: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
     },
     { sequelize, tableName: 'Orders' }
   );

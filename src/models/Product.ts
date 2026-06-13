@@ -28,6 +28,7 @@ class Product extends Model<ProductAttributes, ProductCreationAttributes> implem
   public type!: 'ready' | 'preorder';
   public preorder_duration!: number;
   public is_active!: boolean;
+  public visibility?: any;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }

@@ -21,7 +21,10 @@ export const register = async (input: RegisterInput) => {
   });
 
   logger.info('User registered successfully', { userId: user.id, email: user.email });
-  return user;
+
+  // Exclude password dari response
+  const { password: _pw, ...safeUser } = user.toJSON();
+  return safeUser;
 };
 
 export const login = async (input: LoginInput) => {
@@ -39,10 +42,16 @@ export const login = async (input: LoginInput) => {
 
   logger.info('User logged in successfully', { userId: user.id, email: user.email });
 
-  const secret = process.env.JWT_SECRET || 'secret';
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error('JWT_SECRET is not configured in environment variables.');
+  }
+
   const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, secret, {
     expiresIn: '1d',
   });
 
-  return { user, token };
+  // Exclude password dari response
+  const { password: _pw, ...safeUser } = user.toJSON();
+  return { user: safeUser, token };
 };
