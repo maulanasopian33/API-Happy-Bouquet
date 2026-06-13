@@ -1,0 +1,46 @@
+LATEST UPDATES - 2026-06-11
+==============================
+
+1. INITIALIZE PROJECT CONTEXT & DEV FOLDER
+   - Menginisialisasi folder `.dev/` sebagai Single Source of Truth
+   - Membuat file `context.md`, `decisions.md`, `known-issues.md`
+   - Memasukkan struktur changelog baru.
+
+Timestamp: 2026-06-11 16:05:00
+
+2. BACKEND REALTIME ANALYTICS SETUP
+   - Install dependencies `ioredis`, `socket.io`, `geoip-lite`, `ua-parser-js`.
+   - Setup konfigurasi koneksi Redis di `src/config/redis.ts`.
+   - Setup server Socket.io di `src/socket.ts` dengan room management untuk admin.
+   - Buat helper ekstraktor UTM, IP Geolocation, dan User-Agent di `src/utils/analyticsHelper.ts`.
+   - Buat endpoint `POST /api/v1/analytics/collect` dengan Rate Limit ketat.
+   - Terapkan perlindungan `express-rate-limit` global di `app.ts`.
+   - Setup Node-cron Worker `src/workers/analyticsWorker.ts` untuk sync Redis ke SQL.
+
+Timestamp: 2026-06-11 16:13:00
+
+LATEST UPDATES - 13 Juni 2026
+==============================
+
+3. IMPLEMENTASI SISTEM RESELLER (SPRINT 1 & 2)
+   - Membuat 7 model database baru untuk reseller: Reseller, ResellerTierPrice, ResellerClient, ResellerWhatsappTemplate, ResellerCatalogSetting, ResellerEarning, ResellerProductVisibility.
+   - Menambahkan relasi (associations) dan mendaftarkannya di models/index.ts.
+   - Menambahkan kolom reseller-related ke model Order.ts.
+   - Membuat Zod validators komprehensif untuk semua input reseller.
+   - Membuat 6 reseller services (reseller, admin, client, order, earning, catalog) untuk logika bisnis.
+   - Membuat WhatsApp helper utility untuk normalisasi dan rendering WhatsApp template link.
+   - Membuat controller dan routes untuk reseller, catalog, dan admin-reseller management.
+   - Mendaftarkan rute di Express app.ts beserta global error handler middleware.
+   - Membuat seeder default reseller product visibility.
+   - Membuat unit tests untuk registrasi dan WhatsApp generator link reseller.
+
+Timestamp: 2026-06-13 12:42:00
+
+4. AUDIT PROYEK MENYELURUH & SINKRONISASI INFORMASI
+   - Melakukan audit komprehensif terhadap alur sistem, arsitektur database, dan struktur folder.
+   - Mengidentifikasi gap backend (worker SQL sync masih berupa placeholder TODO dan belum terhubung ke tabel log DB).
+   - Menyinkronkan status rate-limiting yang sudah diaktifkan di backend ke log known-issues.
+   - File disentuh: `.dev/known-issues.md`, `changelog.txt`.
+Timestamp: 2026-06-13 12:51:00
+
+
