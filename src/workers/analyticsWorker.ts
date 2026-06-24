@@ -1,6 +1,7 @@
 import cron from 'node-cron';
 import redis from '../config/redis';
 import logger from '../utils/logger';
+import db from '../models';
 
 // Fungsi untuk memindahkan data dari Redis ke Database SQL
 export const syncAnalyticsToDB = async () => {
@@ -15,16 +16,24 @@ export const syncAnalyticsToDB = async () => {
     while (logEntry) {
       const data = JSON.parse(logEntry);
       
-      // TODO: Implementasi insert ke Sequelize Model (misalnya AnalyticsLog)
-      // await AnalyticsLog.create({
-      //   session_id: data.session_id,
-      //   url: data.url,
-      //   event_type: data.event_type,
-      //   device_type: data.device_type,
-      //   country: data.country,
-      //   utm_source: data.utm.source,
-      //   ...dll
-      // });
+      await db.AnalyticsLog.create({
+        session_id: data.session_id,
+        url: data.url,
+        referrer: data.referrer,
+        event_type: data.event_type,
+        scroll_depth: data.scroll_depth,
+        ip_address: data.ip,
+        user_agent: data.user_agent || data.uaString || 'Unknown',
+        device_type: data.device_type,
+        browser: data.browser,
+        os: data.os,
+        country: data.country,
+        city: data.city,
+        utm_source: data.utm?.source,
+        utm_medium: data.utm?.medium,
+        utm_campaign: data.utm?.campaign,
+        timestamp: new Date(data.timestamp || Date.now())
+      });
       
       processed++;
       logEntry = await redis.rpop('analytics:raw_logs');

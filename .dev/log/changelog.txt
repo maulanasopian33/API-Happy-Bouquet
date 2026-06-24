@@ -54,3 +54,13 @@ Timestamp: 2026-06-13 13:00:00
    - File disentuh: `.dev/known-issues.md`, `changelog.txt`.
 
 
+LATEST UPDATES - 2026-06-24
+==============================
+
+6. PRODUCTION AUDIT & FIXES
+   - Memperbaiki teknikal debt testing: menambahkan flag `--runInBand` di Jest test command untuk mencegah tabrakan koneksi database.
+   - Memperbaiki test case `fund.test.ts` untuk assertion strict mode dari tipe data Decimal Sequelize (String -> Number).
+   - Menyelesaikan TODO Analytics Worker: membuat model `AnalyticsLog` dan mendaftarkannya ke `src/models/index.ts`.
+   - Mengimplementasikan `db.AnalyticsLog.create(...)` pada `syncAnalyticsToDB` di `src/workers/analyticsWorker.ts` untuk memindahkan raw log dari Redis ke MySQL secara permanen.
+Timestamp: 2026-06-24 14:41:00
+

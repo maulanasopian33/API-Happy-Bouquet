@@ -30,3 +30,32 @@ export const login = async (req: Request, res: Response) => {
     return errorResponse(res, error.message, null, 401);
   }
 };
+
+import { AuthRequest } from '../middlewares/authMiddleware';
+import * as userService from '../services/userService';
+
+export const getMe = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user) {
+      return errorResponse(res, 'Unauthorized access', null, 401);
+    }
+    const user = await userService.getUserById(req.user.id);
+    if (!user) {
+      return errorResponse(res, 'User not found', null, 404);
+    }
+    return successResponse(res, 'Session verified successfully', user, 200);
+  } catch (error: any) {
+    return errorResponse(res, error.message, null, 500);
+  }
+};
+
+export const logout = async (req: Request, res: Response) => {
+  try {
+    // Stateless JWT logout is handled client-side by clearing token,
+    // but endpoint is provided for clean API integration.
+    return successResponse(res, 'Logged out successfully', null, 200);
+  } catch (error: any) {
+    return errorResponse(res, error.message, null, 500);
+  }
+};
+
