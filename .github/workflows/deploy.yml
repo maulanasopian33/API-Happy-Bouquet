@@ -32,19 +32,14 @@ jobs:
       - name: Prune dev dependencies
         run: npm prune --production
 
-      # Prepare deploy dir (Combine dist + node_modules + config)
+      # Prepare deploy dir (without node_modules)
       - name: Prepare deploy folder
         run: |
           mkdir deploy
           cp -r dist deploy/dist
-          cp -r node_modules deploy/node_modules
           cp package.json deploy/package.json
           cp package-lock.json deploy/package-lock.json
-
-          # Verify node_modules content (debug)
-          echo "Node Modules size:"
-          du -sh deploy/node_modules
-
+          
           # Migration files
           cp -r migrations deploy/migrations
           if [ -d "seeders" ]; then
@@ -52,27 +47,37 @@ jobs:
           else
             echo "Seeders directory not found, skipping."
           fi
-
+          
           # Use Production .sequelizerc
           cp .sequelizerc.prod deploy/.sequelizerc
 
-          # Create restart trigger (Passenger)
-          mkdir -p deploy/tmp
-          echo "restart $(date)" > deploy/tmp/restart.txt
+      # Compress deploy folder
+      - name: Compress artifacts
+        run: tar -czvf deploy.tar.gz -C deploy .
 
-      # Force removal of .gitignore to ensure node_modules is uploaded
-      - name: Remove .gitignore
-        run: rm -f .gitignore
+      # Upload archive via SCP
+      - name: Upload archive via SCP
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          port: ${{ secrets.SSH_PORT }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "deploy.tar.gz"
+          target: ${{ secrets.SSH_TARGET_DIR }}
 
-      # Deploy via SSH (Rsync)
-      - name: Deploy to Server via SSH
-        uses: easingthemes/ssh-deploy@main
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          ARGS: "-avzr --delete"
-          SOURCE: "deploy/"
-          REMOTE_HOST: ${{ secrets.SSH_HOST }}
-          REMOTE_USER: ${{ secrets.SSH_USER }}
-          REMOTE_PORT: ${{ secrets.SSH_PORT }}
-          TARGET: ${{ secrets.SSH_TARGET_DIR }}
-          EXCLUDE: "/.git/, /node_modules/.bin/, /node_modules/.cache/"
+      # Extract, install production dependencies, and restart via SSH
+      - name: Execute remote commands
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          port: ${{ secrets.SSH_PORT }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ${{ secrets.SSH_TARGET_DIR }}
+            tar -xzvf deploy.tar.gz
+            rm deploy.tar.gz
+            npm install --production
+            mkdir -p tmp
+            touch tmp/restart.txt
