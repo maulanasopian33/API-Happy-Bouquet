@@ -64,24 +64,16 @@ jobs:
       - name: Remove .gitignore
         run: rm -f .gitignore
 
-      # Deploy via FTP
-      - name: Upload build via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
-        with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          port: ${{ secrets.FTP_PORT }}
-          protocol: ftp
-          local-dir: "deploy/"
-          server-dir: ${{ secrets.FTP_REMOTE_DIR }}
-          # Use incremental sync by excluding unchanged files if possible
-          # Note: SamKirkland/FTP-Deploy-Action uses git to determine changed files by default
-          # but since we are deploying a "deploy" folder that is recreated, 
-          # we should ensure it handles it efficiently.
-          exclude: |
-            **/.git*
-            **/.git*/**
-            node_modules/.bin/**
-            node_modules/.cache/**
+      # Deploy via SSH (Rsync)
+      - name: Deploy to Server via SSH
+        uses: easingthemes/ssh-deploy@main
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          ARGS: "-avzr --delete"
+          SOURCE: "deploy/"
+          REMOTE_HOST: ${{ secrets.SSH_HOST }}
+          REMOTE_USER: ${{ secrets.SSH_USER }}
+          REMOTE_PORT: ${{ secrets.SSH_PORT }}
+          TARGET: ${{ secrets.SSH_TARGET_DIR }}
+          EXCLUDE: "/.git/, /node_modules/.bin/, /node_modules/.cache/"
 

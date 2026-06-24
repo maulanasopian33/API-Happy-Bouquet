@@ -62,5 +62,9 @@ LATEST UPDATES - 2026-06-24
    - Memperbaiki test case `fund.test.ts` untuk assertion strict mode dari tipe data Decimal Sequelize (String -> Number).
    - Menyelesaikan TODO Analytics Worker: membuat model `AnalyticsLog` dan mendaftarkannya ke `src/models/index.ts`.
    - Mengimplementasikan `db.AnalyticsLog.create(...)` pada `syncAnalyticsToDB` di `src/workers/analyticsWorker.ts` untuk memindahkan raw log dari Redis ke MySQL secara permanen.
-Timestamp: 2026-06-24 14:41:00
+
+7. DEPLOYMENT PIPELINE MIGRATION
+   - Mengganti protokol upload di `.github/workflows/deploy.yml` dari FTP menjadi SSH/Rsync.
+   - Integrasi `easingthemes/ssh-deploy@main` untuk mempercepat upload `node_modules` secara inkremental dan menghapus file usang di production.
+Timestamp: 2026-06-24 14:46:00
 
