@@ -9,7 +9,29 @@ const app = express();
 // This is necessary for express-rate-limit to correctly identify user IPs
 app.set('trust proxy', 1);
 
-app.use(cors());
+const allowedOrigins = process.env.CORS_ORIGINS 
+  ? process.env.CORS_ORIGINS.split(',').map(o => o.trim())
+  : [];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Izinkan request tanpa origin (seperti curl, Postman, atau server-to-server)
+    if (!origin) return callback(null, true);
+    
+    // Jika masih development, izinkan semua origin
+    if (process.env.NODE_ENV !== 'production') {
+      return callback(null, true);
+    }
+    
+    // Jika production, cek apakah origin terdaftar
+    if (allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+      return callback(null, true);
+    }
+    
+    return callback(new Error(`CORS Error: Origin ${origin} is not allowed.`), false);
+  },
+  credentials: true,
+}));
 app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
