@@ -12,7 +12,7 @@ module.exports = {
       updated_by: {
         type: Sequelize.INTEGER,
         allowNull: true,
-        references: { model: 'users', key: 'id' },
+        references: { model: 'Users', key: 'id' },
         onUpdate: 'CASCADE', onDelete: 'SET NULL'
       },
       created_at: { allowNull: false, type: Sequelize.DATE, defaultValue: Sequelize.literal('CURRENT_TIMESTAMP') },
