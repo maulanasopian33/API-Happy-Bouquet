@@ -29,7 +29,7 @@ import { initResellerProductVisibility } from './ResellerProductVisibility';
 import { initInvoice } from './Invoice';
 import { initNotificationTemplate } from './NotificationTemplate';
 import { initNotificationLog } from './NotificationLog';
-import { AnalyticsLog } from './AnalyticsLog';
+import { initAnalyticsLog } from './AnalyticsLog';
 
 dotenv.config();
 
@@ -72,8 +72,8 @@ const Invoice = initInvoice(sequelize);
 const NotificationTemplate = initNotificationTemplate(sequelize);
 const NotificationLog = initNotificationLog(sequelize);
 
-// Initialize Analytics models (AnalyticsLog is statically initialized in its file)
-// We just pass it to db object
+// Initialize Analytics models
+const AnalyticsLog = initAnalyticsLog(sequelize);
 
 // ─── ASOSIASI ────────────────────────────────────────────────────
 

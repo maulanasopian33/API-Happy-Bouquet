@@ -1,5 +1,4 @@
-import { Model, DataTypes } from 'sequelize';
-import sequelize from '../config/database';
+import { Model, DataTypes, Sequelize, Optional } from 'sequelize';
 
 export interface AnalyticsLogAttributes {
   id?: number;
@@ -23,7 +22,9 @@ export interface AnalyticsLogAttributes {
   updatedAt?: Date;
 }
 
-export class AnalyticsLog extends Model<AnalyticsLogAttributes> implements AnalyticsLogAttributes {
+interface AnalyticsLogCreationAttributes extends Optional<AnalyticsLogAttributes, 'id'> {}
+
+export class AnalyticsLog extends Model<AnalyticsLogAttributes, AnalyticsLogCreationAttributes> implements AnalyticsLogAttributes {
   public id!: number;
   public session_id!: string;
   public url!: string;
@@ -45,83 +46,85 @@ export class AnalyticsLog extends Model<AnalyticsLogAttributes> implements Analy
   public readonly updatedAt!: Date;
 }
 
-AnalyticsLog.init(
-  {
-    id: {
-      type: DataTypes.BIGINT,
-      autoIncrement: true,
-      primaryKey: true,
+export const initAnalyticsLog = (sequelize: Sequelize) => {
+  AnalyticsLog.init(
+    {
+      id: {
+        type: DataTypes.BIGINT,
+        autoIncrement: true,
+        primaryKey: true,
+      },
+      session_id: {
+        type: DataTypes.STRING(255),
+        allowNull: false,
+      },
+      url: {
+        type: DataTypes.TEXT,
+        allowNull: false,
+      },
+      referrer: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      event_type: {
+        type: DataTypes.STRING(50),
+        allowNull: false,
+      },
+      scroll_depth: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+      ip_address: {
+        type: DataTypes.STRING(45),
+        allowNull: false,
+      },
+      user_agent: {
+        type: DataTypes.TEXT,
+        allowNull: false,
+      },
+      device_type: {
+        type: DataTypes.STRING(50),
+        allowNull: false,
+      },
+      browser: {
+        type: DataTypes.STRING(100),
+        allowNull: false,
+      },
+      os: {
+        type: DataTypes.STRING(100),
+        allowNull: false,
+      },
+      country: {
+        type: DataTypes.STRING(100),
+        allowNull: false,
+      },
+      city: {
+        type: DataTypes.STRING(100),
+        allowNull: false,
+      },
+      utm_source: {
+        type: DataTypes.STRING(100),
+        allowNull: true,
+      },
+      utm_medium: {
+        type: DataTypes.STRING(100),
+        allowNull: true,
+      },
+      utm_campaign: {
+        type: DataTypes.STRING(100),
+        allowNull: true,
+      },
+      timestamp: {
+        type: DataTypes.DATE,
+        allowNull: false,
+      },
     },
-    session_id: {
-      type: DataTypes.STRING(255),
-      allowNull: false,
-    },
-    url: {
-      type: DataTypes.TEXT,
-      allowNull: false,
-    },
-    referrer: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    event_type: {
-      type: DataTypes.STRING(50),
-      allowNull: false,
-    },
-    scroll_depth: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-    },
-    ip_address: {
-      type: DataTypes.STRING(45), // Support IPv6
-      allowNull: false,
-    },
-    user_agent: {
-      type: DataTypes.TEXT,
-      allowNull: false,
-    },
-    device_type: {
-      type: DataTypes.STRING(50),
-      allowNull: false,
-    },
-    browser: {
-      type: DataTypes.STRING(100),
-      allowNull: false,
-    },
-    os: {
-      type: DataTypes.STRING(100),
-      allowNull: false,
-    },
-    country: {
-      type: DataTypes.STRING(100),
-      allowNull: false,
-    },
-    city: {
-      type: DataTypes.STRING(100),
-      allowNull: false,
-    },
-    utm_source: {
-      type: DataTypes.STRING(100),
-      allowNull: true,
-    },
-    utm_medium: {
-      type: DataTypes.STRING(100),
-      allowNull: true,
-    },
-    utm_campaign: {
-      type: DataTypes.STRING(100),
-      allowNull: true,
-    },
-    timestamp: {
-      type: DataTypes.DATE,
-      allowNull: false,
-    },
-  },
-  {
-    sequelize,
-    tableName: 'AnalyticsLogs',
-    timestamps: true,
-  }
-);
+    {
+      sequelize,
+      tableName: 'AnalyticsLogs',
+    }
+  );
+  return AnalyticsLog;
+};
 
 export default AnalyticsLog;
