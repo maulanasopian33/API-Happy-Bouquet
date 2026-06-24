@@ -51,33 +51,17 @@ jobs:
           # Use Production .sequelizerc
           cp .sequelizerc.prod deploy/.sequelizerc
 
-      # Compress deploy folder
-      - name: Compress artifacts
-        run: tar -czvf deploy.tar.gz -C deploy .
-
-      # Upload archive via SCP
-      - name: Upload archive via SCP
-        uses: appleboy/scp-action@v0.1.7
+      # Upload archive via FTP (Fast because no node_modules)
+      - name: Upload build via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          port: ${{ secrets.SSH_PORT }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "deploy.tar.gz"
-          target: ${{ secrets.SSH_TARGET_DIR }}
-
-      # Extract, install production dependencies, and restart via SSH
-      - name: Execute remote commands
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          port: ${{ secrets.SSH_PORT }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cd ${{ secrets.SSH_TARGET_DIR }}
-            tar -xzvf deploy.tar.gz
-            rm deploy.tar.gz
-            npm install --production
-            mkdir -p tmp
-            touch tmp/restart.txt
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: ${{ secrets.FTP_PORT }}
+          protocol: ftp
+          local-dir: "deploy/"
+          server-dir: ${{ secrets.FTP_REMOTE_DIR }}
+          exclude: |
+            **/.git*
+            **/.git*/**
