@@ -3,7 +3,7 @@ name: Deploy to Shared Hosting
 on:
   push:
     tags:
-      - "v*"   # Trigger on version tags, e.g., v1.0.0
+      - "v*" # Trigger on version tags, e.g., v1.0.0
 
 jobs:
   build-and-deploy:
@@ -40,11 +40,11 @@ jobs:
           cp -r node_modules deploy/node_modules
           cp package.json deploy/package.json
           cp package-lock.json deploy/package-lock.json
-          
+
           # Verify node_modules content (debug)
           echo "Node Modules size:"
           du -sh deploy/node_modules
-          
+
           # Migration files
           cp -r migrations deploy/migrations
           if [ -d "seeders" ]; then
@@ -52,10 +52,10 @@ jobs:
           else
             echo "Seeders directory not found, skipping."
           fi
-          
+
           # Use Production .sequelizerc
           cp .sequelizerc.prod deploy/.sequelizerc
-          
+
           # Create restart trigger (Passenger)
           mkdir -p deploy/tmp
           echo "restart $(date)" > deploy/tmp/restart.txt
@@ -76,4 +76,3 @@ jobs:
           REMOTE_PORT: ${{ secrets.SSH_PORT }}
           TARGET: ${{ secrets.SSH_TARGET_DIR }}
           EXCLUDE: "/.git/, /node_modules/.bin/, /node_modules/.cache/"
-
