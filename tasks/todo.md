@@ -1,11 +1,11 @@
 # Todo Audit & Refactor API Happy Bouquet
 
 ## Phase 1: Quick Wins
-- [ ] Task 1: Standarkan format respons di `LogController.ts` (pakai successResponse/errorResponse)
-- [ ] Task 2: Standarkan format respons di `tiktokAdmin.controller.ts` & `tiktokUser.controller.ts`
-- [ ] Task 3: Hapus `isAdmin` inline di `adminRoutes.ts` → `authorizeRoles('admin', 'super_admin')`
-- [ ] Task 4: Migrasi `registerSchema` & `materialSchema` ke `src/validators/`; hapus `utils/validation.ts` & `utils/types.ts`
-- [ ] Task 5: Validasi body `login` dengan Zod; seragamkan pesan error Bahasa Indonesia
+- [x] Task 1: Standarkan format respons di `LogController.ts` (pakai successResponse/errorResponse)
+- [x] Task 2: Standarkan format respons di `tiktokAdmin.controller.ts` & `tiktokUser.controller.ts`
+- [x] Task 3: Hapus `isAdmin` inline di `adminRoutes.ts` → `authorizeRoles('admin', 'super_admin')`
+- [x] Task 4: Migrasi `registerSchema` & `materialSchema` ke `src/validators/`; hapus `utils/validation.ts` & `utils/types.ts`
+- [x] Task 5: Validasi body `login` dengan Zod; seragamkan pesan error Bahasa Indonesia
 
 ## Checkpoint: Phase 1
 - [x] `npm run build` sukses
@@ -15,12 +15,13 @@
 - [x] Fix bug Zod v4: `err.errors` -> `err.issues` + kode `VALIDATION_ERROR` (30 kemunculan, 14 controller)
 
 ## Phase 2: Fitur Mock (keputusan user)
-- [ ] Task 6: TikTok — sunset/disable rute atau implementasi nyata
-- [ ] Task 7: Mock analytics di `socket.ts` hanya development; matikan di production
+- [x] Task 6: TikTok — sunset/disable rute (diblokir 403 di production, mock tetap di dev)
+- [x] Task 7: Mock analytics di `socket.ts` hanya development; production baca data nyata dari Redis
 
 ## Checkpoint: Phase 2
-- [ ] Tidak ada data palsu bocor ke production
-- [ ] Endpoint disabled tidak bisa diakses (403/404 jelas)
+- [x] Tidak ada data palsu bocor ke production
+- [x] Endpoint disabled tidak bisa diakses (403/404 jelas)
+- [x] Build + test hijau (35/35)
 
 ## Phase 3: Kerapian & Konsistensi
 - [ ] Task 8: Kurangi `(req as any)` — perluas `AuthRequest`/`ResellerAuthRequest`

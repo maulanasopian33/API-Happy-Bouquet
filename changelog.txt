@@ -18,6 +18,11 @@ LATEST UPDATES - 8 Agustus 2026
    - Tambah import `ErrorCodes` dari `src/constants/errors.ts` di controller terkait; standarisasi kode error validasi.
    - Dampak: `reseller.test.ts` (sebelumnya merah karena `error.code === 'VALIDATION_ERROR'`) kini hijau; full test 35/35 lulus.
 
+34. FASE 2 — TIKTOK SUNSET (DATA MOCK TIDAK BOCOR KE PRODUCTION)
+   - Rute TikTok (`/api/tiktok/*`) hanya implementasi mock, belum integrasi API resmi. Di `production`, semua rute kini ditolak dengan HTTP 403 + pesan jelas ("Fitur TikTok belum tersedia di production"); mock tetap aktif di development untuk keperluan frontend.
+   - Ganti middleware `isAdmin` inline duplikat di `tiktok.routes.ts` dengan `authorizeRoles('admin', 'super admin', 'super_admin')` (konsisten dengan `adminRoutes.ts`).
+   - `broadcastActiveVisitors()` di `src/socket.ts`: di production baca data NYATA dari Redis (`analytics:active_visitors` -> activeVisitors, `analytics:top_urls` -> topProducts, `analytics:raw_logs` -> deviceStats); generator mock (active count, traffic history, device stats) hanya dijalankan saat development.
+
 Timestamp: 2026-08-08 00:00:00
 
 LATEST UPDATES - 26 Januari 2026
