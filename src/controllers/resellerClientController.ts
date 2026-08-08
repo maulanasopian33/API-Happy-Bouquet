@@ -1,4 +1,5 @@
-import { Response } from 'express';
+﻿import { Response } from 'express';
+import { ErrorCodes } from '../constants/errors';
 import { successResponse, errorResponse } from '../utils/response';
 import * as resellerClientService from '../services/resellerClientService';
 import { createClientSchema, updateClientSchema } from '../validators/resellerValidator';
@@ -35,7 +36,7 @@ export const createClient = async (req: AuthRequest, res: Response) => {
     return successResponse(res, 'Client berhasil didaftarkan', client, 201);
   } catch (err: any) {
     if (err.name === 'ZodError') {
-      return errorResponse(res, 'Input client tidak valid', err.errors, 422);
+      return errorResponse(res, 'Input client tidak valid', { code: ErrorCodes.VALIDATION_ERROR, issues: err.issues }, 422);
     }
     return errorResponse(res, err.message);
   }
@@ -53,7 +54,7 @@ export const updateClient = async (req: AuthRequest, res: Response) => {
     return successResponse(res, 'Data client berhasil diperbarui', client);
   } catch (err: any) {
     if (err.name === 'ZodError') {
-      return errorResponse(res, 'Input pembaruan client tidak valid', err.errors, 422);
+      return errorResponse(res, 'Input pembaruan client tidak valid', { code: ErrorCodes.VALIDATION_ERROR, issues: err.issues }, 422);
     }
     return errorResponse(res, err.message, null, 404);
   }

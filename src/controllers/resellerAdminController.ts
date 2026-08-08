@@ -1,4 +1,5 @@
-import { Request, Response } from 'express';
+﻿import { Request, Response } from 'express';
+import { ErrorCodes } from '../constants/errors';
 import { successResponse, errorResponse } from '../utils/response';
 import * as resellerAdminService from '../services/resellerAdminService';
 import {
@@ -50,7 +51,7 @@ export const reject = async (req: Request, res: Response) => {
     return successResponse(res, 'Pendaftaran reseller ditolak', reseller);
   } catch (err: any) {
     if (err.name === 'ZodError') {
-      return errorResponse(res, 'Alasan penolakan tidak valid', err.errors, 422);
+      return errorResponse(res, 'Alasan penolakan tidak valid', { code: ErrorCodes.VALIDATION_ERROR, issues: err.issues }, 422);
     }
     return errorResponse(res, err.message);
   }
@@ -72,7 +73,7 @@ export const changeTier = async (req: Request, res: Response) => {
     return successResponse(res, 'Tingkatan/tier reseller berhasil diubah', reseller);
   } catch (err: any) {
     if (err.name === 'ZodError') {
-      return errorResponse(res, 'Tingkatan/tier tidak valid', err.errors, 422);
+      return errorResponse(res, 'Tingkatan/tier tidak valid', { code: ErrorCodes.VALIDATION_ERROR, issues: err.issues }, 422);
     }
     return errorResponse(res, err.message);
   }
@@ -85,7 +86,7 @@ export const setTierPrices = async (req: Request, res: Response) => {
     return successResponse(res, 'Harga tier reseller berhasil ditetapkan');
   } catch (err: any) {
     if (err.name === 'ZodError') {
-      return errorResponse(res, 'Struktur harga tier tidak valid', err.errors, 422);
+      return errorResponse(res, 'Struktur harga tier tidak valid', { code: ErrorCodes.VALIDATION_ERROR, issues: err.issues }, 422);
     }
     return errorResponse(res, err.message);
   }

@@ -1,4 +1,5 @@
-import { Request, Response } from 'express';
+﻿import { Request, Response } from 'express';
+import { ErrorCodes } from '../constants/errors';
 import { successResponse, errorResponse } from '../utils/response';
 import * as resellerCatalogService from '../services/resellerCatalogService';
 import {
@@ -8,7 +9,7 @@ import {
 import { AuthRequest } from '../middlewares/authMiddleware';
 import * as whatsappUtils from '../utils/whatsapp';
 
-// ─── Public Endpoints ─────────────────────────────────────────────
+// â”€â”€â”€ Public Endpoints â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export const getCatalog = async (req: Request, res: Response) => {
   try {
@@ -55,7 +56,7 @@ export const getWhatsappLink = async (req: Request, res: Response) => {
     // 3. Compile whatsapp template text
     const templateText =
       reseller.whatsappTemplate?.template ||
-      'Halo kak {reseller_name}, saya ingin pesan:\n🌸 {product_name}\n💰 Rp {price}';
+      'Halo kak {reseller_name}, saya ingin pesan:\nðŸŒ¸ {product_name}\nðŸ’° Rp {price}';
 
     const messagePreview = whatsappUtils.compileWhatsappMessage(templateText, {
       reseller_name: reseller.user?.name || '',
@@ -85,7 +86,7 @@ export const getWhatsappLink = async (req: Request, res: Response) => {
   }
 };
 
-// ─── Reseller Authenticated Settings ──────────────────────────────
+// â”€â”€â”€ Reseller Authenticated Settings â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export const getSettings = async (req: AuthRequest, res: Response) => {
   try {
@@ -105,7 +106,7 @@ export const updateSettings = async (req: AuthRequest, res: Response) => {
     return successResponse(res, 'Pengaturan katalog berhasil diperbarui', settings);
   } catch (err: any) {
     if (err.name === 'ZodError') {
-      return errorResponse(res, 'Pengaturan katalog tidak valid', err.errors, 422);
+      return errorResponse(res, 'Pengaturan katalog tidak valid', { code: ErrorCodes.VALIDATION_ERROR, issues: err.issues }, 422);
     }
     return errorResponse(res, err.message);
   }
@@ -132,7 +133,7 @@ export const updateTemplate = async (req: AuthRequest, res: Response) => {
     return successResponse(res, 'Template WhatsApp berhasil diperbarui', updatedTemplate);
   } catch (err: any) {
     if (err.name === 'ZodError') {
-      return errorResponse(res, 'Template WhatsApp tidak valid', err.errors, 422);
+      return errorResponse(res, 'Template WhatsApp tidak valid', { code: ErrorCodes.VALIDATION_ERROR, issues: err.issues }, 422);
     }
     return errorResponse(res, err.message);
   }

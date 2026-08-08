@@ -1,4 +1,5 @@
-import { Request, Response } from 'express';
+﻿import { Request, Response } from 'express';
+import { ErrorCodes } from '../constants/errors';
 import { successResponse, errorResponse } from '../utils/response';
 import * as productService from '../services/productService';
 import { z } from 'zod';
@@ -66,7 +67,7 @@ export const createProduct = async (req: Request, res: Response) => {
     const product = await productService.createProduct({ ...data, photo_url });
     return successResponse(res, 'Produk berhasil dibuat', product, 201);
   } catch (err: any) {
-    if (err.name === 'ZodError') return errorResponse(res, 'Validasi gagal', err.errors, 422);
+    if (err.name === 'ZodError') return errorResponse(res, 'Validasi gagal', { code: ErrorCodes.VALIDATION_ERROR, issues: err.issues }, 422);
     return errorResponse(res, err.message);
   }
 };
@@ -105,7 +106,7 @@ export const bulkAddCostTemplates = async (req: Request, res: Response) => {
     const created = await productService.bulkAddCostTemplates(Number(req.params.id), templates);
     return successResponse(res, `${created.length} template biaya berhasil ditambahkan`, created, 201);
   } catch (err: any) {
-    if (err.name === 'ZodError') return errorResponse(res, 'Validasi gagal', err.errors, 422);
+    if (err.name === 'ZodError') return errorResponse(res, 'Validasi gagal', { code: ErrorCodes.VALIDATION_ERROR, issues: err.issues }, 422);
     return errorResponse(res, err.message, null, 404);
   }
 };
@@ -125,7 +126,7 @@ export const setProductChannels = async (req: Request, res: Response) => {
     const result = await productService.setProductChannels(Number(req.params.id), channels);
     return successResponse(res, 'Order channels produk berhasil diperbarui', result);
   } catch (err: any) {
-    if (err.name === 'ZodError') return errorResponse(res, 'Validasi gagal', err.errors, 422);
+    if (err.name === 'ZodError') return errorResponse(res, 'Validasi gagal', { code: ErrorCodes.VALIDATION_ERROR, issues: err.issues }, 422);
     return errorResponse(res, err.message, null, 404);
   }
 };

@@ -1,4 +1,5 @@
-import { Request, Response } from 'express';
+﻿import { Request, Response } from 'express';
+import { ErrorCodes } from '../constants/errors';
 import { successResponse, errorResponse } from '../utils/response';
 import * as promoService from '../services/promoService';
 import { z } from 'zod';
@@ -40,7 +41,7 @@ export const createPromo = async (req: Request, res: Response) => {
     const promo = await promoService.createPromo(data);
     return successResponse(res, 'Promo berhasil dibuat', promo, 201);
   } catch (err: any) {
-    if (err.name === 'ZodError') return errorResponse(res, 'Validasi gagal', err.errors, 422);
+    if (err.name === 'ZodError') return errorResponse(res, 'Validasi gagal', { code: ErrorCodes.VALIDATION_ERROR, issues: err.issues }, 422);
     return errorResponse(res, err.message);
   }
 };
@@ -51,7 +52,7 @@ export const updatePromo = async (req: Request, res: Response) => {
     const promo = await promoService.updatePromo(String(req.params.id), data);
     return successResponse(res, 'Promo berhasil diperbarui', promo);
   } catch (err: any) {
-    if (err.name === 'ZodError') return errorResponse(res, 'Validasi gagal', err.errors, 422);
+    if (err.name === 'ZodError') return errorResponse(res, 'Validasi gagal', { code: ErrorCodes.VALIDATION_ERROR, issues: err.issues }, 422);
     return errorResponse(res, err.message, null, 404);
   }
 };

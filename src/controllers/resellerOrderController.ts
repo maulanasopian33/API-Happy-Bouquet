@@ -1,4 +1,5 @@
-import { Response } from 'express';
+﻿import { Response } from 'express';
+import { ErrorCodes } from '../constants/errors';
 import { successResponse, errorResponse } from '../utils/response';
 import * as resellerOrderService from '../services/resellerOrderService';
 import { createResellerOrderSchema } from '../validators/resellerValidator';
@@ -40,7 +41,7 @@ export const createOrder = async (req: AuthRequest, res: Response) => {
     return successResponse(res, 'Pesanan reseller berhasil dibuat', order, 201);
   } catch (err: any) {
     if (err.name === 'ZodError') {
-      return errorResponse(res, 'Input pesanan tidak valid', err.errors, 422);
+      return errorResponse(res, 'Input pesanan tidak valid', { code: ErrorCodes.VALIDATION_ERROR, issues: err.issues }, 422);
     }
     return errorResponse(res, err.message);
   }

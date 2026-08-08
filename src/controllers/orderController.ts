@@ -1,4 +1,5 @@
-import { Request, Response } from 'express';
+﻿import { Request, Response } from 'express';
+import { ErrorCodes } from '../constants/errors';
 import { successResponse, errorResponse } from '../utils/response';
 import * as orderService from '../services/orderService';
 import * as profitService from '../services/profitService';
@@ -46,7 +47,7 @@ export const createOrder = async (req: Request, res: Response) => {
     const order = await orderService.createOrder(data);
     return successResponse(res, 'Order berhasil dibuat', order, 201);
   } catch (err: any) {
-    if (err.name === 'ZodError') return errorResponse(res, 'Validasi gagal', err.errors, 422);
+    if (err.name === 'ZodError') return errorResponse(res, 'Validasi gagal', { code: ErrorCodes.VALIDATION_ERROR, issues: err.issues }, 422);
     return errorResponse(res, err.message);
   }
 };
@@ -68,7 +69,7 @@ export const updateOrderStatus = async (req: Request, res: Response) => {
     const order = await orderService.updateOrderStatus(Number(req.params.id), status);
     return successResponse(res, `Status order diperbarui menjadi "${status}"`, order);
   } catch (err: any) {
-    if (err.name === 'ZodError') return errorResponse(res, 'Status tidak valid', err.errors, 422);
+    if (err.name === 'ZodError') return errorResponse(res, 'Status tidak valid', { code: ErrorCodes.VALIDATION_ERROR, issues: err.issues }, 422);
     return errorResponse(res, err.message, null, 400);
   }
 };
@@ -97,7 +98,7 @@ export const allocateProfit = async (req: Request, res: Response) => {
     const result = await profitService.allocateProfit(Number(req.params.id), allocations);
     return successResponse(res, 'Profit berhasil dialokasikan', result, 201);
   } catch (err: any) {
-    if (err.name === 'ZodError') return errorResponse(res, 'Validasi gagal', err.errors, 422);
+    if (err.name === 'ZodError') return errorResponse(res, 'Validasi gagal', { code: ErrorCodes.VALIDATION_ERROR, issues: err.issues }, 422);
     return errorResponse(res, err.message, null, 400);
   }
 };

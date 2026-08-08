@@ -1,4 +1,5 @@
-import { Request, Response } from 'express';
+﻿import { Request, Response } from 'express';
+import { ErrorCodes } from '../constants/errors';
 import logger from '../utils/logger';
 
 import * as userService from '../services/userService';
@@ -23,7 +24,7 @@ export const createAdmin = async (req: Request, res: Response) => {
     return successResponse(res, 'Admin created successfully', admin, 201);
   } catch (error: any) {
     if (error.name === 'ZodError') {
-      return errorResponse(res, 'Validation error', error.errors, 400);
+      return errorResponse(res, 'Validation error', { code: ErrorCodes.VALIDATION_ERROR, issues: error.issues }, 400);
     }
     return errorResponse(res, error.message, null, 500);
   }

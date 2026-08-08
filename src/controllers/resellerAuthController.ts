@@ -1,4 +1,5 @@
-import { Request, Response } from 'express';
+﻿import { Request, Response } from 'express';
+import { ErrorCodes } from '../constants/errors';
 import { successResponse, errorResponse } from '../utils/response';
 import * as resellerService from '../services/resellerService';
 import { registerResellerSchema, updateResellerProfileSchema } from '../validators/resellerValidator';
@@ -16,7 +17,7 @@ export const register = async (req: Request, res: Response) => {
     );
   } catch (err: any) {
     if (err.name === 'ZodError') {
-      return errorResponse(res, 'Struktur input data tidak valid', err.errors, 422);
+      return errorResponse(res, 'Struktur input data tidak valid', { code: ErrorCodes.VALIDATION_ERROR, issues: err.issues }, 422);
     }
     return errorResponse(res, err.message || 'Gagal mendaftar sebagai reseller');
   }
@@ -42,7 +43,7 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
     return successResponse(res, 'Profil reseller berhasil diperbarui', updated);
   } catch (err: any) {
     if (err.name === 'ZodError') {
-      return errorResponse(res, 'Pembaruan data profil tidak valid', err.errors, 422);
+      return errorResponse(res, 'Pembaruan data profil tidak valid', { code: ErrorCodes.VALIDATION_ERROR, issues: err.issues }, 422);
     }
     return errorResponse(res, err.message);
   }

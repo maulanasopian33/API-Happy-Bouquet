@@ -1,4 +1,5 @@
-import { Request, Response } from 'express';
+﻿import { Request, Response } from 'express';
+import { ErrorCodes } from '../constants/errors';
 import logger from '../utils/logger';
 
 import * as materialService from '../services/materialService';
@@ -42,7 +43,7 @@ export const createMaterial = async (req: Request, res: Response) => {
     return successResponse(res, 'Material created successfully', material, 201);
   } catch (error: any) {
     if (error.name === 'ZodError') {
-      return errorResponse(res, 'Validation error', error.errors, 400);
+      return errorResponse(res, 'Validation error', { code: ErrorCodes.VALIDATION_ERROR, issues: error.issues }, 400);
     }
     return errorResponse(res, error.message, null, 500);
   }
@@ -64,7 +65,7 @@ export const updateMaterial = async (req: Request, res: Response) => {
     return successResponse(res, 'Material updated successfully', material);
   } catch (error: any) {
     if (error.name === 'ZodError') {
-      return errorResponse(res, 'Validation error', error.errors, 400);
+      return errorResponse(res, 'Validation error', { code: ErrorCodes.VALIDATION_ERROR, issues: error.issues }, 400);
     }
     return errorResponse(res, error.message, null, 500);
   }
