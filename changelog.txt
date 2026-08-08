@@ -1,3 +1,12 @@
+LATEST UPDATES - 8 Agustus 2026
+==============================
+
+31. DOKUMENTASI ATURAN KERJA AGENTS.MD
+   - Membuat `AGENTS.md` sebagai instruksi OpenCode: bahasa Indonesia, gaya commit emoji conventional, perintah dev/build/test, arsitektur layering, konvensi model/export config, deployment, dan alur kerja wajib (spec-driven, commit per step, changelog, graphify).
+   - Menyinkronkan aturan dari `.dev/context.md` dan kebiasaan commit di `git log` ke dalam satu file.
+
+Timestamp: 2026-08-08 00:00:00
+
 LATEST UPDATES - 26 Januari 2026
 ==============================
 
