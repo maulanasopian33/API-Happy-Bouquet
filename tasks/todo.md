@@ -1,39 +1,53 @@
-# Todo Audit & Refactor API Happy Bouquet
+# Todo: Audit & Production-Ready Panel Happy Bouquet
 
-## Phase 1: Quick Wins
-- [x] Task 1: Standarkan format respons di `LogController.ts` (pakai successResponse/errorResponse)
-- [x] Task 2: Standarkan format respons di `tiktokAdmin.controller.ts` & `tiktokUser.controller.ts`
-- [x] Task 3: Hapus `isAdmin` inline di `adminRoutes.ts` → `authorizeRoles('admin', 'super_admin')`
-- [x] Task 4: Migrasi `registerSchema` & `materialSchema` ke `src/validators/`; hapus `utils/validation.ts` & `utils/types.ts`
-- [x] Task 5: Validasi body `login` dengan Zod; seragamkan pesan error Bahasa Indonesia
+## Phase A: Backend — Mismatch & Otorisasi
+- [ ] Task A1: Tambah `POST /api/customers` (controller + validator + route + test)
+- [ ] Task A2: Tambah `authorizeRoles('admin','super_admin')` pada route tulis admin yang kurang
+- [ ] Task A3: Seragamkan format respons middleware auth + errorHandler ke `{status,...}`
 
-## Checkpoint: Phase 1
-- [x] `npm run build` sukses
-- [x] `npm test` hijau (--runInBand) — 35/35 lulus
+## Checkpoint A
+- [ ] `npm run build` sukses; `npm test` hijau
 
-## Fase 1 Bonus (ditemukan saat checkpoint)
-- [x] Fix bug Zod v4: `err.errors` -> `err.issues` + kode `VALIDATION_ERROR` (30 kemunculan, 14 controller)
+## Phase B: Backend — Cookie Auth (Dual-mode) & CSRF
+- [ ] Task B1: Pasang cookie-parser; config cookie
+- [ ] Task B2: authenticateToken dukung cookie sebagai fallback Bearer
+- [ ] Task B3: login set cookie; logout clear cookie (token tetap di body)
+- [ ] Task B4: Middleware csrfGuard (X-Requested-With pada mutasi)
+- [ ] Task B5: CORS credentials + test auth
 
-## Phase 2: Fitur Mock (keputusan user)
-- [x] Task 6: TikTok — sunset/disable rute (diblokir 403 di production, mock tetap di dev)
-- [x] Task 7: Mock analytics di `socket.ts` hanya development; production baca data nyata dari Redis
+## Checkpoint B
+- [ ] `npm run build` sukses; `npm test` hijau
 
-## Checkpoint: Phase 2
-- [x] Tidak ada data palsu bocor ke production
-- [x] Endpoint disabled tidak bisa diakses (403/404 jelas)
-- [x] Build + test hijau (35/35)
+## Phase C: Backend — Proteksi Logs
+- [ ] Task C1: GET /api/logs & /:date admin-only; POST tetap publik + rate limit
 
-## Phase 3: Kerapian & Konsistensi
-- [x] Task 8: Kurangi `(req as any)` — perluas `AuthRequest` (field `reseller`) + `req.reseller!.id`
-- [x] Task 9: Seragamkan blok ZodError -> helper `validationErrorResponse`; LogController typed logger
-- [x] Task 10: Rapikan `server.ts` & ganti console.log -> logger
+## Checkpoint C
+- [ ] `npm run build` sukses; `npm test` hijau; changelog API + known-issues
 
-## Checkpoint: Phase 3
-- [x] Build + test hijau
-- [x] `graphify update .` berjalan tanpa menyusut
+## Phase D: Panel — Auth Cookie & Perbaikan Dasar
+- [ ] Task D1: apiClient axios → withCredentials + X-Requested-With; hapus token localStorage
+- [ ] Task D2: Semua service/composable fetch → util terpusat (credentials + header)
+- [ ] Task D3: auth.store tanpa token localStorage; guard router sesuaikan
+- [ ] Task D4: .env → .gitignore; hapus hardcoded URL backend
 
-## Phase 4: Ship
-- [x] Task 11: `npm run build` + `npm test` penuh (35/35; temuan flaky `product_preorder` timeout hook)
-- [x] Task 11b: Fix flaky — `testTimeout: 30000` di `jest.config.js`; 35/35 stabil 2x beruntun
-- [x] Task 12: Catat `changelog.txt` + `.dev/log/changelog.txt`
-- [x] Task 13: `graphify update .`, commit per step (konvensi emoji)
+## Phase E: Panel — Fitur & Bug
+- [ ] Task E1: Fix PDF export Finance (field snake_case)
+- [ ] Task E2: Hapus/gate mock dashboard & customer order history
+- [ ] Task E3: Tambah route 404 catch-all
+- [ ] Task E4: Evaluasi /register publik panel
+
+## Phase F: Panel — Modul Baru
+- [ ] Task F1: Halaman Reseller admin (list/approve/reject/suspend/tier + tier prices)
+- [ ] Task F2: Halaman Invoice (daftar + link unduh PDF)
+- [ ] Task F3: Halaman Notification (daftar notifikasi)
+- [ ] Task F4: Halaman Logs (daftar file + lihat isi)
+
+## Checkpoint E+F
+- [ ] Build + test hijau di panel
+- [ ] Build + test hijau di API
+- [ ] Manual check login → semua menu, tanpa 404
+
+## Phase G: Ship
+- [ ] Task G1: Update docs knowledge base (format respons & endpoint baru)
+- [ ] Task G2: Update changelog kedua repo + known-issues + todo
+- [ ] Task G3: graphify update + commit per step (emoji konvensional)

@@ -1,69 +1,83 @@
-# Implementation Plan: Audit & Refactor API Happy Bouquet
+# Implementation Plan: Audit & Production-Ready Panel Happy Bouquet
 
 ## Overview
-Audit menyeluruh codebase (Express + TS + Sequelize) setelah analisis graphify + pemeriksaan manual. Tujuan: menghilangkan fitur duplikat/unused/tidak sesuai, menyamakan standar kode (respons format, middleware auth, validasi), dan menyiapkan production-readiness tanpa mengubah perilaku fitur inti.
 
-## Temuan Audit (ringkas)
-- **Fitur mock (tidak sesuai production):** modul TikTok seluruhnya mock (`tiktok.service.ts`, `tiktokAdmin.controller.ts`, `tiktokUser.controller.ts`), dan `socket.ts` menyiarkan data analytics palsu (`mockActiveCount`, `mockTrafficHistory`).
-- **Duplikasi middleware auth:** `adminRoutes.ts` punya `isAdmin` inline yang hanya cek `role === 'admin'` (tidak support `super_admin`, pesan EN); padahal `authorizeRoles` sudah ada dan `resellerRoutes` sudah menggunakannya dengan benar.
-- **Inkonsistensi format respons:** `LogController.ts`, `tiktokAdmin.controller.ts`, `tiktokUser.controller.ts` memakai `res.json` langsung, melanggar format global `{ status, message, data, error }`.
-- **Validasi tersebar:** skema lama di `src/utils/validation.ts` (registerSchema, materialSchema) dipakai 3 controller; folder `src/validators/` berisi skema Zod lain. Tidak ada satu lokasi baku.
-- **Inkonsistensi bahasa pesan:** campur EN (`"User registered successfully"`) dan ID (reseller, order).
-- **Kerapian:** banyak `(req as any)`, `catch (err: any)`, `console.log` di TikTok, `logout` tanpa validasi input login (body langsung tanpa Zod).
-- **Positif:** semua model terdaftar & dipakai (tidak ada model mati), tidak ada import cycle, tidak ada `@ts-ignore`.
+Menyelaraskan Admin Panel (Vue 3) dengan API backend dan mengamankannya untuk production. Berdasarkan audit dua codebase. Spec: `tasks/specs/audit-panel-production.md`.
 
-## Architecture Decisions
-- **TikTok:** kandidat utama deprecation/sunset. Belum dipakai frontend (modul panel TikTok hanya stub); keputusan: nonaktifkan rute + pindah ke flag, ATAU dihapus total — butuh keputusan user.
-- **Mock analytics socket:** pertahankan sebagai fallback development dengan `NODE_ENV === 'production'` menampilkan data real dari Redis/DB; nonaktifkan mock di production.
-- **Respons format:** semua controller wajib `successResponse`/`errorResponse`.
-- **Auth role:** semua pengecekan admin memakai `authorizeRoles('admin', 'super_admin')`.
-- **Validasi:** skema Zod bermigrasi ke `src/validators/` (satu lokasi baku); `utils/types.ts` dipindah/digabung.
-- **Bahasa pesan:** seragam Bahasa Indonesia.
+## Arsitektur & Keputusan Kunci
+
+1. **Dual-mode auth**: middleware `authenticateToken` baca token dari **cookie httpOnly** (`token`) ATAU header `Authorization: Bearer`. Login set cookie; logout clear cookie. Storefront Nuxt tetap Bearer.
+2. **CSRF**: cookie `SameSite=Lax; httpOnly; secure(prod)`. Middleware `csrfGuard` mewajibkan header `X-Requested-With` pada method mutasi (POST/PUT/PATCH/DELETE) bila origin adalah browser (cookie-based). Header ini tidak bisa dikirim cross-origin tanpa persetujuan CORS → mencegah CSRF.
+3. **Format respons seragam**: ubah `authenticateToken`, `authorizeRoles`, `requireActiveReseller`, dan `errorHandler` agar memakai shape `{ status, message, data, error }` — konsisten dengan `successResponse`/`errorResponse`.
+4. **Otorisasi**: tambah `authorizeRoles('admin','super_admin')` pada semua route tulis admin yang kurang.
+5. **Endpoint baru**: `POST /api/customers` (createCustomer + validator Zod).
+6. **Logs**: `GET /api/logs` & `GET /api/logs/:date` → admin-only; `POST /api/logs` (log dari frontend) tetap publik dengan rate limit.
 
 ## Task List
 
-### Phase 1: Quick Wins (aman, tanpa ubah perilaku)
-- [ ] Task 1: Standarkan format respons di `LogController.ts`.
-- [ ] Task 2: Standarkan format respons di `tiktokAdmin.controller.ts` & `tiktokUser.controller.ts`.
-- [ ] Task 3: Hapus `isAdmin` inline di `adminRoutes.ts`, ganti `authorizeRoles('admin', 'super_admin')`.
-- [ ] Task 4: Migrasi `registerSchema` & `materialSchema` ke `src/validators/`; hapus `utils/validation.ts` & `utils/types.ts` bila tidak dipakai lagi.
-- [ ] Task 5: Validasi body `login` dengan Zod (pesan bahasa diseragamkan di Fase 3, karena test auth/material meng-assert pesan EN).
+### Phase A: Backend — Mismatch & Otorisasi
+- [ ] Task A1: Tambah `POST /api/customers` (controller `createCustomer` + validator Zod + route + test).  **Depends:** none
+- [ ] Task A2: Tambah `authorizeRoles('admin','super_admin')` pada route tulis admin yang kurang: products (create/update/delete/cost-templates/channels), orders (confirm-payment/status/pay-worker-fees/allocate-profit + baca), materials (tulis+baca), categories (tulis), promos (tulis), banners (tulis), channels (tulis), financial (tulis+baca), reports, invoices, notifications. **Depends:** none
+- [ ] Task A3: Seragamkan format respons middleware auth (`authenticateToken`, `authorizeRoles`, `requireActiveReseller`) + `errorHandler` ke `{status,message,data,error}`. Perbarui test yang assert shape lama. **Depends:** none
 
-### Checkpoint: Phase 1
-- [ ] `npm run build` sukses
-- [ ] `npm test` hijau (--runInBand)
+### Checkpoint A
+- [ ] `npm run build` sukses; `npm test` hijau
 
-### Phase 2: Fitur Mock (keputusan user)
-- [ ] Task 6: TikTok — sunset/disable rute atau implementasi nyata.
-- [ ] Task 7: Mock analytics di `socket.ts` hanya untuk development; matikan di production.
+### Phase B: Backend — Cookie Auth (Dual-mode) & CSRF
+- [ ] Task B1: Pasang `cookie-parser`; config cookie (`httpOnly`, `secure` di prod, `sameSite:'lax'`, `maxAge`).
+- [ ] Task B2: `authenticateToken` mendukung cookie `token` sebagai fallback setelah Bearer header.
+- [ ] Task B3: `login` set cookie; `logout` clear cookie (dua-duanya tetap return token di body agar storefront tetap jalan).
+- [ ] Task B4: Middleware `csrfGuard` — wajib `X-Requested-With` pada method mutasi via cookie; bypass untuk Bearer-only.
+- [ ] Task B5: CORS `credentials: true` sudah aktif; pastikan `CORS_ORIGINS` diisi panel origin di prod. Test auth (login cookie, CSRF 403 tanpa header, Bearer tetap jalan).
 
-### Checkpoint: Phase 2
-- [ ] Tidak ada data palsu bocor ke production.
-- [ ] Endpoint yang di-disable tidak bisa diakses tanpa 404/403 yang jelas.
+### Checkpoint B
+- [ ] `npm run build` sukses; `npm test` hijau
 
-### Phase 3: Kerapian & Konsistensi
-- [ ] Task 8: Kurangi `(req as any)` — tambah `ResellerAuthRequest`/perluas `AuthRequest`.
-- [ ] Task 9: Seragamkan pesan & struktur try/catch di controller.
-- [ ] Task 10: Rapikan `server.ts` (migrasi manual jelas) & hapus komentar/console.log sisa.
+### Phase C: Backend — Proteksi Logs
+- [ ] Task C1: `GET /api/logs` & `GET /api/logs/:date` → `authenticateToken + authorizeRoles('admin','super_admin')`; `POST /api/logs` tetap publik + rate limit.
 
-### Checkpoint: Phase 3
-- [ ] Build + test hijau
-- [ ] `graphify update .` berjalan dan graph tidak mengecil
+### Checkpoint C
+- [ ] `npm run build` sukses; `npm test` hijau; catat changelog API + `.dev/known-issues.md`
 
-### Phase 4: Ship
-- [ ] Task 11: Jalankan `npm run build` + `npm test` penuh.
-- [ ] Task 12: Catat `changelog.txt` + `.dev/log/changelog.txt`.
-- [ ] Task 13: `graphify update .`, commit per step dengan konvensi emoji.
+### Phase D: Panel — Auth Cookie & Perbaikan Dasar
+- [ ] Task D1: `apiClient` (axios) → `withCredentials: true`; hapus interceptor token localStorage; tambah header `X-Requested-With` pada request; 401 handler → hapus session.
+- [ ] Task D2: Semua service/composable `fetch()` → pakai `withCredentials` (credentials:'include') + header `X-Requested-With`; hapus `getHeaders()` token localStorage. Satu util `apiFetch`/`apiClient` terpusat.
+- [ ] Task D3: `auth.store` — hapus token dari localStorage; login pakai cookie; `verifySession` pakai `/auth/me`; guard router sesuaikan.
+- [ ] Task D4: `.env` → `.gitignore` + `.env.example` (sudah ada); hapus hardcoded URL `localhost:3000/5000/127.0.0.1` → `VITE_API_URL` fallback `/api`.
 
-## Risks and Mitigations
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| Menghapus TikTok bisa memutus frontend yang belum/telah pakai | Med | Konfirmasi user; aktifkan flag & jaga respons 404 yang jelas |
-| Mengubah respons LogController bisa memutus consumer log | Low | Pertahankan field yang sama di `data` |
-| Migrasi skema bisa salah import | Low | Build + test tiap step |
-| `npm test` butuh MySQL lokal hidup | Med | Verifikasi DB `happybouquet_test` sebelum test |
+### Phase E: Panel — Fitur & Bug
+- [ ] Task E1: Fix PDF export Finance (field snake_case mapping).
+- [ ] Task E2: Hapus/gate mock: dashboard top products/chart → ambil dari API (`/reports/summary` dsb); `useCustomerDetail` order history → API nyata.
+- [ ] Task E3: Tambah route 404 catch-all.
+- [ ] Task E4: Evaluasi `/register` publik panel — batasi akses (guard atau hapus menu) agar tidak memunculkan akun customer dari panel.
+
+### Phase F: Panel — Modul Baru (Reseller, Invoice, Notification, Logs)
+- [ ] Task F1: Halaman **Reseller admin** (list/approve/reject/suspend/tier + tier prices).
+- [ ] Task F2: Halaman **Invoice** (daftar + link unduh PDF per order).
+- [ ] Task F3: Halaman **Notification** (daftar notifikasi user login).
+- [ ] Task F4: Halaman **Logs** (daftar file + lihat isi, admin).
+
+### Checkpoint E+F
+- [ ] `npm run build` + `npm test` hijau di panel
+- [ ] `npm run build` + `npm test` hijau di API
+- [ ] Manual: login → semua menu berfungsi, tidak ada 404
+
+### Phase G: Ship
+- [ ] Task G1: Update `docs/api_routes_kb.md` & `docs/kb_routes_produk.md` (format respons baru, endpoint baru).
+- [ ] Task G2: Update `changelog.txt` kedua repo + `.dev/log/changelog.txt` + `.dev/known-issues.md` + `tasks/todo.md`.
+- [ ] Task G3: `graphify update .` (API), commit per step (konvensi emoji, Bahasa Indonesia).
+
+## Risiko & Mitigasi
+
+| Risiko | Dampak | Mitigasi |
+|---|---|---|
+| Cookie tidak terkirim lintas-port di dev (Vite proxy) | Login gagal di dev | Proxy Vite sudah same-origin `/api`; pastikan cookie tidak butuh `secure` di dev |
+| Storefront Nuxt rusak akibat dual-mode | Breaking change | Bearer header tetap didukung penuh; tes auth mencakup keduanya |
+| CSRF terlalu ketat | Request panel ditolak | Hanya wajib `X-Requested-With` pada method mutasi; Bearer-only dibypass |
+| Mengubah shape 401/403 | Panel redudant | Panel disesuaikan sekaligus; test diperbarui |
+| Modul baru (reseller/invoice/log) besar | Scope membengkak | Implementasi bertahap per modul; commit per halaman |
 
 ## Open Questions
-- TikTok: **KEPUTUSAN USER (2026-08-08):** disable rute + flag, pertahankan stub untuk implementasi masa depan (Fase 2).
-- Mock analytics socket: **KEPUTUSAN USER:** mock hanya di development; production pakai data real (Fase 2).
-- Prioritas eksekusi: **KEPUTUSAN USER:** eksekusi Fase 1 saja sekarang (quick wins); Fase 2+ ditunda dengan plan siap.
+
+- Detail UI halaman Logs (daftar file + isi saja?).
+- Invoice di panel: daftar semua invoice atau cukup dari detail order.
