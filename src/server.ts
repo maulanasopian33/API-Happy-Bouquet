@@ -9,36 +9,10 @@ dotenv.config();
 
 const PORT = process.env.PORT || 3000;
 
-// Function to run migrations
-const runMigrations = () => {
-  return new Promise((resolve, reject) => {
-    const { exec } = require('child_process');
-    const command = 'npx sequelize-cli db:migrate';
-    
-    logger.info('Running database migrations...');
-    
-    // Add --config explicitly if needed, but .sequelizerc should handle it.
-    // In production (dist), .sequelizerc.prod is copied to .sequelizerc, so it should work.
-    
-    exec(command, (error: any, stdout: any, stderr: any) => {
-      if (error) {
-        logger.error(`Migration error: ${error.message}`);
-        return reject(error);
-      }
-      if (stderr) {
-        logger.error(`Migration stderr: ${stderr}`);
-      }
-      logger.info(`Migration stdout: ${stdout}`);
-      resolve(true);
-    });
-  });
-};
+// Catatan: migrasi database dijalankan manual (sequelize-cli), lihat AGENTS.md.
 
 const startServer = async () => {
   try {
-    // Run migrations before starting the server
-    // await runMigrations();
-    
     const server = createServer(app);
     initSocket(server);
     initAnalyticsWorker();
@@ -53,5 +27,3 @@ const startServer = async () => {
 };
 
 startServer();
-
-// Trigger nodemon restart after resolving EADDRINUSE

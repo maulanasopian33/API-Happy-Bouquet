@@ -1,9 +1,10 @@
 import crypto from 'crypto';
+import logger from './logger';
 
 // Gunakan key 32 bytes untuk AES-256-GCM. Wajib di-set via environment variable.
 const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY;
 if (!ENCRYPTION_KEY || ENCRYPTION_KEY.length !== 32) {
-  console.warn('[WARN] ENCRYPTION_KEY harus 32 karakter. Set di file .env untuk keamanan.');
+  logger.warn('[WARN] ENCRYPTION_KEY harus 32 karakter. Set di file .env untuk keamanan.');
 }
 const KEY = ENCRYPTION_KEY || 'default_32_bytes_long_secret_key!'; 
 const ALGORITHM = 'aes-256-gcm';

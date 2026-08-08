@@ -1,6 +1,7 @@
 import db from '../models';
 import { encrypt, decrypt } from '../utils/encryption';
 import crypto from 'crypto';
+import logger from '../utils/logger';
 
 export class TiktokService {
   /**
@@ -25,7 +26,7 @@ export class TiktokService {
    * Mock API Refresh Token
    */
   static async refreshToken(setting: any): Promise<string> {
-    console.log('[Mock TikTok API] Refreshing token...');
+    logger.info('[Mock TikTok API] Refreshing token...');
     
     // Validasi refresh token belum expired (biasanya 1 tahun)
     const now = new Date();
@@ -54,8 +55,8 @@ export class TiktokService {
    * Mock API untuk publish video ke TikTok (Stream)
    */
   static async publishVideo(accessToken: string, caption: string, filePath: string): Promise<any> {
-    console.log(`[Mock TikTok API] Uploading video with caption: ${caption}`);
-    console.log(`[Mock TikTok API] File path: ${filePath}`);
+    logger.info(`[Mock TikTok API] Uploading video with caption: ${caption}`);
+    logger.info(`[Mock TikTok API] File path: ${filePath}`);
     
     // Simulasikan delay upload stream
     await new Promise(resolve => setTimeout(resolve, 2000));
