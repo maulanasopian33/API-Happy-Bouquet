@@ -1,8 +1,13 @@
 import { Request, Response } from 'express';
+import crypto from 'crypto';
 import logger from '../utils/logger';
 
 import * as userService from '../services/userService';
-import { successResponse, errorResponse } from '../utils/response';
+import {
+  createCustomerSchema,
+  updateCustomerSchema,
+} from '../validators/customerValidator';
+import { successResponse, errorResponse, validationErrorResponse } from '../utils/response';
 
 export const getAllCustomers = async (req: Request, res: Response) => {
   try {
@@ -26,10 +31,44 @@ export const getCustomerById = async (req: Request, res: Response) => {
   }
 };
 
+export const createCustomer = async (req: Request, res: Response) => {
+  try {
+    const parsed = createCustomerSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return validationErrorResponse(res, parsed.error, 'Validasi gagal.', 400);
+    }
+    const data = parsed.data;
+    // Password default acak bila tidak dikirim (panel tidak punya field password).
+    // Customer tetap bisa reset via admin bila perlu.
+    const password = data.password || crypto.randomBytes(12).toString('hex');
+    const customer = await userService.createUser({
+      name: data.name,
+      email: data.email,
+      password,
+      phone: data.phone,
+      address: data.address,
+      role: 'customer',
+    });
+    logger.info(`Customer created: ID ${customer.id}`);
+    // Jangan ekspos password hash ke klien
+    const { password: _pw, ...safeCustomer } = customer.toJSON();
+    return successResponse(res, 'Customer created successfully', safeCustomer, 201);
+  } catch (error: any) {
+    if (error.name === 'SequelizeUniqueConstraintError') {
+      return errorResponse(res, 'Email sudah terdaftar.', null, 409);
+    }
+    return errorResponse(res, error.message, null, 400);
+  }
+};
+
 export const updateCustomer = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const updateData = req.body;
+    const parsed = updateCustomerSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return validationErrorResponse(res, parsed.error, 'Validasi gagal.', 400);
+    }
+    const updateData = parsed.data;
     const customer = await userService.updateUser(Number(id), updateData);
     logger.info(`Customer updated: ID ${id}`);
     return successResponse(res, 'Customer updated successfully', customer);

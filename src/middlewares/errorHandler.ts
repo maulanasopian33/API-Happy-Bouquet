@@ -11,7 +11,9 @@ export const errorHandler = (err: Error, req: Request, res: Response, _next: Nex
   // 1. AppError — error terstruktur dari kode kita
   if (err instanceof AppError) {
     return res.status(err.statusCode).json({
-      success: false,
+      status: false,
+      message: err.message,
+      data: null,
       error: {
         code: err.code,
         message: err.message,
@@ -28,7 +30,9 @@ export const errorHandler = (err: Error, req: Request, res: Response, _next: Nex
     }));
 
     return res.status(400).json({
-      success: false,
+      status: false,
+      message: 'Input data gagal melewati validasi.',
+      data: null,
       error: {
         code: ErrorCodes.VALIDATION_ERROR,
         message: 'Input data gagal melewati validasi.',
@@ -44,16 +48,19 @@ export const errorHandler = (err: Error, req: Request, res: Response, _next: Nex
       field: e.path,
       issue: e.message,
     }));
+    const message = err.name === 'SequelizeUniqueConstraintError'
+      ? 'Data sudah ada (duplikat).'
+      : 'Validasi database gagal.';
 
     return res.status(400).json({
-      success: false,
+      status: false,
+      message,
+      data: null,
       error: {
         code: err.name === 'SequelizeUniqueConstraintError'
           ? ErrorCodes.ALREADY_EXISTS
           : ErrorCodes.VALIDATION_ERROR,
-        message: err.name === 'SequelizeUniqueConstraintError'
-          ? 'Data sudah ada (duplikat).'
-          : 'Validasi database gagal.',
+        message,
         details,
       },
     });
@@ -61,21 +68,27 @@ export const errorHandler = (err: Error, req: Request, res: Response, _next: Nex
 
   // 4. JWT Error
   if (err.name === 'JsonWebTokenError') {
+    const message = 'Token tidak valid.';
     return res.status(401).json({
-      success: false,
+      status: false,
+      message,
+      data: null,
       error: {
         code: ErrorCodes.TOKEN_INVALID,
-        message: 'Token tidak valid.',
+        message,
       },
     });
   }
 
   if (err.name === 'TokenExpiredError') {
+    const message = 'Token sudah kedaluwarsa.';
     return res.status(401).json({
-      success: false,
+      status: false,
+      message,
+      data: null,
       error: {
         code: ErrorCodes.TOKEN_EXPIRED,
-        message: 'Token sudah kedaluwarsa.',
+        message,
       },
     });
   }
@@ -88,13 +101,16 @@ export const errorHandler = (err: Error, req: Request, res: Response, _next: Nex
     method: req.method,
   });
 
+  const message = process.env.NODE_ENV === 'production'
+    ? 'Terjadi kesalahan pada server.'
+    : err.message;
   return res.status(500).json({
-    success: false,
+    status: false,
+    message,
+    data: null,
     error: {
       code: ErrorCodes.INTERNAL_ERROR,
-      message: process.env.NODE_ENV === 'production'
-        ? 'Terjadi kesalahan pada server.'
-        : err.message,
+      message,
     },
   });
 };

@@ -1,6 +1,7 @@
 import request from 'supertest';
 import app from '../src/app';
 import db from '../src/models';
+import bcrypt from 'bcryptjs';
 import fs from 'fs';
 import path from 'path';
 
@@ -10,11 +11,12 @@ const testImagePath = path.join(__dirname, 'test_image.png');
 beforeAll(async () => {
   await db.sequelize.sync({ force: true });
   
-  // Register and login to get token
-  await request(app).post('/api/auth/register').send({
+  // Buat admin langsung (registerSchema men-strip role, sehingga role tidak bisa
+  // diset lewat /api/auth/register).
+  await db.User.create({
     name: 'Admin User',
     email: 'admin@example.com',
-    password: 'password123',
+    password: await bcrypt.hash('password123', 10),
     role: 'admin',
   });
   

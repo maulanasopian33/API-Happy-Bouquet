@@ -1,6 +1,7 @@
 import request from 'supertest';
 import app from '../src/app';
 import db from '../src/models';
+import bcrypt from 'bcryptjs';
 
 describe('Product Preorder & Channels API', () => {
   let token: string;
@@ -11,11 +12,12 @@ describe('Product Preorder & Channels API', () => {
     // Sync DB and get token
     await db.sequelize.sync({ force: true });
     
-    await request(app).post('/api/auth/register').send({
+    // Buat admin langsung (registerSchema men-strip role)
+    await db.User.create({
       name: 'Admin',
       email: 'admin@test.com',
-      password: 'password123',
-      role: 'admin'
+      password: await bcrypt.hash('password123', 10),
+      role: 'admin',
     });
     
     const loginRes = await request(app).post('/api/auth/login').send({

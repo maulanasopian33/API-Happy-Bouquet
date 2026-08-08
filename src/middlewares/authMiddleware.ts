@@ -28,7 +28,9 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
 
   if (!token || token === 'null') {
     return res.status(401).json({
-      success: false,
+      status: false,
+      message: 'Akses ditolak. Token tidak ditemukan.',
+      data: null,
       error: {
         code: ErrorCodes.UNAUTHORIZED,
         message: 'Akses ditolak. Token tidak ditemukan.',
@@ -44,12 +46,12 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
   jwt.verify(token, secret, (err, decoded) => {
     if (err) {
       const code = err.name === 'TokenExpiredError' ? ErrorCodes.TOKEN_EXPIRED : ErrorCodes.TOKEN_INVALID;
+      const message = err.name === 'TokenExpiredError' ? 'Token sudah kedaluwarsa.' : 'Token tidak valid.';
       return res.status(401).json({
-        success: false,
-        error: {
-          code,
-          message: err.name === 'TokenExpiredError' ? 'Token sudah kedaluwarsa.' : 'Token tidak valid.',
-        },
+        status: false,
+        message,
+        data: null,
+        error: { code, message },
       });
     }
     req.user = decoded as AuthRequest['user'];
@@ -65,7 +67,9 @@ export const authorizeRoles = (...allowedRoles: string[]) => {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
     if (!req.user) {
       return res.status(401).json({
-        success: false,
+        status: false,
+        message: 'Autentikasi diperlukan.',
+        data: null,
         error: {
           code: ErrorCodes.UNAUTHORIZED,
           message: 'Autentikasi diperlukan.',
@@ -79,7 +83,9 @@ export const authorizeRoles = (...allowedRoles: string[]) => {
 
     if (!normalizedAllowed.includes(userRole)) {
       return res.status(403).json({
-        success: false,
+        status: false,
+        message: `Akses ditolak. Memerlukan role: ${allowedRoles.join(', ')}.`,
+        data: null,
         error: {
           code: ErrorCodes.FORBIDDEN,
           message: `Akses ditolak. Memerlukan role: ${allowedRoles.join(', ')}.`,
@@ -98,7 +104,9 @@ export const requireActiveReseller = async (req: AuthRequest, res: Response, nex
   try {
     if (!req.user || req.user.role?.toLowerCase() !== 'reseller') {
       return res.status(403).json({
-        success: false,
+        status: false,
+        message: 'Akses hanya untuk reseller.',
+        data: null,
         error: {
           code: ErrorCodes.FORBIDDEN,
           message: 'Akses hanya untuk reseller.',
@@ -115,7 +123,9 @@ export const requireActiveReseller = async (req: AuthRequest, res: Response, nex
 
     if (!reseller) {
       return res.status(404).json({
-        success: false,
+        status: false,
+        message: 'Profil reseller tidak ditemukan.',
+        data: null,
         error: {
           code: ErrorCodes.NOT_FOUND,
           message: 'Profil reseller tidak ditemukan.',
@@ -131,7 +141,9 @@ export const requireActiveReseller = async (req: AuthRequest, res: Response, nex
       };
 
       return res.status(403).json({
-        success: false,
+        status: false,
+        message: `Akun reseller Anda berstatus: ${reseller.status}.`,
+        data: null,
         error: {
           code: codeMap[reseller.status] || ErrorCodes.RESELLER_NOT_ACTIVE,
           message: `Akun reseller Anda berstatus: ${reseller.status}.`,
