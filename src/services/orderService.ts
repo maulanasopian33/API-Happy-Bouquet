@@ -70,9 +70,12 @@ export const createOrder = async (data: {
 
 // ─── Ambil semua Order (dengan pagination) ───────────────────────
 
-export const getAllOrders = async (page = 1, limit = 20) => {
+export const getAllOrders = async (page = 1, limit = 20, customerId?: number) => {
   const offset = (page - 1) * limit;
+  const where: any = {};
+  if (customerId) where.customer_id = customerId;
   const { count, rows } = await Order.findAndCountAll({
+    where,
     include: [
       { model: Product, as: 'product' },
       { model: db.User, as: 'customer', attributes: ['id', 'name', 'email', 'phone'] },

@@ -34,10 +34,13 @@
 - [x] `npm run build` sukses + `npm test` (12/12) hijau di panel; commit `2ceddf2`
 
 ## Phase E: Panel — Fitur & Bug
-- [ ] Task E1: Fix PDF export Finance (field snake_case)
-- [ ] Task E2: Hapus/gate mock dashboard & customer order history
-- [ ] Task E3: Tambah route 404 catch-all
-- [ ] Task E4: Evaluasi /register publik panel
+- [x] Task E1: Fix PDF export Finance (field snake_case)
+- [x] Task E2: Hapus/gate mock dashboard & customer order history
+- [x] Task E3: Tambah route 404 catch-all
+- [x] Task E4: Evaluasi /register publik panel
+
+## Checkpoint E
+- [x] Build + test hijau di panel (12/12) & API (48/48)
 
 ## Phase F: Panel — Modul Baru
 - [ ] Task F1: Halaman Reseller admin (list/approve/reject/suspend/tier + tier prices)

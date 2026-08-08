@@ -24,7 +24,8 @@ export const getAllOrders = async (req: Request, res: Response) => {
   try {
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 20;
-    const data = await orderService.getAllOrders(page, limit);
+    const customerId = req.query.customer_id ? Number(req.query.customer_id) : undefined;
+    const data = await orderService.getAllOrders(page, limit, customerId);
     return successResponse(res, 'Daftar order berhasil diambil', data);
   } catch (err: any) {
     return errorResponse(res, err.message);

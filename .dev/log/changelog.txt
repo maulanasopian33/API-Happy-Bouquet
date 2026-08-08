@@ -10,6 +10,13 @@ X. PHASE A-C BACKEND + PHASE D PANEL (Audit Production-Ready)
 
 Timestamp: 2026-08-08 12:05:00
 
+X. PHASE E (Panel) + BACKEND SUPPORT
+   - Backend: `getAllOrders` + controller mendukung filter `customer_id` (untuk order history customer di panel).
+   - Panel: fix PDF Finance snake_case; hapus mock dashboard (top products & chart dari `/reports/orders`) & customer order history (dari API); tambah route 404; hapus route publik `/register`.
+   - Test API 48/48 hijau; test panel 12/12 hijau.
+
+Timestamp: 2026-08-08 12:30:00
+
 LATEST UPDATES - 2026-06-11
 ==============================
 
