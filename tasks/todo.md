@@ -24,13 +24,13 @@
 - [x] Build + test hijau (35/35)
 
 ## Phase 3: Kerapian & Konsistensi
-- [ ] Task 8: Kurangi `(req as any)` — perluas `AuthRequest`/`ResellerAuthRequest`
-- [ ] Task 9: Seragamkan pesan & struktur try/catch di controller
-- [ ] Task 10: Rapikan `server.ts` & hapus console.log sisa
+- [x] Task 8: Kurangi `(req as any)` — perluas `AuthRequest` (field `reseller`) + `req.reseller!.id`
+- [x] Task 9: Seragamkan blok ZodError -> helper `validationErrorResponse`; LogController typed logger
+- [x] Task 10: Rapikan `server.ts` & ganti console.log -> logger
 
 ## Checkpoint: Phase 3
-- [ ] Build + test hijau
-- [ ] `graphify update .` berjalan tanpa menyusut
+- [x] Build + test hijau
+- [x] `graphify update .` berjalan tanpa menyusut
 
 ## Phase 4: Ship
 - [ ] Task 11: `npm run build` + `npm test` penuh

@@ -23,6 +23,16 @@ LATEST UPDATES - 8 Agustus 2026
    - Ganti middleware `isAdmin` inline duplikat di `tiktok.routes.ts` dengan `authorizeRoles('admin', 'super admin', 'super_admin')` (konsisten dengan `adminRoutes.ts`).
    - `broadcastActiveVisitors()` di `src/socket.ts`: di production baca data NYATA dari Redis (`analytics:active_visitors` -> activeVisitors, `analytics:top_urls` -> topProducts, `analytics:raw_logs` -> deviceStats); generator mock (active count, traffic history, device stats) hanya dijalankan saat development.
 
+35. FASE 3 — KERAPIAN & KONSISTENSI
+   - Hilangkan SEMUA cast `(req as any)` (dan `(res as any)`) di controller:
+     - Perluas `AuthRequest` di `authMiddleware.ts` dengan field `reseller?`; middleware `requireActiveReseller` kini set `req.reseller` langsung (tanpa cast).
+     - Controller akses reseller dengan `req.reseller!.id` (non-null assertion, lebih presisi dari `as any`); handler tetap bertipe `AuthRequest` agar compatible dengan Express `RequestHandler`.
+     - `invoiceController` & `notificationController` pakai `req.user` + guard 401; `productController` pakai `req.file` (tipe multer); `tiktokAdmin` pakai `req.user?.id`.
+   - Seragamkan penanganan error validasi: semua blok `if (err.name === 'ZodError')` kini memakai helper `validationErrorResponse` (tunggal di `src/utils/response.ts`) — menggantikan 30 inline `errorResponse(res, ..., { code, issues }, ...)`; import `ErrorCodes` yang jadi tak terpakai dibersihkan.
+   - `LogController`: ganti `(logger as any)[level]` dengan lookup bertipe `Record<string, LogFn>`.
+   - `server.ts`: hapus fungsi `runMigrations` yang mati (migrasi tetap manual per AGENTS.md); hapus komentar sisa.
+   - Ganti semua `console.log`/`console.error`/`console.warn` -> `logger` (winston) di `config/redis.ts`, `services/tiktok.service.ts`, `utils/encryption.ts`.
+
 Timestamp: 2026-08-08 00:00:00
 
 LATEST UPDATES - 26 Januari 2026
