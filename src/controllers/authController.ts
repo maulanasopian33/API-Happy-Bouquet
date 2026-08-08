@@ -1,10 +1,9 @@
 ﻿import { Request, Response } from 'express';
-import { ErrorCodes } from '../constants/errors';
 import logger from '../utils/logger';
 
 import * as authService from '../services/authService';
 import { registerSchema, loginSchema } from '../validators/authValidator';
-import { successResponse, errorResponse } from '../utils/response';
+import { successResponse, errorResponse, validationErrorResponse } from '../utils/response';
 
 export const register = async (req: Request, res: Response) => {
   try {
@@ -14,7 +13,7 @@ export const register = async (req: Request, res: Response) => {
     return successResponse(res, 'User registered successfully', user, 201);
   } catch (error: any) {
     if (error.name === 'ZodError') {
-      return errorResponse(res, 'Validation error', { code: ErrorCodes.VALIDATION_ERROR, issues: error.issues }, 400);
+      return validationErrorResponse(res, error, 'Validation error', 400);
     } else {
       return errorResponse(res, error.message, null, 400);
     }

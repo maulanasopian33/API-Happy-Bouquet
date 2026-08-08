@@ -8,6 +8,15 @@ export interface AuthRequest extends Request {
     email: string;
     role: string;
   };
+  /**
+   * Terisi setelah melewati `requireActiveReseller`.
+   * Akses dari controller: `req.reseller!.id`.
+   */
+  reseller?: {
+    id: number;
+    user_id: number;
+    status: string;
+  };
 }
 
 /**
@@ -131,7 +140,7 @@ export const requireActiveReseller = async (req: AuthRequest, res: Response, nex
     }
 
     // Attach reseller data ke request untuk digunakan controller
-    (req as any).reseller = reseller;
+    req.reseller = reseller;
     next();
   } catch (error) {
     next(error);

@@ -1,6 +1,5 @@
 ﻿import { Request, Response } from 'express';
-import { ErrorCodes } from '../constants/errors';
-import { successResponse, errorResponse } from '../utils/response';
+import { successResponse, errorResponse, validationErrorResponse } from '../utils/response';
 import * as resellerCatalogService from '../services/resellerCatalogService';
 import {
   updateCatalogSettingsSchema,
@@ -90,7 +89,7 @@ export const getWhatsappLink = async (req: Request, res: Response) => {
 
 export const getSettings = async (req: AuthRequest, res: Response) => {
   try {
-    const resellerId = (req as any).reseller.id;
+    const resellerId = req.reseller!.id;
     const settings = await resellerCatalogService.getCatalogSettings(resellerId);
     return successResponse(res, 'Pengaturan katalog berhasil diambil', settings);
   } catch (err: any) {
@@ -100,13 +99,13 @@ export const getSettings = async (req: AuthRequest, res: Response) => {
 
 export const updateSettings = async (req: AuthRequest, res: Response) => {
   try {
-    const resellerId = (req as any).reseller.id;
+    const resellerId = req.reseller!.id;
     const data = updateCatalogSettingsSchema.parse(req.body);
     const settings = await resellerCatalogService.updateCatalogSettings(resellerId, data);
     return successResponse(res, 'Pengaturan katalog berhasil diperbarui', settings);
   } catch (err: any) {
     if (err.name === 'ZodError') {
-      return errorResponse(res, 'Pengaturan katalog tidak valid', { code: ErrorCodes.VALIDATION_ERROR, issues: err.issues }, 422);
+      return validationErrorResponse(res, err, 'Pengaturan katalog tidak valid', 422);
     }
     return errorResponse(res, err.message);
   }
@@ -114,7 +113,7 @@ export const updateSettings = async (req: AuthRequest, res: Response) => {
 
 export const getTemplate = async (req: AuthRequest, res: Response) => {
   try {
-    const resellerId = (req as any).reseller.id;
+    const resellerId = req.reseller!.id;
     const template = await resellerCatalogService.getWhatsappTemplate(resellerId);
     return successResponse(res, 'Template WhatsApp berhasil diambil', template);
   } catch (err: any) {
@@ -124,7 +123,7 @@ export const getTemplate = async (req: AuthRequest, res: Response) => {
 
 export const updateTemplate = async (req: AuthRequest, res: Response) => {
   try {
-    const resellerId = (req as any).reseller.id;
+    const resellerId = req.reseller!.id;
     const { template } = updateWhatsappTemplateSchema.parse(req.body);
     const updatedTemplate = await resellerCatalogService.updateWhatsappTemplate(
       resellerId,
@@ -133,7 +132,7 @@ export const updateTemplate = async (req: AuthRequest, res: Response) => {
     return successResponse(res, 'Template WhatsApp berhasil diperbarui', updatedTemplate);
   } catch (err: any) {
     if (err.name === 'ZodError') {
-      return errorResponse(res, 'Template WhatsApp tidak valid', { code: ErrorCodes.VALIDATION_ERROR, issues: err.issues }, 422);
+      return validationErrorResponse(res, err, 'Template WhatsApp tidak valid', 422);
     }
     return errorResponse(res, err.message);
   }

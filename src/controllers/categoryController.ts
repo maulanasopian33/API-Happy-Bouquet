@@ -1,6 +1,5 @@
 ﻿import { Request, Response } from 'express';
-import { ErrorCodes } from '../constants/errors';
-import { successResponse, errorResponse } from '../utils/response';
+import { successResponse, errorResponse, validationErrorResponse } from '../utils/response';
 import * as categoryService from '../services/categoryService';
 import { z } from 'zod';
 
@@ -33,7 +32,7 @@ export const createCategory = async (req: Request, res: Response) => {
     const category = await categoryService.createCategory(data);
     return successResponse(res, 'Kategori berhasil dibuat', category, 201);
   } catch (err: any) {
-    if (err.name === 'ZodError') return errorResponse(res, 'Validasi gagal', { code: ErrorCodes.VALIDATION_ERROR, issues: err.issues }, 422);
+    if (err.name === 'ZodError') return validationErrorResponse(res, err, 'Validasi gagal', 422);
     return errorResponse(res, err.message);
   }
 };
@@ -44,7 +43,7 @@ export const updateCategory = async (req: Request, res: Response) => {
     const category = await categoryService.updateCategory(Number(req.params.id), data);
     return successResponse(res, 'Kategori berhasil diperbarui', category);
   } catch (err: any) {
-    if (err.name === 'ZodError') return errorResponse(res, 'Validasi gagal', { code: ErrorCodes.VALIDATION_ERROR, issues: err.issues }, 422);
+    if (err.name === 'ZodError') return validationErrorResponse(res, err, 'Validasi gagal', 422);
     return errorResponse(res, err.message, null, 404);
   }
 };

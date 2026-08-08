@@ -1,5 +1,6 @@
 import { Response } from 'express';
 import logger from './logger';
+import { ErrorCodes } from '../constants/errors';
 
 interface ApiResponse {
   status: boolean;
@@ -27,4 +28,16 @@ export const errorResponse = (res: Response, message: string, error: any = null,
   };
   logger.error(message, { error });
   return res.status(statusCode).json(response);
+};
+
+/**
+ * Respons standar untuk kegagalan validasi Zod (Zod v4: pakai `.issues`, bukan `.errors`).
+ */
+export const validationErrorResponse = (
+  res: Response,
+  error: any,
+  message = 'Validation error',
+  statusCode = 400
+) => {
+  return errorResponse(res, message, { code: ErrorCodes.VALIDATION_ERROR, issues: error.issues || [] }, statusCode);
 };

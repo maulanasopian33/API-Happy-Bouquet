@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { TiktokService } from '../services/tiktok.service';
 import crypto from 'crypto';
 import { successResponse, errorResponse } from '../utils/response';
+import { AuthRequest } from '../middlewares/authMiddleware';
 
 export class TiktokAdminController {
 
@@ -29,11 +30,11 @@ export class TiktokAdminController {
   /**
    * Mock endpoint untuk handle callback dari TikTok
    */
-  static async handleCallback(req: Request, res: Response): Promise<void> {
+  static async handleCallback(req: AuthRequest, res: Response): Promise<void> {
     try {
       // Di real implementation, req.query.code digunakan untuk fetch token
 
-      const adminId = (req as any).user?.id || 1; // Asumsi admin dari token
+      const adminId = req.user?.id || 1; // Asumsi admin dari token
 
       const openId = 'mock_open_id_' + crypto.randomBytes(4).toString('hex');
       const username = '@mock_admin_tiktok';

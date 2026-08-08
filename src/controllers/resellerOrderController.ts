@@ -1,13 +1,12 @@
 ﻿import { Response } from 'express';
-import { ErrorCodes } from '../constants/errors';
-import { successResponse, errorResponse } from '../utils/response';
+import { successResponse, errorResponse, validationErrorResponse } from '../utils/response';
 import * as resellerOrderService from '../services/resellerOrderService';
 import { createResellerOrderSchema } from '../validators/resellerValidator';
 import { AuthRequest } from '../middlewares/authMiddleware';
 
 export const listOrders = async (req: AuthRequest, res: Response) => {
   try {
-    const resellerId = (req as any).reseller.id;
+    const resellerId = req.reseller!.id;
     const page = Number(req.query.page || 1);
     const limit = Number(req.query.limit || 20);
 
@@ -20,7 +19,7 @@ export const listOrders = async (req: AuthRequest, res: Response) => {
 
 export const getOrder = async (req: AuthRequest, res: Response) => {
   try {
-    const resellerId = (req as any).reseller.id;
+    const resellerId = req.reseller!.id;
     const order = await resellerOrderService.getResellerOrderById(
       Number(req.params.id),
       resellerId
@@ -41,7 +40,7 @@ export const createOrder = async (req: AuthRequest, res: Response) => {
     return successResponse(res, 'Pesanan reseller berhasil dibuat', order, 201);
   } catch (err: any) {
     if (err.name === 'ZodError') {
-      return errorResponse(res, 'Input pesanan tidak valid', { code: ErrorCodes.VALIDATION_ERROR, issues: err.issues }, 422);
+      return validationErrorResponse(res, err, 'Input pesanan tidak valid', 422);
     }
     return errorResponse(res, err.message);
   }
@@ -49,7 +48,7 @@ export const createOrder = async (req: AuthRequest, res: Response) => {
 
 export const uploadProof = async (req: AuthRequest, res: Response) => {
   try {
-    const resellerId = (req as any).reseller.id;
+    const resellerId = req.reseller!.id;
     if (!req.file) {
       throw new Error('File bukti transfer pembayaran wajib diunggah');
     }

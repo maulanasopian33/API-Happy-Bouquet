@@ -1,6 +1,5 @@
 ﻿import { Request, Response } from 'express';
-import { ErrorCodes } from '../constants/errors';
-import { successResponse, errorResponse } from '../utils/response';
+import { successResponse, errorResponse, validationErrorResponse } from '../utils/response';
 import * as productService from '../services/productService';
 import { z } from 'zod';
 
@@ -63,18 +62,18 @@ export const getProductBySlug = async (req: Request, res: Response) => {
 export const createProduct = async (req: Request, res: Response) => {
   try {
     const data = createProductSchema.parse(req.body);
-    const photo_url = (req as any).file ? `/public/uploads/products/${(req as any).file.filename}` : undefined;
+    const photo_url = req.file ? `/public/uploads/products/${req.file.filename}` : undefined;
     const product = await productService.createProduct({ ...data, photo_url });
     return successResponse(res, 'Produk berhasil dibuat', product, 201);
   } catch (err: any) {
-    if (err.name === 'ZodError') return errorResponse(res, 'Validasi gagal', { code: ErrorCodes.VALIDATION_ERROR, issues: err.issues }, 422);
+    if (err.name === 'ZodError') return validationErrorResponse(res, err, 'Validasi gagal', 422);
     return errorResponse(res, err.message);
   }
 };
 
 export const updateProduct = async (req: Request, res: Response) => {
   try {
-    const photo_url = (req as any).file ? `/public/uploads/products/${(req as any).file.filename}` : undefined;
+    const photo_url = req.file ? `/public/uploads/products/${req.file.filename}` : undefined;
     const product = await productService.updateProduct(Number(req.params.id), { ...req.body, ...(photo_url && { photo_url }) });
     return successResponse(res, 'Produk berhasil diperbarui', product);
   } catch (err: any) {
@@ -106,7 +105,7 @@ export const bulkAddCostTemplates = async (req: Request, res: Response) => {
     const created = await productService.bulkAddCostTemplates(Number(req.params.id), templates);
     return successResponse(res, `${created.length} template biaya berhasil ditambahkan`, created, 201);
   } catch (err: any) {
-    if (err.name === 'ZodError') return errorResponse(res, 'Validasi gagal', { code: ErrorCodes.VALIDATION_ERROR, issues: err.issues }, 422);
+    if (err.name === 'ZodError') return validationErrorResponse(res, err, 'Validasi gagal', 422);
     return errorResponse(res, err.message, null, 404);
   }
 };
@@ -126,7 +125,7 @@ export const setProductChannels = async (req: Request, res: Response) => {
     const result = await productService.setProductChannels(Number(req.params.id), channels);
     return successResponse(res, 'Order channels produk berhasil diperbarui', result);
   } catch (err: any) {
-    if (err.name === 'ZodError') return errorResponse(res, 'Validasi gagal', { code: ErrorCodes.VALIDATION_ERROR, issues: err.issues }, 422);
+    if (err.name === 'ZodError') return validationErrorResponse(res, err, 'Validasi gagal', 422);
     return errorResponse(res, err.message, null, 404);
   }
 };

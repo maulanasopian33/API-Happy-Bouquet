@@ -1,6 +1,5 @@
 ﻿import { Request, Response } from 'express';
-import { ErrorCodes } from '../constants/errors';
-import { successResponse, errorResponse } from '../utils/response';
+import { successResponse, errorResponse, validationErrorResponse } from '../utils/response';
 import * as service from '../services/orderChannelService';
 import { z } from 'zod';
 
@@ -35,7 +34,7 @@ export const createChannel = async (req: Request, res: Response) => {
     const channel = await service.createChannel(data);
     return successResponse(res, 'Order channel berhasil dibuat', channel, 201);
   } catch (err: any) {
-    if (err.name === 'ZodError') return errorResponse(res, 'Validasi gagal', { code: ErrorCodes.VALIDATION_ERROR, issues: err.issues }, 422);
+    if (err.name === 'ZodError') return validationErrorResponse(res, err, 'Validasi gagal', 422);
     return errorResponse(res, err.message);
   }
 };
@@ -46,7 +45,7 @@ export const updateChannel = async (req: Request, res: Response) => {
     const channel = await service.updateChannel(Number(req.params.id), data);
     return successResponse(res, 'Order channel berhasil diperbarui', channel);
   } catch (err: any) {
-    if (err.name === 'ZodError') return errorResponse(res, 'Validasi gagal', { code: ErrorCodes.VALIDATION_ERROR, issues: err.issues }, 422);
+    if (err.name === 'ZodError') return validationErrorResponse(res, err, 'Validasi gagal', 422);
     return errorResponse(res, err.message, null, 404);
   }
 };

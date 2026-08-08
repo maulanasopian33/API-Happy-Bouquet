@@ -1,10 +1,9 @@
 ﻿import { Request, Response } from 'express';
-import { ErrorCodes } from '../constants/errors';
 import logger from '../utils/logger';
 
 import * as userService from '../services/userService';
 import { registerSchema } from '../validators/authValidator';
-import { successResponse, errorResponse } from '../utils/response';
+import { successResponse, errorResponse, validationErrorResponse } from '../utils/response';
 
 export const getAllAdmins = async (req: Request, res: Response) => {
   try {
@@ -24,7 +23,7 @@ export const createAdmin = async (req: Request, res: Response) => {
     return successResponse(res, 'Admin created successfully', admin, 201);
   } catch (error: any) {
     if (error.name === 'ZodError') {
-      return errorResponse(res, 'Validation error', { code: ErrorCodes.VALIDATION_ERROR, issues: error.issues }, 400);
+      return validationErrorResponse(res, error, 'Validation error', 400);
     }
     return errorResponse(res, error.message, null, 500);
   }

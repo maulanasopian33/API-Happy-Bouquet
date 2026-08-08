@@ -70,8 +70,18 @@ class LogController {
         return errorResponse(res, 'Message wajib diisi', null, 400);
       }
 
-      const logMethod = (logger as any)[level] || logger.info;
-      logMethod.call(logger, {
+      type LogFn = (message: unknown, ...meta: unknown[]) => void;
+      const logMethods: Record<string, LogFn> = {
+        error: logger.error,
+        warn: logger.warn,
+        info: logger.info,
+        http: logger.http,
+        verbose: logger.verbose,
+        debug: logger.debug,
+        silly: logger.silly,
+      };
+      const logMethod = logMethods[level] || logger.info;
+      logMethod({
         source: 'Frontend',
         message,
         ...meta

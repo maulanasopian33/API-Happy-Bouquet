@@ -1,13 +1,12 @@
 ﻿import { Response } from 'express';
-import { ErrorCodes } from '../constants/errors';
-import { successResponse, errorResponse } from '../utils/response';
+import { successResponse, errorResponse, validationErrorResponse } from '../utils/response';
 import * as resellerClientService from '../services/resellerClientService';
 import { createClientSchema, updateClientSchema } from '../validators/resellerValidator';
 import { AuthRequest } from '../middlewares/authMiddleware';
 
 export const listClients = async (req: AuthRequest, res: Response) => {
   try {
-    const resellerId = (req as any).reseller.id;
+    const resellerId = req.reseller!.id;
     const clients = await resellerClientService.getClients(resellerId);
     return successResponse(res, 'Daftar client berhasil diambil', clients);
   } catch (err: any) {
@@ -17,7 +16,7 @@ export const listClients = async (req: AuthRequest, res: Response) => {
 
 export const getClient = async (req: AuthRequest, res: Response) => {
   try {
-    const resellerId = (req as any).reseller.id;
+    const resellerId = req.reseller!.id;
     const clientData = await resellerClientService.getClientById(
       Number(req.params.id),
       resellerId
@@ -30,13 +29,13 @@ export const getClient = async (req: AuthRequest, res: Response) => {
 
 export const createClient = async (req: AuthRequest, res: Response) => {
   try {
-    const resellerId = (req as any).reseller.id;
+    const resellerId = req.reseller!.id;
     const data = createClientSchema.parse(req.body);
     const client = await resellerClientService.createClient(resellerId, data);
     return successResponse(res, 'Client berhasil didaftarkan', client, 201);
   } catch (err: any) {
     if (err.name === 'ZodError') {
-      return errorResponse(res, 'Input client tidak valid', { code: ErrorCodes.VALIDATION_ERROR, issues: err.issues }, 422);
+      return validationErrorResponse(res, err, 'Input client tidak valid', 422);
     }
     return errorResponse(res, err.message);
   }
@@ -44,7 +43,7 @@ export const createClient = async (req: AuthRequest, res: Response) => {
 
 export const updateClient = async (req: AuthRequest, res: Response) => {
   try {
-    const resellerId = (req as any).reseller.id;
+    const resellerId = req.reseller!.id;
     const data = updateClientSchema.parse(req.body);
     const client = await resellerClientService.updateClient(
       Number(req.params.id),
@@ -54,7 +53,7 @@ export const updateClient = async (req: AuthRequest, res: Response) => {
     return successResponse(res, 'Data client berhasil diperbarui', client);
   } catch (err: any) {
     if (err.name === 'ZodError') {
-      return errorResponse(res, 'Input pembaruan client tidak valid', { code: ErrorCodes.VALIDATION_ERROR, issues: err.issues }, 422);
+      return validationErrorResponse(res, err, 'Input pembaruan client tidak valid', 422);
     }
     return errorResponse(res, err.message, null, 404);
   }
@@ -62,7 +61,7 @@ export const updateClient = async (req: AuthRequest, res: Response) => {
 
 export const deleteClient = async (req: AuthRequest, res: Response) => {
   try {
-    const resellerId = (req as any).reseller.id;
+    const resellerId = req.reseller!.id;
     await resellerClientService.deleteClient(Number(req.params.id), resellerId);
     return successResponse(res, 'Client berhasil dihapus');
   } catch (err: any) {

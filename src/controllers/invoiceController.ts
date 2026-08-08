@@ -1,13 +1,14 @@
 import { Request, Response } from 'express';
 import { successResponse, errorResponse } from '../utils/response';
 import * as invoiceService from '../services/invoiceService';
+import { AuthRequest } from '../middlewares/authMiddleware';
 import db from '../models';
 import path from 'path';
 import fs from 'fs';
 
 const Order = db.Order;
 
-export const getInvoiceByOrderId = async (req: Request, res: Response) => {
+export const getInvoiceByOrderId = async (req: AuthRequest, res: Response) => {
   try {
     const orderId = Number(req.params.orderId);
     const order = await Order.findByPk(orderId);
@@ -15,7 +16,10 @@ export const getInvoiceByOrderId = async (req: Request, res: Response) => {
       return errorResponse(res, 'Order tidak ditemukan', null, 404);
     }
 
-    const user = (req as any).user;
+    if (!req.user) {
+      return errorResponse(res, 'Autentikasi diperlukan', null, 401);
+    }
+    const user = req.user;
     if (user.role !== 'admin' && user.role !== 'super_admin' && user.role !== 'staff') {
       if (order.customer_id !== user.id) {
         return errorResponse(res, 'Akses ditolak', null, 403);
@@ -33,7 +37,7 @@ export const getInvoiceByOrderId = async (req: Request, res: Response) => {
   }
 };
 
-export const downloadInvoice = async (req: Request, res: Response) => {
+export const downloadInvoice = async (req: AuthRequest, res: Response) => {
   try {
     const orderId = Number(req.params.orderId);
     const order = await Order.findByPk(orderId);
@@ -41,7 +45,10 @@ export const downloadInvoice = async (req: Request, res: Response) => {
       return errorResponse(res, 'Order tidak ditemukan', null, 404);
     }
 
-    const user = (req as any).user;
+    if (!req.user) {
+      return errorResponse(res, 'Autentikasi diperlukan', null, 401);
+    }
+    const user = req.user;
     if (user.role !== 'admin' && user.role !== 'super_admin' && user.role !== 'staff') {
       if (order.customer_id !== user.id) {
         return errorResponse(res, 'Akses ditolak', null, 403);

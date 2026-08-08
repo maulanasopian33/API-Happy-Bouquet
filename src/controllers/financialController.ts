@@ -1,6 +1,5 @@
 ﻿import { Request, Response } from 'express';
-import { ErrorCodes } from '../constants/errors';
-import { successResponse, errorResponse } from '../utils/response';
+import { successResponse, errorResponse, validationErrorResponse } from '../utils/response';
 import * as fundService from '../services/fundService';
 import { createManualTransactionSchema, updateManualTransactionSchema } from '../validators/fundValidator';
 
@@ -39,7 +38,7 @@ export const createManualTransaction = async (req: Request, res: Response) => {
     const transaction = await fundService.createManualTransaction(data);
     return successResponse(res, 'Transaksi manual berhasil dibuat', transaction, 201);
   } catch (err: any) {
-    if (err.name === 'ZodError') return errorResponse(res, 'Validasi gagal', { code: ErrorCodes.VALIDATION_ERROR, issues: err.issues }, 422);
+    if (err.name === 'ZodError') return validationErrorResponse(res, err, 'Validasi gagal', 422);
     return errorResponse(res, err.message);
   }
 };
@@ -50,7 +49,7 @@ export const updateManualTransaction = async (req: Request, res: Response) => {
     const transaction = await fundService.updateManualTransaction(Number(req.params.id), data);
     return successResponse(res, 'Transaksi manual berhasil diperbarui', transaction);
   } catch (err: any) {
-    if (err.name === 'ZodError') return errorResponse(res, 'Validasi gagal', { code: ErrorCodes.VALIDATION_ERROR, issues: err.issues }, 422);
+    if (err.name === 'ZodError') return validationErrorResponse(res, err, 'Validasi gagal', 422);
     return errorResponse(res, err.message);
   }
 };
