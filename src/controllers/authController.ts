@@ -4,6 +4,7 @@ import logger from '../utils/logger';
 import * as authService from '../services/authService';
 import { registerSchema, loginSchema } from '../validators/authValidator';
 import { successResponse, errorResponse, validationErrorResponse } from '../utils/response';
+import { AUTH_COOKIE_NAME, getAuthCookieOptions } from '../middlewares/authMiddleware';
 
 export const register = async (req: Request, res: Response) => {
   try {
@@ -25,6 +26,9 @@ export const login = async (req: Request, res: Response) => {
     const validatedData = loginSchema.parse(req.body);
     const result = await authService.login(validatedData);
     logger.info(`User logged in: ${validatedData.email}`);
+    // Set cookie httpOnly untuk admin panel (dual-mode: Bearer header tetap dikirim di body
+    // untuk storefront Nuxt & API client).
+    res.cookie(AUTH_COOKIE_NAME, result.token, getAuthCookieOptions());
     return successResponse(res, 'Login successful', result, 200);
   } catch (error: any) {
     return errorResponse(res, error.message, null, 401);
@@ -53,6 +57,10 @@ export const logout = async (req: Request, res: Response) => {
   try {
     // Stateless JWT logout is handled client-side by clearing token,
     // but endpoint is provided for clean API integration.
+    // Hapus cookie auth bila ada. `maxAge` tidak disertakan agar browser
+    // langsung menganggap cookie kedaluwarsa (bukan memperpanjang umurnya).
+    const { maxAge: _unused, ...clearOptions } = getAuthCookieOptions();
+    res.clearCookie(AUTH_COOKIE_NAME, clearOptions);
     return successResponse(res, 'Logged out successfully', null, 200);
   } catch (error: any) {
     return errorResponse(res, error.message, null, 500);

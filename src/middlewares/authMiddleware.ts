@@ -20,13 +20,35 @@ export interface AuthRequest extends Request {
 }
 
 /**
+ * Nama cookie auth.
+ * Dual-mode: client browser memakai cookie httpOnly, API client/storefront memakai Bearer header.
+ */
+export const AUTH_COOKIE_NAME = 'hb_token';
+
+/**
+ * Konfigurasi cookie auth. `secure` hanya aktif di production (HTTPS).
+ */
+export const getAuthCookieOptions = () => ({
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'lax' as const,
+  maxAge: 24 * 60 * 60 * 1000, // 1 hari, sinkron dengan expiresIn JWT
+  path: '/',
+});
+
+/**
  * Middleware: Verifikasi JWT Token
+ * Mendukung dua mode:
+ *  1. Bearer token di header `Authorization` (storefront Nuxt & API client)
+ *  2. Cookie `hb_token` (admin panel browser)
  */
 export const authenticateToken = (req: AuthRequest, res: Response, next: NextFunction) => {
   const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
+  const headerToken = authHeader && authHeader.split(' ')[1];
+  const cookieToken = req.cookies?.[AUTH_COOKIE_NAME] as string | undefined;
+  const token = (headerToken && headerToken !== 'null' ? headerToken : undefined) || cookieToken;
 
-  if (!token || token === 'null') {
+  if (!token) {
     return res.status(401).json({
       status: false,
       message: 'Akses ditolak. Token tidak ditemukan.',

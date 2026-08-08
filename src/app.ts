@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+import cookieParser from 'cookie-parser';
 
 const app = express();
 
@@ -35,6 +36,7 @@ app.use(cors({
 app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 // Rate limiting (Re-enabled for production security)
 const limiter = rateLimit({
@@ -45,6 +47,10 @@ const limiter = rateLimit({
   validate: { trustProxy: false },
 });
 app.use(limiter);
+
+import { csrfGuard } from './middlewares/csrfMiddleware';
+// Proteksi CSRF untuk request berbasis cookie (panel). Bearer-only & publik di-bypass.
+app.use(csrfGuard);
 
 import authRoutes from './routes/authRoutes';
 import materialRoutes from './routes/materialRoutes';
