@@ -12,6 +12,12 @@ LATEST UPDATES - 8 Agustus 2026
    - Rapi `AGENTS.md`: section Graphify digabung jadi satu; perintah `graphify update .` untuk refresh graph setelah modifikasi kode.
    - `graphify-out/` masuk `.gitignore` (artefak generate, dibangun ulang oleh hook).
 
+33. FIX VALIDASI ZOD V4 (ERROR DETAIL HILANG)
+   - Bug pre-existing: semua controller memakai `err.errors`, properti yang dihapus di Zod v4 (diganti `err.issues`) sehingga `errorResponse` menerima `undefined` dan detail validasi hilang dari respons API.
+   - Perbaiki 30 kemunculan di 14 controller: `err.errors`/`error.errors` -> `{ code: ErrorCodes.VALIDATION_ERROR, issues: err.issues }`.
+   - Tambah import `ErrorCodes` dari `src/constants/errors.ts` di controller terkait; standarisasi kode error validasi.
+   - Dampak: `reseller.test.ts` (sebelumnya merah karena `error.code === 'VALIDATION_ERROR'`) kini hijau; full test 35/35 lulus.
+
 Timestamp: 2026-08-08 00:00:00
 
 LATEST UPDATES - 26 Januari 2026
