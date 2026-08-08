@@ -19,7 +19,7 @@
 - [ ] `npm run build` sukses; `npm test` hijau
 
 ## Phase C: Backend — Proteksi Logs
-- [ ] Task C1: GET /api/logs & /:date admin-only; POST tetap publik + rate limit
+- [x] Task C1: GET /api/logs & /:date admin-only; POST tetap publik + rate limit
 
 ## Checkpoint C
 - [ ] `npm run build` sukses; `npm test` hijau; changelog API + known-issues
@@ -43,13 +43,13 @@
 - [x] Build + test hijau di panel (12/12) & API (48/48)
 
 ## Phase F: Panel — Modul Baru
-- [ ] Task F1: Halaman Reseller admin (list/approve/reject/suspend/tier + tier prices)
-- [ ] Task F2: Halaman Invoice (daftar + link unduh PDF)
-- [ ] Task F3: Halaman Notification (daftar notifikasi)
-- [ ] Task F4: Halaman Logs (daftar file + lihat isi)
+- [x] Task F1: Halaman Reseller admin (list/approve/reject/suspend/tier + tier prices)
+- [x] Task F2: Halaman Invoice (daftar + link unduh PDF)
+- [x] Task F3: Halaman Notification (daftar notifikasi)
+- [x] Task F4: Halaman Logs (daftar file + lihat isi)
 
 ## Checkpoint E+F
-- [ ] Build + test hijau di panel
+- [x] Build + test hijau di panel
 - [ ] Build + test hijau di API
 - [ ] Manual check login → semua menu, tanpa 404
 

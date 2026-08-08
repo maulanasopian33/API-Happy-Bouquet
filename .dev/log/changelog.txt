@@ -17,6 +17,14 @@ X. PHASE E (Panel) + BACKEND SUPPORT
 
 Timestamp: 2026-08-08 12:30:00
 
+X. PHASE F (Panel) — MODUL BARU
+   - Panel (commit panel `5ae6299`): halaman Reseller admin (`/admin/resellers`, list/filter/approve/reject/suspend/tier), Invoice (`/invoice`, daftar order + unduh PDF & lihat detail via `/invoices/:orderId`), Notifikasi (`/notifications`), Log Aplikasi (`/logs`, daftar file + isi per tanggal). Semua service baru via `apiFetch`/`apiJson`.
+   - Fix `.gitignore` panel: `logs` → `/logs/` agar `src/views/logs/` tidak tertutup.
+   - Task C1 backend (proteksi `/logs` admin-only) ditandai selesai di todo.
+   - Test panel 12/12 hijau; build panel sukses.
+
+Timestamp: 2026-08-08 12:45:00
+
 LATEST UPDATES - 2026-06-11
 ==============================
 
