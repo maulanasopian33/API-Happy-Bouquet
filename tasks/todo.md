@@ -25,10 +25,13 @@
 - [ ] `npm run build` sukses; `npm test` hijau; changelog API + known-issues
 
 ## Phase D: Panel — Auth Cookie & Perbaikan Dasar
-- [ ] Task D1: apiClient axios → withCredentials + X-Requested-With; hapus token localStorage
-- [ ] Task D2: Semua service/composable fetch → util terpusat (credentials + header)
-- [ ] Task D3: auth.store tanpa token localStorage; guard router sesuaikan
-- [ ] Task D4: .env → .gitignore; hapus hardcoded URL backend
+- [x] Task D1: apiClient axios → withCredentials + X-Requested-With; hapus token localStorage
+- [x] Task D2: Semua service/composable fetch → util terpusat (credentials + header)
+- [x] Task D3: auth.store tanpa token localStorage; guard router sesuaikan
+- [x] Task D4: .env → .gitignore; hapus hardcoded URL backend
+
+## Checkpoint D
+- [x] `npm run build` sukses + `npm test` (12/12) hijau di panel; commit `2ceddf2`
 
 ## Phase E: Panel — Fitur & Bug
 - [ ] Task E1: Fix PDF export Finance (field snake_case)

@@ -1,3 +1,15 @@
+LATEST UPDATES - 2026-08-08
+==============================
+
+X. PHASE A-C BACKEND + PHASE D PANEL (Audit Production-Ready)
+   - Phase A: tambah `POST /api/customers`; `authorizeRoles('admin','super_admin')` di route admin; format respons `{status,message,data,error}` seragam (commit API `3d322b7`).
+   - Phase B: cookie auth dual-mode (`cookie-parser`, `hb_token` httpOnly) + CSRF `X-Requested-With`; CORS credentials (commit `1bb3088`).
+   - Phase C: `GET /api/logs` admin-only; `POST /api/logs` publik + rate limit (commit `c6f24f4`).
+   - Phase D (panel `2ceddf2`): auth cookie httpOnly, util `apiFetch`/`apiJson` terpusat (credentials + `X-Requested-With`), hapus token localStorage, hapus hardcoded URL, `.env` ke gitignore.
+   - Test API 48/48 hijau; test panel 12/12 hijau.
+
+Timestamp: 2026-08-08 12:05:00
+
 LATEST UPDATES - 2026-06-11
 ==============================
 
