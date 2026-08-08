@@ -1,6 +1,12 @@
 LATEST UPDATES - 8 Agustus 2026
 ==============================
 
+37. PHASE F: MODUL BARU PANEL (RESELLER, INVOICE, NOTIFIKASI, LOGS)
+   - Panel (commit `5ae6299`): halaman `/admin/resellers` (list/filter/approve/reject/suspend/ganti tier), `/invoice` (daftar order + unduh PDF & lihat detail via `/invoices/:orderId`), `/notifications` (riwayat notifikasi user login), `/logs` (daftar file log + isi per tanggal).
+   - Service baru panel via `apiFetch`/`apiJson`: `resellerAdminService`, `invoiceService`, `notificationService`, `logService`.
+   - Fix `.gitignore` panel: `logs` → `/logs/` agar `src/views/logs/` ikut ter-track.
+   - Task C1 backend (`/logs` admin-only) ditandai selesai; test API 48/48 & panel 12/12 hijau.
+
 31. DOKUMENTASI ATURAN KERJA AGENTS.MD
    - Membuat `AGENTS.md` sebagai instruksi OpenCode: bahasa Indonesia, gaya commit emoji conventional, perintah dev/build/test, arsitektur layering, konvensi model/export config, deployment, dan alur kerja wajib (spec-driven, commit per step, changelog, graphify).
    - Menyinkronkan aturan dari `.dev/context.md` dan kebiasaan commit di `git log` ke dalam satu file.
