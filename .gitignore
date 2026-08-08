@@ -37,3 +37,7 @@ pnpm-debug.log*
 # OS generated files
 .DS_Store
 Thumbs.db
+
+# Generated upload artifacts (test invoices/materials)
+/public/uploads/invoices/
+/public/uploads/materials/

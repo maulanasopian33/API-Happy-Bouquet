@@ -10,3 +10,4 @@
 - [RESOLVED] Mock analytics di `socket.ts` bocor ke production. (Kini produksi baca data nyata Redis, mock hanya dev, commit `878c03a`.)
 - [RESOLVED] Banyak `(req as any)` di controller. (Dihilangkan via `AuthRequest.reseller` + `req.reseller!.id`, commit `9a84a49`.)
 - [RESOLVED] `console.log` sisa di redis/tiktok/encryption. (Diganti logger winston, commit `3e25ec1`.)
+- [RESOLVED] Test flaky: `beforeAll` (sync `{force:true}` + setup) kalah timeout 5s Jest saat suite penuh. (Fix `testTimeout: 30000` di `jest.config.js`; 35/35 stabil 2x berturut-turut.)

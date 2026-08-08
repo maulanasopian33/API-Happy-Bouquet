@@ -68,3 +68,17 @@ LATEST UPDATES - 2026-06-24
    - Integrasi `easingthemes/ssh-deploy@main` untuk mempercepat upload `node_modules` secara inkremental dan menghapus file usang di production.
 Timestamp: 2026-06-24 14:46:00
 
+
+LATEST UPDATES - 2026-08-08
+==============================
+
+8. AUDIT & REFACTOR FASE 1-3 (Spec-driven, hasil audit menyeluruh)
+   - Fase 1 Quick Wins: standarkan format respons di `LogController` & controller TikTok ke `successResponse`/`errorResponse`; hapus middleware `isAdmin` duplikat di `adminRoutes.ts` -> `authorizeRoles`; migrasi validasi Zod ke `src/validators/` (hapus `utils/validation.ts` & `utils/types.ts`).
+   - Bonus: fix bug Zod v4 `err.errors` -> `err.issues` (30 kemunculan/14 controller) + kode `VALIDATION_ERROR`; helper `validationErrorResponse`; tambah `--forceExit` di npm test.
+   - Fase 2: rute mock TikTok diblokir 403 di production; mock analytics `socket.ts` hanya dev, production baca data nyata Redis.
+   - Fase 3: hilangkan semua `(req as any)` via `AuthRequest.reseller`; seragamkan penanganan ZodError ke helper tunggal; rapikan `server.ts`; semua `console.log` -> logger winston.
+   - File disentuh: banyak controller, routes, middleware, utils, services, changelog.txt, tasks/todo.md.
+   - Semua fase lolos `npm run build` + `npm test` (35/35).
+
+Timestamp: 2026-08-08 00:00:00
+

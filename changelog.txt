@@ -23,6 +23,11 @@ LATEST UPDATES - 8 Agustus 2026
    - Ganti middleware `isAdmin` inline duplikat di `tiktok.routes.ts` dengan `authorizeRoles('admin', 'super admin', 'super_admin')` (konsisten dengan `adminRoutes.ts`).
    - `broadcastActiveVisitors()` di `src/socket.ts`: di production baca data NYATA dari Redis (`analytics:active_visitors` -> activeVisitors, `analytics:top_urls` -> topProducts, `analytics:raw_logs` -> deviceStats); generator mock (active count, traffic history, device stats) hanya dijalankan saat development.
 
+36. FIX TEST FLAKY — TIMEOUT HOOK JEST 5s
+   - Bug: `beforeAll` di 8 file test (`sync({force:true})` + setup auth/channel) kalah dari timeout default Jest 5 detik saat suite penuh jalan — kegagalan intermiten (ex: `product_preorder`), bukan error fungsional.
+   - Fix: set `testTimeout: 30000` di `jest.config.js` (berlaku untuk hook & test semua file sekaligus).
+   - Verifikasi: suite penuh 35/35 lulus dua kali berturut-turut (exit 0).
+
 35. FASE 3 — KERAPIAN & KONSISTENSI
    - Hilangkan SEMUA cast `(req as any)` (dan `(res as any)`) di controller:
      - Perluas `AuthRequest` di `authMiddleware.ts` dengan field `reseller?`; middleware `requireActiveReseller` kini set `req.reseller` langsung (tanpa cast).

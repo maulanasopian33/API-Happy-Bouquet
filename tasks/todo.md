@@ -33,6 +33,7 @@
 - [x] `graphify update .` berjalan tanpa menyusut
 
 ## Phase 4: Ship
-- [ ] Task 11: `npm run build` + `npm test` penuh
-- [ ] Task 12: Catat `changelog.txt` + `.dev/log/changelog.txt`
-- [ ] Task 13: `graphify update .`, commit per step (konvensi emoji)
+- [x] Task 11: `npm run build` + `npm test` penuh (35/35; temuan flaky `product_preorder` timeout hook)
+- [x] Task 11b: Fix flaky — `testTimeout: 30000` di `jest.config.js`; 35/35 stabil 2x beruntun
+- [x] Task 12: Catat `changelog.txt` + `.dev/log/changelog.txt`
+- [x] Task 13: `graphify update .`, commit per step (konvensi emoji)
