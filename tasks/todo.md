@@ -8,8 +8,11 @@
 - [ ] Task 5: Validasi body `login` dengan Zod; seragamkan pesan error Bahasa Indonesia
 
 ## Checkpoint: Phase 1
-- [ ] `npm run build` sukses
-- [ ] `npm test` hijau (--runInBand)
+- [x] `npm run build` sukses
+- [x] `npm test` hijau (--runInBand) — 35/35 lulus
+
+## Fase 1 Bonus (ditemukan saat checkpoint)
+- [x] Fix bug Zod v4: `err.errors` -> `err.issues` + kode `VALIDATION_ERROR` (30 kemunculan, 14 controller)
 
 ## Phase 2: Fitur Mock (keputusan user)
 - [ ] Task 6: TikTok — sunset/disable rute atau implementasi nyata
