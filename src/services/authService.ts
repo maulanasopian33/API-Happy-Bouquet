@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import db from '../models';
 import logger from '../utils/logger';
 
-import { RegisterInput, LoginInput } from '../utils/types';
+import { RegisterInput, LoginInput } from '../validators/authValidator';
 
 const User = db.User;
 

@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import logger from '../utils/logger';
 
 import * as userService from '../services/userService';
-import { registerSchema } from '../utils/validation';
+import { registerSchema } from '../validators/authValidator';
 import { successResponse, errorResponse } from '../utils/response';
 
 export const getAllAdmins = async (req: Request, res: Response) => {

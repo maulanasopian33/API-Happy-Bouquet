@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import fs from 'fs';
 import path from 'path';
 import logger from '../utils/logger';
+import { successResponse, errorResponse } from '../utils/response';
 
 class LogController {
   /**
@@ -11,7 +12,7 @@ class LogController {
     try {
       const logDir = path.join(process.cwd(), 'logs');
       if (!fs.existsSync(logDir)) {
-        return res.json({ status: 'success', data: [] });
+        return successResponse(res, 'Daftar log kosong', []);
       }
 
       const files = fs.readdirSync(logDir)
@@ -23,9 +24,9 @@ class LogController {
         }))
         .sort((a, b) => b.date.localeCompare(a.date));
 
-      res.json({ status: 'success', data: files });
+      return successResponse(res, 'Daftar file log berhasil diambil', files);
     } catch (error: any) {
-      res.status(500).json({ status: 'error', message: error.message });
+      return errorResponse(res, error.message, null, 500);
     }
   }
 
@@ -38,12 +39,12 @@ class LogController {
       const logFile = path.join(process.cwd(), 'logs', `${date}.log`);
 
       if (!fs.existsSync(logFile)) {
-        return res.status(404).json({ status: 'error', message: 'Log file not found' });
+        return errorResponse(res, 'File log tidak ditemukan', null, 404);
       }
 
       const content = fs.readFileSync(logFile, 'utf8');
       const lines = content.trim().split('\n').filter(line => line.length > 0);
-      
+
       const logs = lines.map(line => {
         try {
           return JSON.parse(line);
@@ -52,9 +53,9 @@ class LogController {
         }
       });
 
-      res.json({ status: 'success', data: logs });
+      return successResponse(res, 'Isi file log berhasil diambil', logs);
     } catch (error: any) {
-      res.status(500).json({ status: 'error', message: error.message });
+      return errorResponse(res, error.message, null, 500);
     }
   }
 
@@ -66,7 +67,7 @@ class LogController {
       const { level, message, meta } = req.body;
 
       if (!message) {
-        return res.status(400).json({ status: 'error', message: 'Message is required' });
+        return errorResponse(res, 'Message wajib diisi', null, 400);
       }
 
       const logMethod = (logger as any)[level] || logger.info;
@@ -76,9 +77,9 @@ class LogController {
         ...meta
       });
 
-      res.json({ status: 'success', message: 'Log recorded' });
+      return successResponse(res, 'Log tercatat');
     } catch (error: any) {
-      res.status(500).json({ status: 'error', message: error.message });
+      return errorResponse(res, error.message, null, 500);
     }
   }
 }

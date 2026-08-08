@@ -1,9 +1,10 @@
 import { Request, Response } from 'express';
 import { TiktokService } from '../services/tiktok.service';
 import fs from 'fs';
+import { successResponse, errorResponse } from '../utils/response';
 
 export class TiktokUserController {
-  
+
   /**
    * Endpoint untuk mempublish video ke TikTok
    */
@@ -12,12 +13,12 @@ export class TiktokUserController {
     const { caption } = req.body;
 
     if (!file) {
-      res.status(400).json({ success: false, message: 'Video file is required' });
+      errorResponse(res, 'File video wajib diunggah', null, 400);
       return;
     }
 
     if (caption && caption.length > 2000) {
-      res.status(400).json({ success: false, message: 'Caption exceeds 2000 characters limit' });
+      errorResponse(res, 'Caption melebihi batas 2000 karakter', null, 400);
       // Clean up directly
       fs.unlinkSync(file.path);
       return;
@@ -26,16 +27,16 @@ export class TiktokUserController {
     try {
       const accessToken = await TiktokService.getActiveToken();
       if (!accessToken) {
-        res.status(400).json({ success: false, message: 'TikTok account is not connected by Admin' });
+        errorResponse(res, 'Akun TikTok belum dihubungkan oleh Admin', null, 400);
         return;
       }
 
       // Memanggil layanan untuk publish (Mock)
       const result = await TiktokService.publishVideo(accessToken, caption || '', file.path);
-      
-      res.json({ success: true, message: 'Video published successfully', data: result.data });
+
+      successResponse(res, 'Video berhasil dipublikasikan', result.data);
     } catch (error: any) {
-      res.status(500).json({ success: false, message: error.message || 'Failed to publish video' });
+      errorResponse(res, error.message || 'Gagal mempublikasikan video', null, 500);
     } finally {
       // Selalu hapus file temporary untuk mitigasi space server
       if (fs.existsSync(file.path)) {

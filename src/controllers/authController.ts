@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import logger from '../utils/logger';
 
 import * as authService from '../services/authService';
-import { registerSchema } from '../utils/validation';
+import { registerSchema, loginSchema } from '../validators/authValidator';
 import { successResponse, errorResponse } from '../utils/response';
 
 export const register = async (req: Request, res: Response) => {
@@ -22,9 +22,9 @@ export const register = async (req: Request, res: Response) => {
 
 export const login = async (req: Request, res: Response) => {
   try {
-    const { email, password } = req.body;
-    const result = await authService.login({ email, password });
-    logger.info(`User logged in: ${email}`);
+    const validatedData = loginSchema.parse(req.body);
+    const result = await authService.login(validatedData);
+    logger.info(`User logged in: ${validatedData.email}`);
     return successResponse(res, 'Login successful', result, 200);
   } catch (error: any) {
     return errorResponse(res, error.message, null, 401);

@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import logger from '../utils/logger';
 
 import * as materialService from '../services/materialService';
-import { materialSchema } from '../utils/validation';
+import { materialSchema } from '../validators/materialValidator';
 import { successResponse, errorResponse } from '../utils/response';
 
 export const getAllMaterials = async (req: Request, res: Response) => {
