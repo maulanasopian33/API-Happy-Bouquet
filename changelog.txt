@@ -5,6 +5,13 @@ LATEST UPDATES - 8 Agustus 2026
    - Membuat `AGENTS.md` sebagai instruksi OpenCode: bahasa Indonesia, gaya commit emoji conventional, perintah dev/build/test, arsitektur layering, konvensi model/export config, deployment, dan alur kerja wajib (spec-driven, commit per step, changelog, graphify).
    - Menyinkronkan aturan dari `.dev/context.md` dan kebiasaan commit di `git log` ke dalam satu file.
 
+32. INISIALISASI GRAPHIFY
+   - Build graph pertama untuk seluruh codebase (AST, tanpa API key) → 830 node, 1454 edges, 79 community di `graphify-out/`.
+   - Pasang post-commit/post-checkout hook agar graph otomatis ter-update setiap commit.
+   - Integrasi OpenCode: plugin `.opencode/plugins/graphify.js` (reminder sebelum tool bash) + registrasi di `.opencode/opencode.json`.
+   - Rapi `AGENTS.md`: section Graphify digabung jadi satu; perintah `graphify update .` untuk refresh graph setelah modifikasi kode.
+   - `graphify-out/` masuk `.gitignore` (artefak generate, dibangun ulang oleh hook).
+
 Timestamp: 2026-08-08 00:00:00
 
 LATEST UPDATES - 26 Januari 2026

@@ -40,8 +40,10 @@ API backend Happy Bouquet: Express + TypeScript + Sequelize (MySQL). Repo ini ba
 4. Alur/keputusan: update `.dev/known-issues.md` dan `.dev/log/changelog.txt` (ter-track). Catatan: `.dev/context.md`, `.dev/decisions.md`, `.dev/roadmap/` TIDAK ter-track (`.dev` di `.gitignore`) — referensi lokal saja.
 
 ## Graphify
-- Saat ditanya soal kodebase, cek dulu `graphify-out/graph.json` (pakai skill graphify) sebelum menjawab.
-- Setelah task selesai, jalankan `graphify --update`. Jika `graphify-out/` belum ada, jalankan `graphify .` sekali penuh dulu.
+- Graph sudah ter-build di `graphify-out/` (generated, jangan di-commit). Saat ditanya soal kodebase, pakai skill graphify TERLEBIH DAHULU: `graphify query "<pertanyaan>"` (subgraph jauh lebih kecil daripada grep mentah), `graphify path "<A>" "<B>"` untuk relasi, `graphify explain "<konsep>"` untuk penjelasan fokus.
+- `graphify-out/GRAPH_REPORT.md` hanya untuk review arsitektur luas; `graphify-out/wiki/index.md` (jika ada) untuk navigasi umum.
+- File `graphify-out/` yang "dirty" setelah hook/update adalah normal — jangan jadikan alasan skip graphify. Hanya skip bila task memang tentang output graph yang basi/salah, atau user eksplisit minta tanpa graphify.
+- Setelah memodifikasi kode, jalankan `graphify update .` agar graph tetap mutakhir (AST-only, tanpa API cost). Jika `graphify-out/` belum ada, jalankan pipeline penuh dulu.
 
 ## Referensi
 - `client_api.http` — koleksi uji REST API.
