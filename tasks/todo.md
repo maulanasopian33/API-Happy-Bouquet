@@ -57,3 +57,13 @@
 - [ ] Task G1: Update docs knowledge base (format respons & endpoint baru)
 - [ ] Task G2: Update changelog kedua repo + known-issues + todo
 - [ ] Task G3: graphify update + commit per step (emoji konvensional)
+
+# PLAN SAAT INI: Root API Profesional + Health Check
+
+**Spec:** `tasks/specs/api-root-health.md` · **Plan:** `tasks/plan.md`
+
+- [x] Task H1: Buat `healthController.ts` (`getApiRoot` + `getHealth`) + `routes/healthRoutes.ts`
+- [x] Task H2: Daftarkan router di `app.ts` (paling depan); hapus `app.get('/')` lama
+- [x] Task H3: Tulis `tests/health.test.ts` (tanpa DB)
+- [x] Task H4: `npm run build` + `npm test` hijau (52/52)
+- [x] Task H5: Update changelog + todo; `graphify update .`; commit per step

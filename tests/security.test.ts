@@ -36,7 +36,9 @@ describe('Security Configuration', () => {
     // This basic test ensures the rate limiter doesn't crash the app
     const res = await request(app).get('/');
     expect(res.statusCode).toEqual(200);
-    expect(res.body).toHaveProperty('message', 'Welcome to Happy Bouquet API');
+    expect(res.body.status).toBe(true);
+    expect(res.body.data).toHaveProperty('name');
+    expect(res.body.data).toHaveProperty('uptime');
   });
 
   it('should respect X-Forwarded-For when trust proxy is enabled', async () => {

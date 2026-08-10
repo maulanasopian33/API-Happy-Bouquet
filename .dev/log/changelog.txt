@@ -1,3 +1,14 @@
+LATEST UPDATES - 2026-08-10
+==============================
+
+X. ROOT API PROFESIONAL + HEALTH CHECK (UPTIME)
+   - `GET /` → info API profesional (`name`, `version`, `status`, `uptime`, `env`, `endpoints`, `timestamp`), format `successResponse`, tanpa bocor info sensitif.
+   - `GET /health` → uptime + runtime dasar (`status:'ok'`, `process.uptime()`, nodeVersion, platform, arch, hostname, cpus, memory, env, timestamp) + `Cache-Control: no-store`; kompatibel UptimeRobot/Healthchecks.io/Uptime Kuma.
+   - Router `healthRoutes.ts` dipasang paling depan di `app.ts`; `app.get('/')` inline dihapus. Tanpa dependency baru.
+   - Test baru `tests/health.test.ts` (4 test, tanpa DB); `security.test.ts` disesuaikan. Build sukses; full test 52/52 hijau.
+
+Timestamp: 2026-08-10 21:35:00
+
 LATEST UPDATES - 2026-08-08
 ==============================
 

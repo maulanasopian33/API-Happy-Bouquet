@@ -72,7 +72,11 @@ import resellerRoutes from './routes/resellerRoutes';
 import resellerCatalogRoutes from './routes/resellerCatalogRoutes';
 import invoiceRoutes from './routes/invoiceRoutes';
 import notificationRoutes from './routes/notificationRoutes';
+import healthRoutes from './routes/healthRoutes';
 import path from 'path';
+
+// ─── Root API Info & Health Check (dipasang paling depan) ───────────
+app.use('/', healthRoutes);
 
 app.use('/public', express.static(path.join(__dirname, '../public')));
 
@@ -100,10 +104,6 @@ app.use('/api', resellerRoutes);
 app.use('/api/catalog', resellerCatalogRoutes);
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/notifications', notificationRoutes);
-
-app.get('/', (req, res) => {
-  res.json({ message: 'Welcome to Happy Bouquet API' });
-});
 
 import { errorHandler } from './middlewares/errorHandler';
 app.use(errorHandler);

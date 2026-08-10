@@ -4,6 +4,30 @@
 
 Menyelaraskan Admin Panel (Vue 3) dengan API backend dan mengamankannya untuk production. Berdasarkan audit dua codebase. Spec: `tasks/specs/audit-panel-production.md`.
 
+---
+
+# PLAN SAAT INI: Root API Profesional + Health Check (Uptime)
+
+**Spec:** `tasks/specs/api-root-health.md`
+
+## Arsitektur & Keputusan Kunci
+
+1. `GET /` → root API info profesional via `healthController.getApiRoot`: `{ name, version, status, uptime, env, endpoints, timestamp }` — daftar endpoint ringkas, tanpa info sensitif.
+2. `GET /health` → `healthController.getHealth`: `{ status: 'ok', uptime, nodeVersion, platform, arch, memory, env, timestamp }` + header `Cache-Control: no-store`. Kompatibel monitoring gratis (UptimeRobot/Healthchecks.io/Uptime Kuma).
+3. Router baru `src/routes/healthRoutes.ts` dipasang PALING DEPAN di `app.ts` (sebelum `public` & semua `/api/*`); hapus handler inline `app.get('/')`.
+4. Version dibaca dari `package.json` via `require('../../package.json').version`.
+5. Tanpa dependency baru (modul bawaan `os`/`process`).
+
+## Task List
+
+- [ ] Task H1: Buat `src/controllers/healthController.ts` (`getApiRoot` + `getHealth`) + `src/routes/healthRoutes.ts`.
+- [ ] Task H2: Daftarkan router di `src/app.ts`; hapus `app.get('/')` lama; pastikan urutan (health di depan, tetap di bawah rate-limit/CSRF yang global).
+- [ ] Task H3: Tulis `tests/health.test.ts` (tanpa DB): `/` profesional & aman, `/health` ok + uptime + `Cache-Control: no-store`.
+- [ ] Task H4: `npm run build` + `npm test` hijau (seluruh suite).
+- [ ] Task H5: Update changelog (`changelog.txt`, `.dev/log/changelog.txt`) + `tasks/todo.md`; `graphify update .`; commit per step.
+
+---
+
 ## Arsitektur & Keputusan Kunci
 
 1. **Dual-mode auth**: middleware `authenticateToken` baca token dari **cookie httpOnly** (`token`) ATAU header `Authorization: Bearer`. Login set cookie; logout clear cookie. Storefront Nuxt tetap Bearer.
