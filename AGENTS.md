@@ -29,7 +29,8 @@ API backend Happy Bouquet: Express + TypeScript + Sequelize (MySQL). Repo ini ba
 - Salin `.env.example` → `.env` sebelum menjalankan apa pun. `ENCRYPTION_KEY` harus tepat 32 karakter; `CORS_ORIGINS` (comma-separated, opsional) hanya dipakai di production.
 
 ## Deployment
-- CI `.github/workflows/deploy.yml` jalan hanya saat tag `v*` di-push: build → prune devDeps → FTP tanpa `node_modules`.
+- CI `.github/workflows/deploy.yml` jalan hanya saat tag `v*` di-push: build → prune devDeps → **rsync via SSH** (cPanel SSH Access, `easingthemes/ssh-deploy`) termasuk `node_modules` produksi + `tmp/restart.txt` (Passenger restart).
+- Secrets SSH wajib terpasang di GitHub: `SSH_PRIVATE_KEY` (tanpa passphrase, format PEM), `SSH_HOST`, `SSH_USER`, `SSH_PORT` (bukan 22, sesuai firewall cPanel), `SSH_TARGET_DIR` (akar aplikasi).
 - Production memakai `.sequelizerc.prod` yang menunjuk ke `dist/`. Migrasi otomatis saat startup di `server.ts` DIKOMENTARI — jalankan migrasi manual.
 - `.cpanel.yml`: `npm install` + `touch tmp/restart.txt` di server.
 

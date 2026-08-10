@@ -1,5 +1,7 @@
 # Known Issues & Tech Debt
 
+- [RESOLVED] Deploy CI masih pakai FTP. (Menggantikan ke SSH rsync `easingthemes/ssh-deploy@v5.1.0` via cPanel SSH Access port 3759 — upload lebih cepat.)
+
 - [RESOLVED] Rate Limit di `app.ts` (Backend) masih dinonaktifkan. (Sudah diaktifkan kembali di `app.ts` dengan trust proxy).
 - [RESOLVED] Belum ada file `.env.example` di backend maupun frontend. (Sudah dibuat beserta Redis URL).
 - [RESOLVED] Sync worker `syncAnalyticsToDB` di backend masih berupa placeholder TODO dan belum menyimpan logs ke database SQL secara permanen. (Sudah diimplementasikan dengan membuat model AnalyticsLog dan menyimpan data mentah dari Redis ke MySQL).

@@ -1,6 +1,17 @@
 LATEST UPDATES - 10 Agustus 2026
 ==============================
 
+LATEST UPDATES - 10 Agustus 2026
+==============================
+
+39. DEPLOYMENT CI — FTP → SSH ACCESS cPANEL (UPLOAD LEBIH CEPAT)
+   - `.github/workflows/deploy.yml`: ganti protokol upload dari FTP (`SamKirkland/FTP-Deploy-Action`) menjadi SSH rsync inkremental (`easingthemes/ssh-deploy@v5.1.0`).
+   - Sekarang meng-upload `node_modules` produksi (hasil `npm prune --production`) + `tmp/restart.txt` (trigger restart Passenger) — satu koneksi SSH, jauh lebih cepat daripada FTP per-file.
+   - Port SSH non-standar **3759** (firewall cPanel) via secret `SSH_PORT`; secrets baru `SSH_PRIVATE_KEY`, `SSH_HOST`, `SSH_USER`, `SSH_TARGET_DIR` menggantikan `FTP_*`.
+   - `AGENTS.md` bagian Deployment diperbarui; spec `tasks/specs/deploy-ssh-cpanel.md`.
+
+Timestamp: 2026-08-10 21:45:00
+
 38. ROOT API PROFESIONAL + HEALTH CHECK (UPTIME)
    - `GET /` kini mengembalikan informasi API profesional: `{ status, message, data: { name, version, status, uptime, env, endpoints, timestamp }, error }` — format global `successResponse`, tanpa info sensitif (kredensial/path absolut tidak diekspos).
    - `GET /health` baru: health check uptime + runtime dasar (`status: 'ok'`, `process.uptime()` detik, versi Node, platform, arch, hostname, jumlah CPU, memory, env, timestamp) + header `Cache-Control: no-store` — kompatibel dengan layanan monitoring gratis & populer (UptimeRobot, Healthchecks.io, Uptime Kuma, Better Stack).

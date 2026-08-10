@@ -1,6 +1,16 @@
 LATEST UPDATES - 2026-08-10
 ==============================
 
+X. DEPLOYMENT CI — FTP → SSH ACCESS cPANEL
+   - `deploy.yml`: FTP (`SamKirkland/FTP-Deploy-Action`) diganti SSH rsync (`easingthemes/ssh-deploy@v5.1.0`); upload `node_modules` produksi ter-prune + `tmp/restart.txt` (restart Passenger) secara inkremental — cepat, satu koneksi.
+   - Port SSH non-standar 3759 via `SSH_PORT`; secrets `SSH_PRIVATE_KEY`, `SSH_HOST`, `SSH_USER`, `SSH_TARGET_DIR` baru (menggantikan `FTP_*`).
+   - Update AGENTS.md bagian Deployment + spec `tasks/specs/deploy-ssh-cpanel.md`.
+
+Timestamp: 2026-08-10 21:45:00
+
+LATEST UPDATES - 2026-08-10
+==============================
+
 X. ROOT API PROFESIONAL + HEALTH CHECK (UPTIME)
    - `GET /` → info API profesional (`name`, `version`, `status`, `uptime`, `env`, `endpoints`, `timestamp`), format `successResponse`, tanpa bocor info sensitif.
    - `GET /health` → uptime + runtime dasar (`status:'ok'`, `process.uptime()`, nodeVersion, platform, arch, hostname, cpus, memory, env, timestamp) + `Cache-Control: no-store`; kompatibel UptimeRobot/Healthchecks.io/Uptime Kuma.

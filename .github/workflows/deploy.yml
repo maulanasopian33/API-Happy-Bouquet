@@ -28,18 +28,19 @@ jobs:
       - name: Build Project
         run: npm run build
 
-      # Remove devDependencies to save space (Critical for FTP)
+      # Remove devDependencies to keep node_modules production-ready (uploaded via rsync)
       - name: Prune dev dependencies
         run: npm prune --production
 
-      # Prepare deploy dir (without node_modules)
+      # Prepare deploy dir (dist + node_modules produksi + config)
       - name: Prepare deploy folder
         run: |
-          mkdir deploy
+          mkdir -p deploy
           cp -r dist deploy/dist
+          cp -r node_modules deploy/node_modules
           cp package.json deploy/package.json
           cp package-lock.json deploy/package-lock.json
-          
+
           # Migration files
           cp -r migrations deploy/migrations
           if [ -d "seeders" ]; then
@@ -47,22 +48,28 @@ jobs:
           else
             echo "Seeders directory not found, skipping."
           fi
-          
-          # Use Production .sequelizerc
+
+          # Use Production .sequelizerc (points to dist/)
           cp .sequelizerc.prod deploy/.sequelizerc
 
-      # Upload archive via FTP (Fast because no node_modules)
-      - name: Upload build via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+          # Restart trigger for Passenger (cPanel Node.js app)
+          mkdir -p deploy/tmp
+          echo "restart $(date -u +%FT%TZ)" > deploy/tmp/restart.txt
+
+          echo "Deploy folder size:"
+          du -sh deploy
+          echo "Node modules size:"
+          du -sh deploy/node_modules
+
+      # Deploy via SSH (Rsync incremental) — cPanel SSH Access
+      - name: Deploy to Server via SSH
+        uses: easingthemes/ssh-deploy@v5.1.0
         with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          port: ${{ secrets.FTP_PORT }}
-          protocol: ftp
-          local-dir: "deploy/"
-          server-dir: ${{ secrets.FTP_REMOTE_DIR }}
-          exclude: |
-            **/.git*
-            **/.git*/**
-            node_modules/**
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          ARGS: "-avzr --delete"
+          SOURCE: "deploy/"
+          REMOTE_HOST: ${{ secrets.SSH_HOST }}
+          REMOTE_USER: ${{ secrets.SSH_USER }}
+          REMOTE_PORT: ${{ secrets.SSH_PORT }}
+          TARGET: ${{ secrets.SSH_TARGET_DIR }}
+          EXCLUDE: "/.git*"
