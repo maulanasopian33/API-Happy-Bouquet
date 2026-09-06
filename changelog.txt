@@ -1,3 +1,19 @@
+LATEST UPDATES - 6 September 2026
+===================================
+
+40. KONVERSI TYPESCRIPT → JAVASCRIPT (Tanpa Build di cPanel)
+   - Konversi SELURUH source code dari TypeScript (.ts) ke JavaScript biasa (CommonJS) agar tidak perlu compile/build di cPanel.
+   - Folder yang dikonversi: config, constants, utils, validators, models (27 file), services (21 file), controllers (25 file), middlewares (5 file), routes (20 file), workers (1 file), server.ts, app.ts, socket.ts.
+   - Perubahan pola: `import X from 'Y'` → `const X = require('Y')`, `export const func` → `const func` + `module.exports`, hapus semua type annotations/interface/generic.
+   - Update package.json: hapus `@types/*`, `ts-node`, `ts-jest`, `typescript` dari dependencies; update scripts (`npm run dev` → `node src/server.js`, hapus `npm run build`).
+   - Update jest.config.js: hapus ts-jest transform.
+   - Hapus tsconfig.json.
+   - Update .sequelizerc.prod: path merujuk ke `src/` bukan `dist/`.
+   - Backup source TS lama di folder `src-ts-backup/`.
+   - Server berhasil dijalankan dengan `node src/server.js` — semua modul loaded, Redis connected, analytics worker initialized.
+
+Timestamp: 2026-09-06 11:25:00
+
 LATEST UPDATES - 10 Agustus 2026
 ==============================
 

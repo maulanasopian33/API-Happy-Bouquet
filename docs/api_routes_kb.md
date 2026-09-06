@@ -8,12 +8,12 @@ Dokumen ini mendokumentasikan seluruh rute API backend pada Happy Bouquet v2.0, 
 
 ### Standar Header
 * **Content-Type**: `application/json` (atau `multipart/form-data` untuk upload file)
-* **Authorization**: `Bearer <JWT_ACCESS_TOKEN>` (diperlukan untuk semua rute terproteksi)
+* **Authorization**: `Bearer <JWT_ACCESS_TOKEN>` **ATAU** cookie httpOnly `hb_token` (dual-mode). Storefront/API client memakai Bearer; panel admin memakai cookie. CSRF: request mutasi (POST/PATCH/PUT/DELETE) wajib menyertakan header `X-Requested-With: XMLHttpRequest` (dipakai panel & util `apiFetch`).
 
 ### Standar Response Sukses (Format Umum)
 ```json
 {
-  "success": true,
+  "status": true,
   "message": "Pesan deskripsi keberhasilan operasi.",
   "data": { ... } // Berupa objek detail atau array list data
 }
@@ -22,7 +22,9 @@ Dokumen ini mendokumentasikan seluruh rute API backend pada Happy Bouquet v2.0, 
 ### Standar Response Error (Format Umum)
 ```json
 {
-  "success": false,
+  "status": false,
+  "message": "Deskripsi kesalahan yang terjadi.",
+  "data": null,
   "error": {
     "code": "ERROR_CODE", // e.g., VALIDATION_ERROR, UNAUTHORIZED, NOT_FOUND
     "message": "Deskripsi kesalahan yang terjadi.",
@@ -30,6 +32,7 @@ Dokumen ini mendokumentasikan seluruh rute API backend pada Happy Bouquet v2.0, 
   }
 }
 ```
+> Catatan: seluruh kode di bawah ditulis dengan format respons TERBARU (`status`/`message`/`data`).
 
 ---
 
@@ -54,7 +57,7 @@ Dokumen ini mendokumentasikan seluruh rute API backend pada Happy Bouquet v2.0, 
 * **Respon Sukses (201 Created)**:
 ```json
 {
-  "success": true,
+  "status": true,
   "message": "Pendaftaran reseller berhasil. Akun Anda sedang dalam peninjauan admin.",
   "data": {
     "id": 5,
@@ -82,7 +85,7 @@ Dokumen ini mendokumentasikan seluruh rute API backend pada Happy Bouquet v2.0, 
 * **Respon Sukses (200 OK)**:
 ```json
 {
-  "success": true,
+  "status": true,
   "message": "Login berhasil",
   "data": {
     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwicm9sZSI6ImFkbWluIi...",
@@ -107,7 +110,7 @@ Dokumen ini mendokumentasikan seluruh rute API backend pada Happy Bouquet v2.0, 
 * **Respon Sukses (200 OK)**:
 ```json
 {
-  "success": true,
+  "status": true,
   "message": "Invoice berhasil diambil",
   "data": {
     "id": 1,
@@ -142,7 +145,7 @@ Dokumen ini mendokumentasikan seluruh rute API backend pada Happy Bouquet v2.0, 
 * **Respon Sukses (200 OK)**:
 ```json
 {
-  "success": true,
+  "status": true,
   "message": "Notifikasi berhasil diambil",
   "data": {
     "logs": [
@@ -168,7 +171,58 @@ Dokumen ini mendokumentasikan seluruh rute API backend pada Happy Bouquet v2.0, 
 
 ---
 
-## 5. PANEL ADMIN — KELOLA KEMITRAAN RESELLER
+## 5. MODUL LOGS (ADMIN ONLY)
+
+### 5.1 Daftar File Log
+* **URL**: `/api/logs`
+* **Method**: `GET`
+* **Auth**: Butuh (Role: `admin`, `super_admin`)
+* **Respon Sukses (200 OK)**:
+```json
+{
+  "status": true,
+  "message": "Daftar file log berhasil diambil",
+  "data": [
+    { "name": "2026-06-13.log", "date": "2026-06-13", "size": 2410 },
+    { "name": "2026-06-12.log", "date": "2026-06-12", "size": 850 }
+  ]
+}
+```
+
+### 5.2 Baca Isi File Log per Tanggal
+* **URL**: `/api/logs/:date`
+* **Method**: `GET`
+* **Auth**: Butuh (Role: `admin`, `super_admin`)
+* **Path Params**: `date` (format `YYYY-MM-DD`)
+* **Respon Sukses (200 OK)**:
+```json
+{
+  "status": true,
+  "message": "Isi file log berhasil diambil",
+  "data": [
+    { "level": "info", "message": "Server started", "timestamp": "2026-06-13T13:00:00.000Z" },
+    { "level": "error", "message": "DB connection failed", "stack": "...", "timestamp": "2026-06-13T13:00:05.000Z" },
+    { "message": "raw line yang tidak ter-parse", "raw": true }
+  ]
+}
+```
+
+### 5.3 Kirim Log Client (Publik — Rate Limit 300/min)
+* **URL**: `/api/logs`
+* **Method**: `POST`
+* **Auth**: Tidak Butuh (Public)
+* **Payload**:
+```json
+{
+  "level": "error",
+  "message": "Gagal memuat data pada halaman checkout",
+  "meta": { "path": "/checkout", "user_agent": "..." }
+}
+```
+
+---
+
+## 6. PANEL ADMIN — KELOLA KEMITRAAN RESELLER
 
 ### 5.1 Daftar Semua Reseller
 * **URL**: `/api/admin/resellers`
@@ -180,7 +234,7 @@ Dokumen ini mendokumentasikan seluruh rute API backend pada Happy Bouquet v2.0, 
 * **Respon Sukses (200 OK)**:
 ```json
 {
-  "success": true,
+  "status": true,
   "message": "Daftar reseller berhasil diambil",
   "data": [
     {
@@ -208,8 +262,8 @@ Dokumen ini mendokumentasikan seluruh rute API backend pada Happy Bouquet v2.0, 
 * **Respon Sukses (200 OK)**:
 ```json
 {
-  "success": true,
-  "message": "Reseller approved",
+  "status": true,
+  "message": "Akun reseller berhasil disetujui",
   "data": {
     "id": 1,
     "status": "active",
@@ -225,14 +279,14 @@ Dokumen ini mendokumentasikan seluruh rute API backend pada Happy Bouquet v2.0, 
 * **Payload**:
 ```json
 {
-  "reason": "Nomor WhatsApp tidak valid atau tidak aktif."
+  "rejection_reason": "Nomor WhatsApp tidak valid atau tidak aktif."
 }
 ```
 * **Respon Sukses (200 OK)**:
 ```json
 {
-  "success": true,
-  "message": "Reseller rejected",
+  "status": true,
+  "message": "Pendaftaran reseller ditolak",
   "data": {
     "id": 1,
     "status": "rejected",
@@ -241,7 +295,63 @@ Dokumen ini mendokumentasikan seluruh rute API backend pada Happy Bouquet v2.0, 
 }
 ```
 
-### 5.4 Konfigurasi Harga Berjenjang Produk (Tier Price)
+### 5.4 Detail Reseller
+* **URL**: `/api/admin/resellers/:id`
+* **Method**: `GET`
+* **Auth**: Butuh (Role: `admin`, `super_admin`)
+* **Respon Sukses (200 OK)**:
+```json
+{
+  "status": true,
+  "message": "Detail reseller berhasil diambil",
+  "data": {
+    "id": 1,
+    "user_id": 5,
+    "slug": "mawar-indah",
+    "shop_name": "Mawar Indah Toko",
+    "whatsapp_number": "08123456789",
+    "tier": "silver",
+    "status": "active",
+    "total_orders": 3,
+    "rejection_reason": null,
+    "user": { "name": "Reseller Mawar", "email": "reseller@mawar.com", "phone": "08123456789" }
+  }
+}
+```
+
+### 5.5 Suspend Reseller
+* **URL**: `/api/admin/resellers/:id/suspend`
+* **Method**: `PATCH`
+* **Auth**: Butuh (Role: `admin`, `super_admin`)
+* **Respon Sukses (200 OK)**:
+```json
+{
+  "status": true,
+  "message": "Akun reseller disuspensi",
+  "data": { "id": 1, "status": "suspended" }
+}
+```
+
+### 5.6 Ganti Tier Reseller
+* **URL**: `/api/admin/resellers/:id/tier`
+* **Method**: `PATCH`
+* **Auth**: Butuh (Role: `admin`, `super_admin`)
+* **Payload**:
+```json
+{
+  "tier": "gold"
+}
+```
+* **Respon Sukses (200 OK)**:
+```json
+{
+  "status": true,
+  "message": "Tier reseller berhasil diubah",
+  "data": { "id": 1, "tier": "gold" }
+}
+```
+
+### 5.7 Konfigurasi Harga Berjenjang Produk (Tier Price)
 * **URL**: `/api/admin/reseller-tier-prices`
 * **Method**: `POST`
 * **Auth**: Butuh (Role: `admin`, `super_admin`)
@@ -259,12 +369,12 @@ Dokumen ini mendokumentasikan seluruh rute API backend pada Happy Bouquet v2.0, 
 * **Respon Sukses (200 OK)**:
 ```json
 {
-  "success": true,
+  "status": true,
   "message": "Harga tier reseller berhasil disimpan"
 }
 ```
 
-### 5.5 Toggle Visibilitas Produk Reseller
+### 5.8 Toggle Visibilitas Produk Reseller
 * **URL**: `/api/admin/products/:id/resellable`
 * **Method**: `PATCH`
 * **Auth**: Butuh (Role: `admin`, `super_admin`)
@@ -277,14 +387,14 @@ Dokumen ini mendokumentasikan seluruh rute API backend pada Happy Bouquet v2.0, 
 * **Respon Sukses (200 OK)**:
 ```json
 {
-  "success": true,
+  "status": true,
   "message": "Otorisasi visibilitas produk reseller berhasil diperbarui."
 }
 ```
 
 ---
 
-## 6. PANEL RESELLER — TOKO & PELANGGAN
+## 7. PANEL RESELLER — TOKO & PELANGGAN
 
 ### 6.1 Ambil Statistik Dashboard Reseller
 * **URL**: `/api/reseller/dashboard`
@@ -293,7 +403,7 @@ Dokumen ini mendokumentasikan seluruh rute API backend pada Happy Bouquet v2.0, 
 * **Respon Sukses (200 OK)**:
 ```json
 {
-  "success": true,
+  "status": true,
   "message": "Dashboard statistik berhasil diambil",
   "data": {
     "shop_name": "Toko Bunga Indah",
@@ -328,7 +438,7 @@ Dokumen ini mendokumentasikan seluruh rute API backend pada Happy Bouquet v2.0, 
 * **Respon Sukses (201 Created)**:
 ```json
 {
-  "success": true,
+  "status": true,
   "message": "Client berhasil ditambahkan",
   "data": {
     "id": 8,
@@ -360,7 +470,7 @@ Dokumen ini mendokumentasikan seluruh rute API backend pada Happy Bouquet v2.0, 
 * **Respon Sukses (201 Created)**:
 ```json
 {
-  "success": true,
+  "status": true,
   "message": "Order reseller berhasil dibuat",
   "data": {
     "id": 25,
@@ -382,7 +492,7 @@ Dokumen ini mendokumentasikan seluruh rute API backend pada Happy Bouquet v2.0, 
 * **Respon Sukses (200 OK)**:
 ```json
 {
-  "success": true,
+  "status": true,
   "message": "Bukti pembayaran berhasil diunggah",
   "data": {
     "id": 25,
@@ -400,7 +510,7 @@ Dokumen ini mendokumentasikan seluruh rute API backend pada Happy Bouquet v2.0, 
 * **Respon Sukses (200 OK)**:
 ```json
 {
-  "success": true,
+  "status": true,
   "message": "Daftar perolehan margin laba berhasil diambil",
   "data": [
     {
@@ -419,7 +529,7 @@ Dokumen ini mendokumentasikan seluruh rute API backend pada Happy Bouquet v2.0, 
 
 ---
 
-## 7. KATALOG PUBLIK RESELLER (PUBLIC — NO AUTH)
+## 8. KATALOG PUBLIK RESELLER (PUBLIC — NO AUTH)
 
 ### 7.1 Ambil Detail Toko & Katalog
 * **URL**: `/api/catalog/:slug`
@@ -428,7 +538,7 @@ Dokumen ini mendokumentasikan seluruh rute API backend pada Happy Bouquet v2.0, 
 * **Respon Sukses (200 OK)**:
 ```json
 {
-  "success": true,
+  "status": true,
   "message": "Katalog berhasil diambil",
   "data": {
     "reseller": {
@@ -461,7 +571,7 @@ Dokumen ini mendokumentasikan seluruh rute API backend pada Happy Bouquet v2.0, 
 * **Respon Sukses (200 OK)**:
 ```json
 {
-  "success": true,
+  "status": true,
   "message": "Link WhatsApp berhasil dibuat",
   "data": {
     "whatsapp_url": "https://wa.me/628123456789?text=Halo+kak+Toko+Bunga+Indah%2C+saya+ingin+pesan%3A%0A%F0%9F%8C%B8+Buket+Mawar+Premium%0A%F0%9F%92%B0+Rp+150.000",
