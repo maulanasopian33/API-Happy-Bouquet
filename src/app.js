@@ -34,17 +34,21 @@ app.use((req, res, next) => {
   const origin = req.headers.origin;
   const allowed = isOriginAllowed(origin);
 
-  // Set CORS headers secara manual untuk OPTIONS
+  console.log(`[CORS] OPTIONS ${req.path} - origin: ${origin} - allowed: ${allowed}`);
+
+  // Build headers object
+  const headers = {};
   if (allowed) {
-    res.setHeader('Access-Control-Allow-Origin', origin || '*');
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, X-CSRF-Token');
-    res.setHeader('Access-Control-Max-Age', '86400');
+    headers['Access-Control-Allow-Origin'] = origin || '*';
+    headers['Access-Control-Allow-Credentials'] = 'true';
+    headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, PATCH, DELETE, OPTIONS';
+    headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With, Accept, Origin, X-CSRF-Token';
+    headers['Access-Control-Max-Age'] = '86400';
   }
 
-  // OPTIONS selalu return 204 No Content
-  return res.status(204).send();
+  // Gunakan writeHead untuk memastikan headers terkirim
+  res.writeHead(204, headers);
+  res.end();
 });
 
 // ─── CORS Middleware (untuk non-OPTIONS requests) ───────────────
@@ -99,6 +103,20 @@ const path = require('path');
 
 // ─── Root API Info & Health Check ───────────────────────────────
 app.use('/', healthRoutes);
+
+// ─── Debug endpoint (hanya untuk testing CORS) ──────────────────
+app.get('/debug/cors', (req, res) => {
+  const origin = req.headers.origin;
+  res.json({
+    origin: origin,
+    allowed: isOriginAllowed(origin),
+    environment: process.env.NODE_ENV,
+    corsOrigins: allowedOrigins,
+    headers: {
+      'access-control-allow-origin': res.getHeader('access-control-allow-origin'),
+    },
+  });
+});
 
 app.use('/public', express.static(path.join(__dirname, '../public')));
 
