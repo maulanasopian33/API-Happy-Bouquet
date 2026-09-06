@@ -1,11 +1,15 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-
 const { ZodError } = require('zod');
 const { AppError, ErrorCodes } = require('../constants/errors');
 const logger = require('../utils/logger');
 
 const errorHandler = (err, req, res, _next) => {
+  // ─── Pastikan CORS headers selalu ada di error response ────────
+  const origin = req.headers.origin;
+  if (origin) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+  }
+
   // 1. AppError
   if (err instanceof AppError) {
     return res.status(err.statusCode).json({
@@ -91,7 +95,21 @@ const errorHandler = (err, req, res, _next) => {
     });
   }
 
-  // 5. Generic Error (fallback)
+  // 5. CORS Error (dari middleware CORS)
+  if (err.message && err.message.includes('CORS')) {
+    logger.warn('CORS error', { origin: req.headers.origin, url: req.originalUrl });
+    return res.status(403).json({
+      status: false,
+      message: 'CORS: Origin tidak diizinkan.',
+      data: null,
+      error: {
+        code: ErrorCodes.FORBIDDEN,
+        message: 'CORS: Origin tidak diizinkan.',
+      },
+    });
+  }
+
+  // 6. Generic Error (fallback)
   logger.error('Unhandled error', {
     message: err.message,
     stack: err.stack,

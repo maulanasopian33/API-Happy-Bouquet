@@ -16,7 +16,12 @@ const allowedOrigins = process.env.CORS_ORIGINS
 
 const isProduction = process.env.NODE_ENV === 'production';
 
-app.use(cors({
+// Debug: log CORS config saat startup
+console.log('[CORS] Environment:', process.env.NODE_ENV);
+console.log('[CORS] Allowed origins:', allowedOrigins.length > 0 ? allowedOrigins : '(none configured)');
+
+// ─── CORS Middleware ─────────────────────────────────────────────
+const corsMiddleware = cors({
   origin: (origin, callback) => {
     // Izinkan request tanpa origin (curl, Postman, server-to-server, mobile apps)
     if (!origin) return callback(null, true);
@@ -28,8 +33,7 @@ app.use(cors({
 
     // Production: cek whitelist
     if (allowedOrigins.length === 0) {
-      // Tidak ada CORS_ORIGINS yang di-set — tolak semua browser origin
-      console.warn('[CORS] No CORS_ORIGINS configured in production — rejecting browser origin:', origin);
+      console.warn('[CORS] No CORS_ORIGINS configured — rejecting origin:', origin);
       return callback(null, false);
     }
 
@@ -55,7 +59,13 @@ app.use(cors({
   ],
   credentials: true,
   maxAge: 86400, // 24 jam preflight cache
-}));
+});
+
+app.use(corsMiddleware);
+
+// ─── Explicit OPTIONS handler (fallback untuk preflight) ─────────
+app.options('*', corsMiddleware);
+
 app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
