@@ -6,6 +6,15 @@ let io;
 
 const isProduction = process.env.NODE_ENV === 'production';
 
+// CORS origins untuk Socket.io — konsisten dengan Express CORS
+const socketAllowedOrigins = (() => {
+  if (!isProduction) return '*';
+  const raw = process.env.CORS_ORIGINS;
+  if (!raw) return '*'; // fallback: izinkan semua ( atau bisa di-restrict ke domain spesifik)
+  const origins = raw.split(',').map(o => o.trim()).filter(Boolean);
+  return origins.length === 0 ? '*' : origins;
+})();
+
 // Batas waktu session dianggap "aktif" (5 menit sejak aktivitas terakhir)
 const ACTIVE_WINDOW_MS = 5 * 60 * 1000;
 const HISTORY_POINTS = 12;
@@ -16,8 +25,9 @@ let trafficHistory = [];
 const initSocket = (server) => {
   io = new Server(server, {
     cors: {
-      origin: '*', // Di production, ganti dengan domain frontend yang diizinkan
-      methods: ['GET', 'POST']
+      origin: socketAllowedOrigins,
+      methods: ['GET', 'POST'],
+      credentials: true,
     }
   });
 

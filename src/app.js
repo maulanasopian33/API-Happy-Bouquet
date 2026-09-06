@@ -11,27 +11,50 @@ const app = express();
 app.set('trust proxy', 1);
 
 const allowedOrigins = process.env.CORS_ORIGINS
-  ? process.env.CORS_ORIGINS.split(',').map(o => o.trim())
+  ? process.env.CORS_ORIGINS.split(',').map(o => o.trim()).filter(Boolean)
   : [];
+
+const isProduction = process.env.NODE_ENV === 'production';
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Izinkan request tanpa origin (seperti curl, Postman, atau server-to-server)
+    // Izinkan request tanpa origin (curl, Postman, server-to-server, mobile apps)
     if (!origin) return callback(null, true);
 
-    // Jika masih development, izinkan semua origin
-    if (process.env.NODE_ENV !== 'production') {
+    // Development: izinkan semua origin
+    if (!isProduction) {
       return callback(null, true);
     }
 
-    // Jika production, cek apakah origin terdaftar
-    if (allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+    // Production: cek whitelist
+    if (allowedOrigins.length === 0) {
+      // Tidak ada CORS_ORIGINS yang di-set — tolak semua browser origin
+      console.warn('[CORS] No CORS_ORIGINS configured in production — rejecting browser origin:', origin);
+      return callback(null, false);
+    }
+
+    if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
 
-    return callback(new Error(`CORS Error: Origin ${origin} is not allowed.`), false);
+    console.warn('[CORS] Blocked origin:', origin);
+    return callback(null, false);
   },
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'X-Requested-With',
+    'Accept',
+    'Origin',
+    'X-CSRF-Token',
+  ],
+  exposedHeaders: [
+    'X-Total-Count',
+    'X-Page-Count',
+  ],
   credentials: true,
+  maxAge: 86400, // 24 jam preflight cache
 }));
 app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 app.use(express.json());
