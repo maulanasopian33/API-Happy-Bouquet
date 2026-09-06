@@ -104,20 +104,6 @@ const path = require('path');
 // ─── Root API Info & Health Check ───────────────────────────────
 app.use('/', healthRoutes);
 
-// ─── Debug endpoint (hanya untuk testing CORS) ──────────────────
-app.get('/debug/cors', (req, res) => {
-  const origin = req.headers.origin;
-  res.json({
-    origin: origin,
-    allowed: isOriginAllowed(origin),
-    environment: process.env.NODE_ENV,
-    corsOrigins: allowedOrigins,
-    headers: {
-      'access-control-allow-origin': res.getHeader('access-control-allow-origin'),
-    },
-  });
-});
-
 app.use('/public', express.static(path.join(__dirname, '../public')));
 
 // ─── Routes ─────────────────────────────────────────────────────
