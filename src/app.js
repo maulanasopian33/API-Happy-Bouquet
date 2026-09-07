@@ -98,6 +98,7 @@ const resellerRoutes = require('./routes/resellerRoutes');
 const resellerCatalogRoutes = require('./routes/resellerCatalogRoutes');
 const invoiceRoutes = require('./routes/invoiceRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
+const mediaRoutes = require('./routes/mediaRoutes');
 const healthRoutes = require('./routes/healthRoutes');
 const path = require('path');
 
@@ -126,6 +127,7 @@ app.use('/api', resellerRoutes);
 app.use('/api/catalog', resellerCatalogRoutes);
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/media', mediaRoutes);
 
 // ─── 404 Handler ────────────────────────────────────────────────
 app.use((req, res) => {

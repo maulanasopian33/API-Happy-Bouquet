@@ -30,6 +30,7 @@ const { initInvoice } = require('./Invoice');
 const { initNotificationTemplate } = require('./NotificationTemplate');
 const { initNotificationLog } = require('./NotificationLog');
 const { initAnalyticsLog } = require('./AnalyticsLog');
+const { initMedia } = require('./Media');
 
 dotenv.config();
 
@@ -74,6 +75,9 @@ const NotificationLog = initNotificationLog(sequelize);
 
 // Initialize Analytics models
 const AnalyticsLog = initAnalyticsLog(sequelize);
+
+// Initialize Media model
+const Media = initMedia(sequelize);
 
 // ─── ASOSIASI ────────────────────────────────────────────────────
 
@@ -187,6 +191,10 @@ Invoice.belongsTo(Order, { foreignKey: 'order_id', as: 'order' });
 User.hasMany(NotificationLog, { foreignKey: 'user_id', as: 'notificationLogs' });
 NotificationLog.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
 
+// User ←→ Media (uploader)
+User.hasMany(Media, { foreignKey: 'uploadedById', as: 'uploadedMedia' });
+Media.belongsTo(User, { foreignKey: 'uploadedById', as: 'uploader' });
+
 // ─────────────────────────────────────────────────────────────────
 
 const db = {
@@ -218,6 +226,7 @@ const db = {
   NotificationTemplate,
   NotificationLog,
   AnalyticsLog,
+  Media,
 };
 
 module.exports = db;
