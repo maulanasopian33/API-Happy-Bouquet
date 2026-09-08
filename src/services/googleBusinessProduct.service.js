@@ -108,7 +108,15 @@ class GoogleBusinessProductService {
     }
     summary = summary.substring(0, 1500);
 
-    const postData = { summary, ctaType: product.cta_type, ctaUrl: product.cta_url };
+    const postData = {
+      summary,
+      ctaType: product.cta_type,
+      ctaUrl: product.cta_url,
+      topicType: 'OFFER',
+      productSpecificType: 'PRODUCT',
+      mediaUrl: product.photo_url || null,
+    };
+
     const result = await GoogleBusinessService.createPost(locationV4Name, postData);
 
     if (result.error) return result;
