@@ -113,7 +113,6 @@ class GoogleBusinessProductService {
       ctaType: product.cta_type,
       ctaUrl: product.cta_url,
       topicType: 'OFFER',
-      productSpecificType: 'PRODUCT',
       mediaUrl: product.photo_url || null,
     };
 

@@ -149,7 +149,7 @@ class GoogleBusinessService {
     return data;
   }
 
-  static async createPost(locationV4Name, { summary, ctaType, ctaUrl, languageCode = 'id', mediaUrl, topicType = 'STANDARD', productSpecificType }) {
+  static async createPost(locationV4Name, { summary, ctaType, ctaUrl, languageCode = 'id', mediaUrl, topicType = 'STANDARD' }) {
     invalidateCache('gbp_posts');
     const url = `https://mybusiness.googleapis.com/v4/${locationV4Name}/localPosts`;
 
@@ -158,10 +158,6 @@ class GoogleBusinessService {
       summary: summary.substring(0, 1500),
       topicType,
     };
-
-    if (topicType === 'OFFER' && productSpecificType) {
-      payload.productSpecificType = productSpecificType;
-    }
 
     if (ctaUrl) {
       payload.callToAction = {
