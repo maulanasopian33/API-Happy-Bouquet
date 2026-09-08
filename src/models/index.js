@@ -31,6 +31,7 @@ const { initNotificationTemplate } = require('./NotificationTemplate');
 const { initNotificationLog } = require('./NotificationLog');
 const { initAnalyticsLog } = require('./AnalyticsLog');
 const { initMedia } = require('./Media');
+const { initGoogleBusinessSetting } = require('./GoogleBusinessSetting');
 
 dotenv.config();
 
@@ -78,6 +79,9 @@ const AnalyticsLog = initAnalyticsLog(sequelize);
 
 // Initialize Media model
 const Media = initMedia(sequelize);
+
+// Initialize Google Business model
+const GoogleBusinessSetting = initGoogleBusinessSetting(sequelize);
 
 // ─── ASOSIASI ────────────────────────────────────────────────────
 
@@ -195,6 +199,10 @@ NotificationLog.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
 User.hasMany(Media, { foreignKey: 'uploadedById', as: 'uploadedMedia' });
 Media.belongsTo(User, { foreignKey: 'uploadedById', as: 'uploader' });
 
+// User ←→ GoogleBusinessSetting
+User.hasOne(GoogleBusinessSetting, { foreignKey: 'updated_by', as: 'googleBusinessSetting' });
+GoogleBusinessSetting.belongsTo(User, { foreignKey: 'updated_by', as: 'updater' });
+
 // ─────────────────────────────────────────────────────────────────
 
 const db = {
@@ -227,6 +235,7 @@ const db = {
   NotificationLog,
   AnalyticsLog,
   Media,
+  GoogleBusinessSetting,
 };
 
 module.exports = db;
