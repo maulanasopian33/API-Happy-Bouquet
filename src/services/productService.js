@@ -54,24 +54,90 @@ const getProductBySlug = async (slug, includeCosts = false) => {
 };
 
 const createProduct = async (data) => {
-  if (!data.slug) {
-    data.slug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+  const { gbp_post, gbp_location, ...productData } = data;
+  if (!productData.slug) {
+    productData.slug = productData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
   }
-  const product = await Product.create(data);
+  const product = await Product.create(productData);
   logger.info('Produk berhasil dibuat', { productId: product.id, name: product.name });
+
+  if (gbp_post && gbp_location) {
+    try {
+      const { GoogleBusinessService } = require('./googleBusiness.service');
+      let summary = product.name;
+      if (product.price) summary += ` — Rp ${new Intl.NumberFormat('id-ID').format(product.price)}`;
+      if (product.description) summary += `\n${product.description}`;
+      const baseUrl = process.env.APP_URL || 'https://tokobunga.pinkplants.my.id';
+      const ctaUrl = `${baseUrl}/produk/${product.slug}`;
+      const mediaUrl = product.photo_url ? `${baseUrl}${product.photo_url}` : null;
+      const result = await GoogleBusinessService.createPost(gbp_location, {
+        summary,
+        ctaType: 'SHOP',
+        ctaUrl,
+        mediaUrl,
+      });
+      if (!result.error) {
+        await product.update({
+          gbp_posted: true,
+          gbp_posted_at: new Date(),
+          gbp_post_name: result.name || null,
+          gbp_location,
+        });
+        logger.info('Produk dipromosikan ke GBP', { productId: product.id, location: gbp_location });
+      }
+    } catch (e) {
+      logger.error('Gagal post produk ke GBP', { error: e.message });
+    }
+  }
+
   return product;
 };
 
 const updateProduct = async (id, data) => {
   const product = await Product.findByPk(id);
   if (!product) throw new Error('Produk tidak ditemukan');
-  
-  if (data.name && !data.slug) {
-    data.slug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+
+  const { gbp_post, gbp_location, ...productData } = data;
+  if (productData.name && !productData.slug) {
+    productData.slug = productData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
   }
 
-  const updated = await product.update(data);
+  const updated = await product.update(productData);
   logger.info('Produk diperbarui', { productId: id });
+
+  if (gbp_post && gbp_location) {
+    try {
+      const { GoogleBusinessService } = require('./googleBusiness.service');
+      let summary = updated.name;
+      if (updated.price) summary += ` — Rp ${new Intl.NumberFormat('id-ID').format(updated.price)}`;
+      if (updated.description) summary += `\n${updated.description}`;
+      const baseUrl = process.env.APP_URL || 'https://tokobunga.pinkplants.my.id';
+      const ctaUrl = `${baseUrl}/produk/${updated.slug}`;
+      const mediaUrl = updated.photo_url ? `${baseUrl}${updated.photo_url}` : null;
+
+      if (updated.gbp_post_name) {
+        await GoogleBusinessService.deletePost(updated.gbp_post_name).catch(() => {});
+      }
+      const result = await GoogleBusinessService.createPost(gbp_location, {
+        summary,
+        ctaType: 'SHOP',
+        ctaUrl,
+        mediaUrl,
+      });
+      if (!result.error) {
+        await updated.update({
+          gbp_posted: true,
+          gbp_posted_at: new Date(),
+          gbp_post_name: result.name || null,
+          gbp_location,
+        });
+        logger.info('Produk dipromosikan ulang ke GBP', { productId: id, location: gbp_location });
+      }
+    } catch (e) {
+      logger.error('Gagal post produk ke GBP', { error: e.message });
+    }
+  }
+
   return updated;
 };
 

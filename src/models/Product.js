@@ -23,6 +23,10 @@ const initProduct = (sequelize) => {
       },
       preorder_duration: { type: DataTypes.INTEGER, allowNull: true },
       is_active: { type: DataTypes.BOOLEAN, defaultValue: true },
+      gbp_posted: { type: DataTypes.BOOLEAN, defaultValue: false },
+      gbp_posted_at: { type: DataTypes.DATE, allowNull: true },
+      gbp_post_name: { type: DataTypes.STRING, allowNull: true },
+      gbp_location: { type: DataTypes.STRING, allowNull: true },
     },
     { sequelize, tableName: 'Products' }
   );

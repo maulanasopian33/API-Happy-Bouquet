@@ -62,7 +62,12 @@ const createProduct = async (req, res) => {
   try {
     const data = createProductSchema.parse(req.body);
     const photo_url = req.file ? `/public/uploads/products/${req.file.filename}` : undefined;
-    const product = await productService.createProduct({ ...data, photo_url });
+    const product = await productService.createProduct({
+      ...data,
+      photo_url,
+      gbp_post: req.body.gbp_post === 'true' || req.body.gbp_post === true,
+      gbp_location: req.body.gbp_location || null,
+    });
     return successResponse(res, 'Produk berhasil dibuat', product, 201);
   } catch (err) {
     if (err.name === 'ZodError') return validationErrorResponse(res, err, 'Validasi gagal', 422);
@@ -73,7 +78,12 @@ const createProduct = async (req, res) => {
 const updateProduct = async (req, res) => {
   try {
     const photo_url = req.file ? `/public/uploads/products/${req.file.filename}` : undefined;
-    const product = await productService.updateProduct(Number(req.params.id), { ...req.body, ...(photo_url && { photo_url }) });
+    const product = await productService.updateProduct(Number(req.params.id), {
+      ...req.body,
+      ...(photo_url && { photo_url }),
+      gbp_post: req.body.gbp_post === 'true' || req.body.gbp_post === true,
+      gbp_location: req.body.gbp_location || null,
+    });
     return successResponse(res, 'Produk berhasil diperbarui', product);
   } catch (err) {
     return errorResponse(res, err.message, null, 404);
