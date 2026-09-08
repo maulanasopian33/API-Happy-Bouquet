@@ -32,6 +32,7 @@ const { initNotificationLog } = require('./NotificationLog');
 const { initAnalyticsLog } = require('./AnalyticsLog');
 const { initMedia } = require('./Media');
 const { initGoogleBusinessSetting } = require('./GoogleBusinessSetting');
+const { initGoogleBusinessProduct } = require('./GoogleBusinessProduct');
 
 dotenv.config();
 
@@ -82,6 +83,7 @@ const Media = initMedia(sequelize);
 
 // Initialize Google Business model
 const GoogleBusinessSetting = initGoogleBusinessSetting(sequelize);
+const GoogleBusinessProduct = initGoogleBusinessProduct(sequelize);
 
 // ─── ASOSIASI ────────────────────────────────────────────────────
 
@@ -236,6 +238,7 @@ const db = {
   AnalyticsLog,
   Media,
   GoogleBusinessSetting,
+  GoogleBusinessProduct,
 };
 
 module.exports = db;
