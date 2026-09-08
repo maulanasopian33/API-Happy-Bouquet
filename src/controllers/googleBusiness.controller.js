@@ -1,5 +1,6 @@
 const { GoogleAuthService } = require('../services/google-business/googleAuth.service');
 const { GoogleBusinessService } = require('../services/googleBusiness.service');
+const { getQuotaStatus, resetQuota } = require('../services/google-business/googleQuota.service');
 const { successResponse, errorResponse } = require('../utils/response');
 const crypto = require('crypto');
 
@@ -270,6 +271,25 @@ class GoogleBusinessController {
       const data = await GoogleBusinessService.fetchPerformance(locationName, days);
       if (data.error) return errorResponse(res, data.error.message, data.error, data.error.status);
       successResponse(res, 'Data performa berhasil diambil', data);
+    } catch (error) {
+      errorResponse(res, error.message, null, 500);
+    }
+  }
+
+  // ─── QUOTA ────────────────────────────────────────────────────
+  static async getQuota(req, res) {
+    try {
+      const quota = getQuotaStatus();
+      successResponse(res, 'Status quota API berhasil diambil', quota);
+    } catch (error) {
+      errorResponse(res, error.message, null, 500);
+    }
+  }
+
+  static async resetQuotaCounter(req, res) {
+    try {
+      resetQuota();
+      successResponse(res, 'Counter quota berhasil direset');
     } catch (error) {
       errorResponse(res, error.message, null, 500);
     }

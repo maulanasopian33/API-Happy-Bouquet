@@ -1,4 +1,5 @@
 const { GoogleAuthService } = require('./googleAuth.service');
+const { trackCall } = require('./googleQuota.service');
 const logger = require('../../utils/logger');
 
 const MAX_RETRIES = 3;
@@ -46,6 +47,9 @@ class GoogleBusinessClient {
         }
 
         const response = await fetch(url, fetchOptions);
+
+        // Track quota usage
+        trackCall(url, method, response.status);
 
         // Handle rate limit (429) dengan retry + exponential backoff
         if (response.status === 429) {

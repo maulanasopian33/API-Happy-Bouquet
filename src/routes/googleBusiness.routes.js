@@ -39,4 +39,8 @@ router.delete('/media/:mediaName', adminOnly, GoogleBusinessController.deleteMed
 // ─── PERFORMANCE ───────────────────────────────────────────────
 router.get('/locations/:locationName/performance', adminOnly, GoogleBusinessController.fetchPerformance);
 
+// ─── QUOTA ─────────────────────────────────────────────────────
+router.get('/quota', adminOnly, GoogleBusinessController.getQuota);
+router.post('/quota/reset', adminOnly, GoogleBusinessController.resetQuotaCounter);
+
 module.exports = router;
