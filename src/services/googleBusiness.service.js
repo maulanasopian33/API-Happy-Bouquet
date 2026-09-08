@@ -149,7 +149,7 @@ class GoogleBusinessService {
     return data;
   }
 
-  static async createPost(locationV4Name, { summary, ctaType, ctaUrl, languageCode = 'id', mediaUrl, topicType = 'STANDARD', offerStartDate, offerEndDate }) {
+  static async createPost(locationV4Name, { summary, ctaType, ctaUrl, languageCode = 'id', mediaUrl, topicType = 'STANDARD' }) {
     invalidateCache('gbp_posts');
     const url = `https://mybusiness.googleapis.com/v4/${locationV4Name}/localPosts`;
 
@@ -171,34 +171,6 @@ class GoogleBusinessService {
         mediaFormat: 'PHOTO',
         sourceUrl: mediaUrl,
       }];
-    }
-
-    // OFFER butuh field event (startDate + endDate)
-    if (topicType === 'OFFER') {
-      const now = new Date();
-      const start = offerStartDate ? new Date(offerStartDate) : now;
-      const end = offerEndDate ? new Date(offerEndDate) : new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-
-      payload.event = {
-        startDate: {
-          year: start.getFullYear(),
-          month: start.getMonth() + 1,
-          day: start.getDate(),
-        },
-        startTime: {
-          hours: start.getHours(),
-          minutes: start.getMinutes(),
-        },
-        endDate: {
-          year: end.getFullYear(),
-          month: end.getMonth() + 1,
-          day: end.getDate(),
-        },
-        endTime: {
-          hours: end.getHours(),
-          minutes: end.getMinutes(),
-        },
-      };
     }
 
     return await GoogleBusinessClient.post(url, payload);
