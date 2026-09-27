@@ -1,3 +1,20 @@
+LATEST UPDATES - 27 September 2026
+===================================
+
+41. REDIS CACHE MANAGEMENT (UPSTASH) — FITUR ADMIN BARU
+    - Implementasi management cache Redis lengkap untuk Upstash.com: get/set/delete key, flush all, get stats, scan keys by pattern, get/set TTL.
+    - Service baru: `src/services/cacheService.js` — wrapper ioredis dengan error handling & logging (get, set, del, flushall, scan, info, ttl, expire, pexpire, exists, type).
+    - Controller baru: `src/controllers/cacheController.js` — 8 endpoint dengan validasi Zod inline & response format global successResponse/errorResponse.
+    - Routes baru: `src/routes/cacheRoutes.js` — `/api/cache/keys` (list), `/api/cache/keys/:key` (get/set/delete), `/api/cache/keys/:key/ttl`, `/api/cache/keys/:key/expire`, `/api/cache/stats`, `/api/cache/flush`.
+    - Proteksi: `authenticateToken` + `authorizeRoles('admin')` — hanya admin yang bisa akses.
+    - Validator: `src/validators/cacheValidator.js` — Zod schemas untuk set key, set expiry, key param, list query.
+    - Update `src/config/redis.js` — support Upstash TLS (rediss://), lazyConnect, auto-reconnect.
+    - Update `.env.example` — tambah `UPSTASH_REDIS_URL` & `UPSTASH_REDIS_TOKEN` (opsional override).
+    - Update `src/app.js` — register `/api/cache` routes.
+    - Syntax check & app load verified.
+
+Timestamp: 2026-09-27 13:15:00
+
 LATEST UPDATES - 6 September 2026
 ===================================
 

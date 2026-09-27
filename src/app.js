@@ -102,6 +102,7 @@ const invoiceRoutes = require('./routes/invoiceRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const mediaRoutes = require('./routes/mediaRoutes');
 const healthRoutes = require('./routes/healthRoutes');
+const cacheRoutes = require('./routes/cacheRoutes');
 const path = require('path');
 
 // ─── Root API Info & Health Check ───────────────────────────────
@@ -132,6 +133,7 @@ app.use('/api/catalog', resellerCatalogRoutes);
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/media', mediaRoutes);
+app.use('/api/cache', cacheRoutes);
 
 // ─── 404 Handler ────────────────────────────────────────────────
 app.use((req, res) => {
