@@ -54,8 +54,8 @@ const authenticateToken = (req, res, next) => {
 };
 
 const authorizeRoles = (...allowedRoles) => {
-  return (req, res, next) => {
-    if (!req.user) {
+  return async (req, res, next) => {
+    if (!req.user || !req.user.id) {
       return res.status(401).json({
         status: false,
         message: 'Autentikasi diperlukan.',
@@ -67,22 +67,52 @@ const authorizeRoles = (...allowedRoles) => {
       });
     }
 
-    const userRole = req.user.role?.toLowerCase();
-    const normalizedAllowed = allowedRoles.map((r) => r.toLowerCase());
+    try {
+      // SEC-007: Validasi status dan role terkini user langsung dari database.
+      // Mencegah akun yang sudah dihapus/didemote tetap mengakses endpoint admin via token JWT stateless.
+      const db = require('../models');
+      const freshUser = await db.User.findByPk(req.user.id, { attributes: ['id', 'role'] });
 
-    if (!normalizedAllowed.includes(userRole)) {
-      return res.status(403).json({
+      if (!freshUser) {
+        return res.status(401).json({
+          status: false,
+          message: 'Pengguna tidak ditemukan atau telah dinonaktifkan.',
+          data: null,
+          error: {
+            code: errors.ErrorCodes.UNAUTHORIZED,
+            message: 'Pengguna tidak ditemukan atau telah dinonaktifkan.',
+          },
+        });
+      }
+
+      const userRole = freshUser.role?.toLowerCase();
+      const normalizedAllowed = allowedRoles.map((r) => r.toLowerCase());
+
+      if (!normalizedAllowed.includes(userRole)) {
+        return res.status(403).json({
+          status: false,
+          message: `Akses ditolak. Memerlukan role: ${allowedRoles.join(', ')}.`,
+          data: null,
+          error: {
+            code: errors.ErrorCodes.FORBIDDEN,
+            message: `Akses ditolak. Memerlukan role: ${allowedRoles.join(', ')}.`,
+          },
+        });
+      }
+
+      req.user.role = freshUser.role;
+      next();
+    } catch (err) {
+      return res.status(500).json({
         status: false,
-        message: `Akses ditolak. Memerlukan role: ${allowedRoles.join(', ')}.`,
+        message: 'Gagal memverifikasi izin pengguna.',
         data: null,
         error: {
-          code: errors.ErrorCodes.FORBIDDEN,
-          message: `Akses ditolak. Memerlukan role: ${allowedRoles.join(', ')}.`,
+          code: errors.ErrorCodes.INTERNAL_ERROR,
+          message: err.message,
         },
       });
     }
-
-    next();
   };
 };
 

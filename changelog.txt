@@ -2,6 +2,7 @@ LATEST UPDATES - 30 Oktober 2026
 ===================================
 
 43. IMPLEMENTASI KEAMANAN PRIORITAS 2 & 3 (PRODUCTION READINESS & HARDENING)
+    - Live Role Verification & JWT Revocation (SEC-007): `authorizeRoles` di `authMiddleware.js` kini melakukan verifikasi role langsung ke database secara real-time. Jika admin didemote/akun dihapus, token JWT 24 jam langsung tertolak (401/403) tanpa menunggu token expired.
     - CORS Origin Reflection Guard: Membuat helper terpusat `src/utils/cors.js`. Memperbaiki `errorHandler.js`, `csrfMiddleware.js`, dan `app.js` agar tidak merefleksikan sembarang origin request dengan Access-Control-Allow-Credentials: true. Origin kini divalidasi terhadap allowlist `CORS_ORIGINS` di production.
     - Path Traversal Guard pada Log Reader: Menegakkan validasi ketat regex `^\d{4}-\d{2}-\d{2}$` dan boundary check direktori pada `LogController.getLogByDate` untuk mencegah serangan traversal seperti `../../`.
     - Mitigasi Log Flooding DoS: Membatasi panjang pesan log frontend maksimal 1000 karakter pada `LogController.createFrontEndLog` dan menurunkan rate limit `POST /api/logs` dari 300 menjadi 30 request/menit per IP.

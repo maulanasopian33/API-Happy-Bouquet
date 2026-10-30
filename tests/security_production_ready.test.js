@@ -102,6 +102,40 @@ describe('Production Readiness & Security Hardening (P2 & P3)', () => {
     });
   });
 
+  describe('SEC-007: Live Role Verification & Revocation on Demoted Admin', () => {
+    it('should immediately reject access to admin endpoint if admin is demoted in DB despite valid JWT', async () => {
+      // Buat admin sementara
+      const tempAdmin = await db.User.create({
+        name: 'Temp Admin',
+        email: 'tempadmin@test.com',
+        password: await bcrypt.hash('password123', 10),
+        role: 'admin',
+      });
+
+      const loginRes = await request(app).post('/api/auth/login').send({
+        email: 'tempadmin@test.com',
+        password: 'password123',
+      });
+      const tempToken = loginRes.body.data.token;
+
+      // Akses awal berhasil (200)
+      const resBefore = await request(app)
+        .get('/api/logs')
+        .set('Authorization', `Bearer ${tempToken}`);
+      expect(resBefore.statusCode).toBe(200);
+
+      // Ubah role user di database menjadi 'customer' (demote)
+      await tempAdmin.update({ role: 'customer' });
+
+      // Request berikutnya dengan token JWT yang sama HARUS ditolak 403
+      const resAfter = await request(app)
+        .get('/api/logs')
+        .set('Authorization', `Bearer ${tempToken}`);
+      expect(resAfter.statusCode).toBe(403);
+      expect(resAfter.body.message).toContain('Akses ditolak. Memerlukan role');
+    });
+  });
+
   describe('SEC-012: Production Health Payload', () => {
     it('should not leak server hostname and hardware details in production', async () => {
       const origEnv = process.env.NODE_ENV;
@@ -119,3 +153,4 @@ describe('Production Readiness & Security Hardening (P2 & P3)', () => {
     });
   });
 });
+
