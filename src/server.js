@@ -1,11 +1,14 @@
-const app = require('./app');
 const dotenv = require('dotenv');
+dotenv.config();
+
+const { validateEnv } = require('./config/envValidation');
+validateEnv();
+
+const app = require('./app');
 const logger = require('./utils/logger');
 const { createServer } = require('http');
 const { initSocket } = require('./socket');
 const { initAnalyticsWorker } = require('./workers/analyticsWorker');
-
-dotenv.config();
 
 const PORT = process.env.PORT || 3000;
 

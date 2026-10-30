@@ -1,14 +1,11 @@
 const { ZodError } = require('zod');
 const { AppError, ErrorCodes } = require('../constants/errors');
 const logger = require('../utils/logger');
+const { applyCorsHeaders } = require('../utils/cors');
 
 const errorHandler = (err, req, res, _next) => {
-  // ─── Pastikan CORS headers selalu ada di error response ────────
-  const origin = req.headers.origin;
-  if (origin) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-  }
+  // Terapkan CORS headers hanya jika origin diizinkan (mencegah arbitrary origin reflection)
+  applyCorsHeaders(res, req.headers.origin);
 
   // 1. AppError
   if (err instanceof AppError) {

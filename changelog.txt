@@ -1,6 +1,18 @@
 LATEST UPDATES - 30 Oktober 2026
 ===================================
 
+43. IMPLEMENTASI KEAMANAN PRIORITAS 2 & 3 (PRODUCTION READINESS & HARDENING)
+    - CORS Origin Reflection Guard: Membuat helper terpusat `src/utils/cors.js`. Memperbaiki `errorHandler.js`, `csrfMiddleware.js`, dan `app.js` agar tidak merefleksikan sembarang origin request dengan Access-Control-Allow-Credentials: true. Origin kini divalidasi terhadap allowlist `CORS_ORIGINS` di production.
+    - Path Traversal Guard pada Log Reader: Menegakkan validasi ketat regex `^\d{4}-\d{2}-\d{2}$` dan boundary check direktori pada `LogController.getLogByDate` untuk mencegah serangan traversal seperti `../../`.
+    - Mitigasi Log Flooding DoS: Membatasi panjang pesan log frontend maksimal 1000 karakter pada `LogController.createFrontEndLog` dan menurunkan rate limit `POST /api/logs` dari 300 menjadi 30 request/menit per IP.
+    - Fail-Fast Environment Validation: Membuat `src/config/envValidation.js` yang dieksekusi saat server startup. Menolak berjalan di production jika `JWT_SECRET` lemah/default, `ENCRYPTION_KEY` tidak tepat 32 karakter, atau `CORS_ORIGINS` kosong.
+    - Hardcoded Encryption Key Mitigation: `src/utils/encryption.js` kini melempar exception fatal jika `ENCRYPTION_KEY` tidak valid di production, menghentikan penggunaan fallback default secret key.
+    - OAuth CSRF Protection (Google Business): Menambahkan binding state acak melalui secure httpOnly cookie `gb_oauth_state` dengan validasi ketat saat alur callback di `googleBusiness.controller.js`.
+    - Server Fingerprint Reduction: Menyederhanakan payload `/health` pada environment production untuk menghilangkan bocoran internal server (`hostname`, `cpus`, dan raw memory stats).
+    - Test Suite: Menambahkan `tests/security_production_ready.test.js` (8/8 lulus).
+
+Timestamp: 2026-10-30 18:40:00
+
 42. IMPLEMENTASI KEAMANAN PRIORITAS 1 (SECURITY AUDIT FIXES)
     - Invoice Private Storage: Pindahkan penyimpanan file PDF invoice dari public/uploads/invoices ke direktori terisolasi storage/invoices/ di luar web root. Akses file hanya via handler terautentikasi GET /api/invoices/:orderId/download (mencegah unauthenticated direct enumeration file PDF berisi PII & data finansial).
     - Notifikasi Realtime via SSE (Server-Sent Events): Menambahkan endpoint GET /api/notifications/stream (dilindungi authenticateToken). Menggantikan broadcast notifikasi WebSocket tanpa auth dengan SSE berbasis user-channel terisolasi dan auto-heartbeat.

@@ -11,10 +11,10 @@ router.get('/', authenticateToken, adminOnly, LogController.listLogs);
 router.get('/:date', authenticateToken, adminOnly, LogController.getLogByDate);
 
 // POST tetap publik — dipakai frontend untuk mengirim log client.
-// Beri rate limit tersendiri agar tidak terlalu membebani (frontend bisa spam log).
+// Beri rate limit ketat (30 req/menit) untuk mencegah disk exhaustion DoS.
 const clientLogLimiter = rateLimit({
   windowMs: 60 * 1000,
-  max: 300,
+  max: 30,
   standardHeaders: true,
   legacyHeaders: false,
 });

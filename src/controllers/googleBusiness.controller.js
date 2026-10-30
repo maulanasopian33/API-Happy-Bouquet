@@ -18,6 +18,15 @@ class GoogleBusinessController {
   static async getAuthUrl(req, res) {
     try {
       const state = crypto.randomBytes(16).toString('hex');
+
+      // Simpan state di cookie httpOnly untuk validasi saat callback (mencegah OAuth CSRF)
+      res.cookie('gb_oauth_state', state, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 10 * 60 * 1000, // 10 menit
+      });
+
       const url = GoogleAuthService.getAuthUrl(state);
       successResponse(res, 'URL otorisasi Google Business berhasil dibuat', { url, state });
     } catch (error) {
@@ -28,10 +37,19 @@ class GoogleBusinessController {
   static async handleCallback(req, res) {
     try {
       const { code, state } = req.query;
+      const expectedState = req.cookies?.gb_oauth_state;
       const adminId = req.user?.id || 1;
+
+      // Hapus cookie state setelah percobaan callback
+      res.clearCookie('gb_oauth_state');
 
       if (!code) {
         return errorResponse(res, 'Authorization code tidak ditemukan', null, 400);
+      }
+
+      // Validasi OAuth state untuk mitigasi serangan CSRF
+      if (!state || !expectedState || state !== expectedState) {
+        return errorResponse(res, 'OAuth state tidak valid atau telah kedaluwarsa (CSRF ditolak)', null, 403);
       }
 
       const tokenData = await GoogleAuthService.exchangeCode(code);

@@ -39,8 +39,19 @@ const getApiRoot = (_req, res) => {
 };
 
 const getHealth = (_req, res) => {
+  const isProd = process.env.NODE_ENV === 'production';
   const memory = process.memoryUsage();
-  const data = {
+
+  // Di production, sembunyikan fingerprinting hardware & memori mentah
+  const data = isProd ? {
+    status: 'ok',
+    uptime: Math.floor(process.uptime()),
+    nodeVersion: process.version,
+    platform: process.platform,
+    arch: process.arch,
+    env: 'production',
+    timestamp: new Date().toISOString(),
+  } : {
     status: 'ok',
     uptime: process.uptime(),
     nodeVersion: process.version,
@@ -56,6 +67,7 @@ const getHealth = (_req, res) => {
     env: process.env.NODE_ENV || 'development',
     timestamp: new Date().toISOString(),
   };
+
   res.set('Cache-Control', 'no-store');
   return successResponse(res, 'Server sehat', data);
 };

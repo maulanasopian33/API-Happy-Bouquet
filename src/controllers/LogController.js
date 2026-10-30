@@ -29,7 +29,18 @@ class LogController {
   async getLogByDate(req, res) {
     try {
       const { date } = req.params;
-      const logFile = path.join(process.cwd(), 'logs', `${date}.log`);
+
+      // Validasi ketat format tanggal YYYY-MM-DD untuk mencegah Path Traversal
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        return errorResponse(res, 'Format tanggal tidak valid. Gunakan format YYYY-MM-DD.', null, 400);
+      }
+
+      const logDir = path.join(process.cwd(), 'logs');
+      const logFile = path.join(logDir, `${date}.log`);
+
+      if (!logFile.startsWith(logDir)) {
+        return errorResponse(res, 'Akses file ditolak', null, 403);
+      }
 
       if (!fs.existsSync(logFile)) {
         return errorResponse(res, 'File log tidak ditemukan', null, 404);
@@ -56,24 +67,28 @@ class LogController {
     try {
       const { level, message, meta } = req.body;
 
-      if (!message) {
+      if (!message || typeof message !== 'string' || message.trim().length === 0) {
         return errorResponse(res, 'Message wajib diisi', null, 400);
       }
+
+      // Cegah disk exhaustion DoS: batasi panjang pesan maksimal 1000 karakter
+      if (message.length > 1000) {
+        return errorResponse(res, 'Panjang pesan log maksimal 1000 karakter', null, 400);
+      }
+
+      const safeLevel = ['error', 'warn', 'info'].includes(level) ? level : 'info';
+      const safeMeta = (meta && typeof meta === 'object' && !Array.isArray(meta)) ? meta : {};
 
       const logMethods = {
         error: logger.error,
         warn: logger.warn,
         info: logger.info,
-        http: logger.http,
-        verbose: logger.verbose,
-        debug: logger.debug,
-        silly: logger.silly,
       };
-      const logMethod = logMethods[level] || logger.info;
+      const logMethod = logMethods[safeLevel] || logger.info;
       logMethod({
         source: 'Frontend',
-        message,
-        ...meta
+        message: message.trim(),
+        ...safeMeta
       });
 
       return successResponse(res, 'Log tercatat');

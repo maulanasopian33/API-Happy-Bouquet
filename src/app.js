@@ -9,22 +9,9 @@ const app = express();
 // Trust proxy for express-rate-limit behind Passenger/LSWS/Nginx
 app.set('trust proxy', 1);
 
-const allowedOrigins = process.env.CORS_ORIGINS
-  ? process.env.CORS_ORIGINS.split(',').map(o => o.trim()).filter(Boolean)
-  : [];
+const { isOriginAllowed, applyCorsHeaders } = require('./utils/cors');
 
 const isProduction = process.env.NODE_ENV === 'production';
-
-console.log('[CORS] Environment:', process.env.NODE_ENV);
-console.log('[CORS] Allowed origins:', allowedOrigins.length > 0 ? allowedOrigins : '(none — all origins will be blocked in production)');
-
-// ─── CORS Origin Checker ────────────────────────────────────────
-const isOriginAllowed = (origin) => {
-  if (!origin) return true; // tanpa origin (curl, Postman, server-to-server)
-  if (!isProduction) return true; // development: izinkan semua
-  if (allowedOrigins.length === 0) return false; // production tanpa config: tolak
-  return allowedOrigins.includes(origin);
-};
 
 // ─── EXPLICIT OPTIONS HANDLER (paling depan!) ───────────────────
 // Handle preflight SEBELUM middleware lain (helmet, rate-limit, dll)
@@ -34,13 +21,15 @@ app.use((req, res, next) => {
   const origin = req.headers.origin;
   const allowed = isOriginAllowed(origin);
 
-  console.log(`[CORS] OPTIONS ${req.path} - origin: ${origin} - allowed: ${allowed}`);
-
   // Build headers object
   const headers = {};
   if (allowed) {
-    headers['Access-Control-Allow-Origin'] = origin || '*';
-    headers['Access-Control-Allow-Credentials'] = 'true';
+    if (origin) {
+      headers['Access-Control-Allow-Origin'] = origin;
+      headers['Access-Control-Allow-Credentials'] = 'true';
+    } else {
+      headers['Access-Control-Allow-Origin'] = '*';
+    }
     headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, PATCH, DELETE, OPTIONS';
     headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With, Accept, Origin, X-CSRF-Token';
     headers['Access-Control-Max-Age'] = '86400';
@@ -53,11 +42,7 @@ app.use((req, res, next) => {
 
 // ─── CORS Middleware (untuk non-OPTIONS requests) ───────────────
 app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  if (isOriginAllowed(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin || '*');
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-  }
+  applyCorsHeaders(res, req.headers.origin);
   next();
 });
 

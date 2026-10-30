@@ -1,5 +1,6 @@
 const { AUTH_COOKIE_NAME } = require('./authMiddleware');
 const { ErrorCodes } = require('../constants/errors');
+const { applyCorsHeaders } = require('../utils/cors');
 
 const csrfGuard = (req, res, next) => {
   // OPTIONS (preflight) harus selalu lolos — CORS sudah handle
@@ -20,9 +21,8 @@ const csrfGuard = (req, res, next) => {
 
   const xRequestedWith = req.headers['x-requested-with'];
   if (!xRequestedWith || String(xRequestedWith).trim() === '') {
-    // Pastikan CORS headers tetap ada di error response
-    res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    // Terapkan CORS headers hanya jika origin diizinkan
+    applyCorsHeaders(res, req.headers.origin);
     return res.status(403).json({
       status: false,
       message: 'CSRF: header X-Requested-With wajib disertakan.',
