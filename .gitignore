@@ -43,3 +43,15 @@ Thumbs.db
 /public/uploads/materials/
 # Private storage
 /storage/
+
+# AI, Agent & Development tooling
+AGENTS.md
+agents.md
+CLAUDE.md
+COPILOT.md
+.cursor/
+.cursorrules
+.gemini/
+.antigravity/
+.dev/
+tasks/
