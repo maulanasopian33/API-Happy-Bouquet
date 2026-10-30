@@ -52,10 +52,26 @@ describe('Product Public API', () => {
     expect(res.body.data.costTemplates).toBeUndefined();
   });
 
-  it('should return products with costTemplates when include_costs=true is passed', async () => {
+  it('should NOT return costTemplates to unauthenticated users even when include_costs=true is passed', async () => {
     const res = await request(app).get('/api/products?include_costs=true');
     expect(res.status).toBe(200);
     
+    const product = res.body.data.find((p) => p.id === testProductId);
+    expect(product).toBeDefined();
+    expect(product.costTemplates).toBeUndefined();
+  });
+
+  it('should return costTemplates when admin provides valid token and include_costs=true', async () => {
+    const jwt = require('jsonwebtoken');
+    const secret = process.env.JWT_SECRET || 'test_jwt_secret_for_tests';
+    process.env.JWT_SECRET = secret;
+    const adminToken = jwt.sign({ id: 1, email: 'admin@hb.com', role: 'admin' }, secret, { expiresIn: '1h' });
+
+    const res = await request(app)
+      .get('/api/products?include_costs=true')
+      .set('Authorization', `Bearer ${adminToken}`);
+
+    expect(res.status).toBe(200);
     const product = res.body.data.find((p) => p.id === testProductId);
     expect(product).toBeDefined();
     expect(product.costTemplates).toBeDefined();

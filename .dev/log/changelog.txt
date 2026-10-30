@@ -1,3 +1,17 @@
+LATEST UPDATES - 30 Oktober 2026
+===================================
+
+42. IMPLEMENTASI KEAMANAN PRIORITAS 1 (SECURITY AUDIT FIXES)
+    - Invoice Private Storage: Pindahkan penyimpanan file PDF invoice dari public/uploads/invoices ke direktori terisolasi storage/invoices/ di luar web root. Akses file hanya via handler terautentikasi GET /api/invoices/:orderId/download (mencegah unauthenticated direct enumeration file PDF berisi PII & data finansial).
+    - Notifikasi Realtime via SSE (Server-Sent Events): Menambahkan endpoint GET /api/notifications/stream (dilindungi authenticateToken). Menggantikan broadcast notifikasi WebSocket tanpa auth dengan SSE berbasis user-channel terisolasi dan auto-heartbeat.
+    - Pengamanan WebSocket: Socket.io kini mewajibkan verifikasi handshake JWT (io.use) dan membatasi join_admin_analytics hanya untuk role admin/super_admin. Menghapus unauthenticated room join_user.
+    - Perlindungan Biaya Produk (COGS): Parameter ?include_costs=true pada route katalog publik GET /api/products, /:id, /slug/:slug kini dibatasi hanya untuk request dengan token admin/super_admin (mencegah kebocoran struktur HPP & marjin ke publik).
+    - Sanitasi File Upload: uploadMiddleware.js dan tiktokUploadMiddleware.js kini menegakkan allowlist ekstensi dan MIME type ketat (.jpg, .jpeg, .png, .webp / .mp4, .mov). Menolak file .svg (vektor Stored XSS) dan file eksekutabel.
+    - Perbaikan Alur Deploy CI/CD: Menyesuaikan .github/workflows/deploy.yml dan package.json agar menyalin src/ dan dependensi produksi secara benar tanpa ketergantungan pada direktori dist/ lama.
+    - Test Baru: Menambahkan test suite tests/security_priority1.test.js dan memperbarui tests/product_public.test.js.
+
+Timestamp: 2026-10-30 18:05:00
+
 LATEST UPDATES - 2026-08-10
 ==============================
 

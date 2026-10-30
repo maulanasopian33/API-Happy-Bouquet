@@ -44,13 +44,13 @@ const createInvoice = async (orderId) => {
   const seq = String(count + 1).padStart(4, '0');
   const invoiceNumber = `${prefix}${seq}`;
 
-  const invoicesDir = path.join(__dirname, '../../public/uploads/invoices');
+  const invoicesDir = path.join(__dirname, '../../storage/invoices');
   if (!fs.existsSync(invoicesDir)) {
     fs.mkdirSync(invoicesDir, { recursive: true });
   }
 
   const filename = `${invoiceNumber.replace(/-/g, '_')}.pdf`;
-  const relativePath = `/uploads/invoices/${filename}`;
+  const relativePath = `storage/invoices/${filename}`;
   const absolutePath = path.join(invoicesDir, filename);
 
   await new Promise((resolve, reject) => {

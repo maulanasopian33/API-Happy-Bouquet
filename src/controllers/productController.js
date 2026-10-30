@@ -25,11 +25,29 @@ const costTemplateSchema = z.object({
 
 const bulkCostTemplateSchema = z.array(costTemplateSchema).min(1, 'Minimal 1 template biaya');
 
+const canViewCosts = (req) => {
+  if (req.user && ['admin', 'super_admin'].includes(String(req.user.role).toLowerCase())) {
+    return true;
+  }
+  const authHeader = req.headers['authorization'];
+  const token = (authHeader && authHeader.split(' ')[1]) || req.cookies?.hb_token;
+  if (!token || token === 'null') return false;
+  try {
+    const secret = process.env.JWT_SECRET;
+    if (!secret) return false;
+    const jwt = require('jsonwebtoken');
+    const decoded = jwt.verify(token, secret);
+    return ['admin', 'super_admin'].includes(String(decoded.role).toLowerCase());
+  } catch {
+    return false;
+  }
+};
+
 const getAllProducts = async (req, res) => {
   try {
     const activeOnly = req.query.active === 'true';
     const categoryId = req.query.category_id ? Number(req.query.category_id) : undefined;
-    const includeCosts = req.query.include_costs === 'true';
+    const includeCosts = canViewCosts(req) && req.query.include_costs === 'true';
     
     const products = await productService.getAllProducts({ activeOnly, categoryId, includeCosts });
     return successResponse(res, 'Daftar produk berhasil diambil', products);
@@ -40,7 +58,7 @@ const getAllProducts = async (req, res) => {
 
 const getProductById = async (req, res) => {
   try {
-    const includeCosts = req.query.include_costs === 'true';
+    const includeCosts = canViewCosts(req) && req.query.include_costs === 'true';
     const product = await productService.getProductById(Number(req.params.id), includeCosts);
     return successResponse(res, 'Produk berhasil diambil', product);
   } catch (err) {
@@ -50,7 +68,7 @@ const getProductById = async (req, res) => {
 
 const getProductBySlug = async (req, res) => {
   try {
-    const includeCosts = req.query.include_costs === 'true';
+    const includeCosts = canViewCosts(req) && req.query.include_costs === 'true';
     const product = await productService.getProductBySlug(req.params.slug, includeCosts);
     return successResponse(res, 'Produk berhasil diambil', product);
   } catch (err) {

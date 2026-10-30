@@ -1,4 +1,5 @@
 const { Server } = require('socket.io');
+const jwt = require('jsonwebtoken');
 const redis = require('./config/redis');
 const logger = require('./utils/logger');
 
@@ -10,9 +11,9 @@ const isProduction = process.env.NODE_ENV === 'production';
 const socketAllowedOrigins = (() => {
   if (!isProduction) return '*';
   const raw = process.env.CORS_ORIGINS;
-  if (!raw) return '*'; // fallback: izinkan semua ( atau bisa di-restrict ke domain spesifik)
+  if (!raw) return []; // In production without config: deny wildcard credentials
   const origins = raw.split(',').map(o => o.trim()).filter(Boolean);
-  return origins.length === 0 ? '*' : origins;
+  return origins;
 })();
 
 // Batas waktu session dianggap "aktif" (5 menit sejak aktivitas terakhir)
@@ -25,26 +26,51 @@ let trafficHistory = [];
 const initSocket = (server) => {
   io = new Server(server, {
     cors: {
-      origin: socketAllowedOrigins,
+      origin: socketAllowedOrigins.length > 0 ? socketAllowedOrigins : false,
       methods: ['GET', 'POST'],
       credentials: true,
     }
   });
 
-  io.on('connection', (socket) => {
-    logger.info(`🔗 New socket connection: ${socket.id}`);
+  // Autentikasi JWT Handshake untuk WebSocket
+  io.use((socket, next) => {
+    const token =
+      socket.handshake.auth?.token ||
+      (socket.handshake.headers?.authorization && socket.handshake.headers.authorization.split(' ')[1]) ||
+      socket.handshake.headers?.cookie?.match(/hb_token=([^;]+)/)?.[1];
 
-    // Admin bisa join room khusus untuk mendapat broadcast analytics
-    socket.on('join_admin_analytics', () => {
-      socket.join('admin_analytics');
-      logger.info(`Socket ${socket.id} joined admin_analytics room`);
-      // Kirim initial data jika diperlukan
-      broadcastActiveVisitors();
+    if (!token) {
+      return next(new Error('Autentikasi diperlukan untuk koneksi WebSocket.'));
+    }
+
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+      return next(new Error('JWT_SECRET tidak dikonfigurasi.'));
+    }
+
+    jwt.verify(token, secret, (err, decoded) => {
+      if (err) {
+        return next(new Error('Token tidak valid atau kedaluwarsa.'));
+      }
+      socket.user = decoded;
+      next();
     });
+  });
 
-    socket.on('join_user', (userId) => {
-      socket.join(`user_${userId}`);
-      logger.info(`Socket ${socket.id} joined user_${userId} room`);
+  io.on('connection', (socket) => {
+    logger.info(`🔗 New authenticated socket connection: ${socket.id} (user: ${socket.user?.id}, role: ${socket.user?.role})`);
+
+    // Hanya role admin/super_admin yang diizinkan join ke room analytics
+    socket.on('join_admin_analytics', () => {
+      const role = String(socket.user?.role || '').toLowerCase();
+      if (!['admin', 'super_admin'].includes(role)) {
+        logger.warn(`[Socket] Unauthorized join_admin_analytics attempt by user ${socket.user?.id} (role: ${role})`);
+        return socket.emit('error', { message: 'Akses ditolak. Memerlukan hak akses admin.' });
+      }
+
+      socket.join('admin_analytics');
+      logger.info(`Admin socket ${socket.id} joined admin_analytics room`);
+      broadcastActiveVisitors();
     });
 
     socket.on('disconnect', () => {
@@ -52,9 +78,7 @@ const initSocket = (server) => {
     });
   });
 
-  // Setup Redis Pub/Sub untuk realtime broadcast lintas instance (jika di-scale)
-  // Untuk versi sederhana, kita akan gunakan timer interval yang membaca dari Redis
-  // dan mem-broadcast ke room admin_analytics setiap 5 detik.
+  // Setup broadcast analytics berkala ke room admin_analytics setiap 5 detik
   setInterval(() => {
     broadcastActiveVisitors();
   }, 5000);

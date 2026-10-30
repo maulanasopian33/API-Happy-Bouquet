@@ -6,12 +6,15 @@ const path = require('path');
 const fs = require('fs');
 const os = require('os');
 
+const ALLOWED_EXTS = ['.mp4', '.mov'];
+const ALLOWED_MIME_TYPES = ['video/mp4', 'video/quicktime'];
+
 const videoFileFilter = (req, file, cb) => {
-  const allowedTypes = ['video/mp4', 'video/quicktime'];
-  if (allowedTypes.includes(file.mimetype)) {
+  const ext = path.extname(file.originalname).toLowerCase();
+  if (ALLOWED_EXTS.includes(ext) && ALLOWED_MIME_TYPES.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error('Only mp4 and mov files are allowed!'), false);
+    cb(new Error('Hanya file video MP4 dan MOV yang diizinkan!'), false);
   }
 };
 
@@ -25,7 +28,9 @@ const storage = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    cb(null, `tiktok-video-${uniqueSuffix}${path.extname(file.originalname)}`);
+    const ext = path.extname(file.originalname).toLowerCase();
+    const safeExt = ALLOWED_EXTS.includes(ext) ? ext : '.mp4';
+    cb(null, `tiktok-video-${uniqueSuffix}${safeExt}`);
   },
 });
 

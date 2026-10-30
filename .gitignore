@@ -41,3 +41,5 @@ Thumbs.db
 # Generated upload artifacts (test invoices/materials)
 /public/uploads/invoices/
 /public/uploads/materials/
+# Private storage
+/storage/

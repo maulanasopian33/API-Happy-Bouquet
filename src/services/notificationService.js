@@ -1,10 +1,61 @@
 const db = require('../models');
 const nodemailer = require('nodemailer');
-const { getIO } = require('../socket');
 const logger = require('../utils/logger');
 
 const NotificationTemplate = db.NotificationTemplate;
 const NotificationLog = db.NotificationLog;
+
+// ─── SSE Client Connection Registry ──────────────────────────────
+const sseClients = new Map(); // userId -> Set<Response>
+
+const addSSEClient = (userId, res) => {
+  const uid = String(userId);
+  if (!sseClients.has(uid)) {
+    sseClients.set(uid, new Set());
+  }
+  sseClients.get(uid).add(res);
+  logger.info(`[SSE] User ${uid} connected. Active connections: ${sseClients.get(uid).size}`);
+};
+
+const removeSSEClient = (userId, res) => {
+  const uid = String(userId);
+  const conns = sseClients.get(uid);
+  if (conns) {
+    conns.delete(res);
+    if (conns.size === 0) {
+      sseClients.delete(uid);
+    }
+    logger.info(`[SSE] User ${uid} disconnected.`);
+  }
+};
+
+const broadcastSSE = (userId, eventName, data) => {
+  const payload = `event: ${eventName}\ndata: ${JSON.stringify(data)}\n\n`;
+  if (userId) {
+    const uid = String(userId);
+    const conns = sseClients.get(uid);
+    if (conns) {
+      conns.forEach((res) => {
+        try {
+          res.write(payload);
+        } catch (err) {
+          logger.error(`[SSE] Write error for user ${uid}:`, err);
+        }
+      });
+    }
+  } else {
+    // Broadcast ke seluruh user aktif
+    sseClients.forEach((conns, uid) => {
+      conns.forEach((res) => {
+        try {
+          res.write(payload);
+        } catch (err) {
+          logger.error(`[SSE] Broadcast write error:`, err);
+        }
+      });
+    });
+  }
+};
 
 let transporter = null;
 
@@ -67,26 +118,13 @@ const sendInAppNotification = async (
       sent_at: new Date(),
     });
 
-    try {
-      const io = getIO();
-      if (userId) {
-        io.to(`user_${userId}`).emit('notification', {
-          id: log.id,
-          body,
-          template_code: templateCode,
-          createdAt: log.createdAt
-        });
-      } else {
-        io.emit('notification', {
-          id: log.id,
-          body,
-          template_code: templateCode,
-          createdAt: log.createdAt
-        });
-      }
-    } catch (ioErr) {
-      logger.debug('Socket.io broadcast skipped: ' + ioErr.message);
-    }
+    // Broadcast via Server-Sent Events (SSE)
+    broadcastSSE(userId, 'notification', {
+      id: log.id,
+      body,
+      template_code: templateCode,
+      createdAt: log.createdAt,
+    });
 
     return log;
   } catch (error) {
@@ -180,4 +218,7 @@ module.exports = {
   sendInAppNotification,
   sendEmailNotification,
   getNotificationLogs,
+  addSSEClient,
+  removeSSEClient,
+  broadcastSSE,
 };

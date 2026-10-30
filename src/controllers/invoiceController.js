@@ -58,7 +58,10 @@ const downloadInvoice = async (req, res) => {
       return errorResponse(res, 'Invoice belum dibuat', null, 404);
     }
 
-    const filePath = path.join(__dirname, '../../public', invoice.pdf_file_path);
+    let filePath = path.join(__dirname, '../../storage/invoices', path.basename(invoice.pdf_file_path));
+    if (!fs.existsSync(filePath)) {
+      filePath = path.join(__dirname, '../../public', invoice.pdf_file_path);
+    }
     if (!fs.existsSync(filePath)) {
       return errorResponse(res, 'Berkas PDF invoice tidak ditemukan', null, 404);
     }

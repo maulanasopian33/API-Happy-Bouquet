@@ -1,5 +1,11 @@
 # Known Issues & Tech Debt
 
+- [RESOLVED] (Audit 2026-10-30) File invoice PDF tersimpan di direktori publik dan dapat diakses siapa saja via URL tanpa login. (Dipindahkan ke storage privat storage/invoices/ dan hanya dapat diakses melalui handler terautentikasi GET /api/invoices/:orderId/download).
+- [RESOLVED] (Audit 2026-10-30) Notifikasi realtime sebelumnya menggunakan WebSocket tanpa otentikasi. (Diganti menggunakan Server-Sent Events (SSE) terisolasi per-user di GET /api/notifications/stream; Socket.io analytics kini dilindungi JWT).
+- [RESOLVED] (Audit 2026-10-30) Parameter include_costs=true membocorkan HPP dan margin ke publik. (Dibatasi hanya untuk role admin/super_admin).
+- [RESOLVED] (Audit 2026-10-30) Upload file menerima file SVG (vektor XSS) dan ekstensi sewenang-wenang. (Dibatasi hanya untuk ekstensi gambar JPG, PNG, WEBP dengan MIME type yang valid).
+- [RESOLVED] (Audit 2026-10-30) Workflow deploy CI/CD gagal karena missing npm run build dan folder dist/. (Disinkronkan dengan struktur CommonJS src/ dan skrip build dummy).
+
 - [RESOLVED] Deploy CI masih pakai FTP. (Menggantikan ke SSH rsync `easingthemes/ssh-deploy@v5.1.0` via cPanel SSH Access port 3759 — upload lebih cepat.)
 
 - [RESOLVED] Rate Limit di `app.ts` (Backend) masih dinonaktifkan. (Sudah diaktifkan kembali di `app.ts` dengan trust proxy).

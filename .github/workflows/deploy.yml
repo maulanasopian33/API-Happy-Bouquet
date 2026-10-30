@@ -24,7 +24,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Build Project (TypeScript -> JavaScript in /dist)
+      # Build Project / Verification
       - name: Build Project
         run: npm run build
 
@@ -32,11 +32,14 @@ jobs:
       - name: Prune dev dependencies
         run: npm prune --production
 
-      # Prepare deploy dir (dist + node_modules produksi + config)
+      # Prepare deploy dir (src + public + node_modules produksi + config)
       - name: Prepare deploy folder
         run: |
           mkdir -p deploy
-          cp -r dist deploy/dist
+          cp -r src deploy/src
+          if [ -d "public" ]; then
+            cp -r public deploy/public
+          fi
           cp -r node_modules deploy/node_modules
           cp package.json deploy/package.json
           cp package-lock.json deploy/package-lock.json
@@ -49,7 +52,7 @@ jobs:
             echo "Seeders directory not found, skipping."
           fi
 
-          # Use Production .sequelizerc (points to dist/)
+          # Use Production .sequelizerc (points to src/)
           cp .sequelizerc.prod deploy/.sequelizerc
 
           # Restart trigger for Passenger (cPanel Node.js app)

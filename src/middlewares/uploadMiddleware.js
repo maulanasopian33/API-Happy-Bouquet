@@ -5,12 +5,15 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
+const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp'];
+const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+
 const fileFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith('image/')) {
-    cb(null, true);
-  } else {
-    cb(new Error('Only image files are allowed!'), false);
+  const ext = path.extname(file.originalname).toLowerCase();
+  if (!ALLOWED_EXTENSIONS.includes(ext) || !ALLOWED_MIME_TYPES.includes(file.mimetype)) {
+    return cb(new Error('Format file tidak didukung! Hanya file gambar JPG, JPEG, PNG, dan WebP yang diizinkan.'), false);
   }
+  cb(null, true);
 };
 
 const createUploader = (folderName, prefix) => {
@@ -24,7 +27,9 @@ const createUploader = (folderName, prefix) => {
     },
     filename: (req, file, cb) => {
       const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-      cb(null, `${prefix}-` + uniqueSuffix + path.extname(file.originalname));
+      const ext = path.extname(file.originalname).toLowerCase();
+      const safeExt = ALLOWED_EXTENSIONS.includes(ext) ? ext : '.jpg';
+      cb(null, `${prefix}-${uniqueSuffix}${safeExt}`);
     },
   });
 
