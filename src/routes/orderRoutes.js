@@ -1,9 +1,33 @@
 const { Router } = require('express');
 const { authenticateToken, authorizeRoles } = require('../middlewares/authMiddleware');
 const ctrl = require('../controllers/orderController');
+const publicCtrl = require('../controllers/publicOrderController');
+const rateLimit = require('express-rate-limit');
 
 const router = Router();
 const adminOnly = authorizeRoles('admin', 'super_admin');
+
+// Rate limiter untuk endpoint publik (tanpa auth)
+const publicOrderLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 menit
+  max: 10, // maks 10 pesanan per IP per 15 menit
+  message: { error: 'Terlalu banyak permintaan, coba lagi nanti' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+const trackingLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 menit
+  max: 20,
+  message: { error: 'Terlalu banyak permintaan, coba lagi nanti' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// POST /api/orders/public                — pesanan dari web storefront (tanpa auth)
+router.post('/public', publicOrderLimiter, publicCtrl.createPublicOrder);
+
+// GET  /api/orders/track/:orderNumber    — cek status pesanan (tanpa auth, data publik)
+router.get('/track/:orderNumber', trackingLimiter, publicCtrl.getPublicOrderTracking);
 
 // GET  /api/orders                       — daftar semua order (admin)
 router.get('/', authenticateToken, adminOnly, ctrl.getAllOrders);
