@@ -10,7 +10,7 @@ const {
 
 const getKeys = async (req, res, next) => {
   try {
-    const validated = listKeysQuerySchema.parse(req.query);
+    const validated = listKeysQuerySchema.parse({ query: req.query });
     const { pattern = '*', limit = 100 } = validated.query;
     const parsedLimit = Math.min(parseInt(limit, 10), 1000);
     const result = await cacheService.getKeys(pattern, parsedLimit);
@@ -26,7 +26,7 @@ const getKeys = async (req, res, next) => {
 
 const getKey = async (req, res, next) => {
   try {
-    const validated = keyParamSchema.parse(req.params);
+    const validated = keyParamSchema.parse({ params: req.params });
     const { key } = validated.params;
     const result = await cacheService.get(key);
     if (result.value === null && result.ttl === -2) {
@@ -44,7 +44,7 @@ const getKey = async (req, res, next) => {
 
 const setKey = async (req, res, next) => {
   try {
-    const validated = setKeySchema.parse(req.body);
+    const validated = setKeySchema.parse({ body: req.body });
     const { key, value, ttl } = validated.body;
     const ttlSeconds = ttl ? parseInt(ttl, 10) : undefined;
     const result = await cacheService.set(key, value, ttlSeconds);
@@ -60,7 +60,7 @@ const setKey = async (req, res, next) => {
 
 const deleteKey = async (req, res, next) => {
   try {
-    const validated = keyParamSchema.parse(req.params);
+    const validated = keyParamSchema.parse({ params: req.params });
     const { key } = validated.params;
     const result = await cacheService.del(key);
     if (!result.deleted) {
@@ -98,7 +98,7 @@ const getStats = async (req, res, next) => {
 
 const getKeyTTL = async (req, res, next) => {
   try {
-    const validated = keyParamSchema.parse(req.params);
+    const validated = keyParamSchema.parse({ params: req.params });
     const { key } = validated.params;
     const result = await cacheService.getTTL(key);
     if (result.ttl === -2) {
