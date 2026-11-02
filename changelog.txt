@@ -1,3 +1,17 @@
+LATEST UPDATES - 02 November 2026
+===================================
+
+44. PENGATURAN TOKO (GET/PUT /api/settings) + ALIAS ANALYTICS
+    - Endpoint baru GET /api/settings (publik): data toko key-value dengan allowlist 9 key kontrak storefront (brand_name, whatsapp_number, email, address, hours, instagram_url, tiktok_url, shopee_url, tiktok_shop_url). Dipakai 11 halaman storefront (footer, contact, faq, privacy, maintenance, links, tracking, index, products, checkout, PDP) — sebelumnya 404 dan selalu memakai fallback.
+    - PUT /api/settings (admin/super_admin): upsert parsial via bulkCreate + updateOnDuplicate; divalidasi Zod (string maks 500 karakter, key di luar skema di-strip otomatis).
+    - Tabel baru StoreSettings: migration 20261102000001-create-store-settings.js + model src/models/StoreSetting.js (key unique) + pendaftaran di src/models/index.js.
+    - Fix path analytics: alias app.use('/api/analytics', analyticsRoutes) di app.js — storefront memanggil /api/analytics/collect sedangkan mount lama hanya /api/v1/analytics, sehingga telemetri channel_outbound selalu 404. Path lama tetap dipertahankan.
+    - healthController APP_ENDPOINTS bertambah /api/settings dan /api/analytics.
+    - Test baru: tests/setting.test.js (6 test: GET publik, PUT 401 tanpa token, upsert admin, validasi 422, strip key asing, alias analytics 400 bukan 404). Regresi tests/health.test.js + tests/public_order.test.js hijau (16 test total, --runInBand --forceExit).
+    - Spec: tasks/specs/store-settings.md.
+
+Timestamp: 2026-11-02 22:10:00
+
 LATEST UPDATES - 30 Oktober 2026
 ===================================
 

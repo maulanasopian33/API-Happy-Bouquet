@@ -1,3 +1,13 @@
+LATEST UPDATES - 02 November 2026
+===================================
+
+44. PENGATURAN TOKO (GET/PUT /api/settings) + ALIAS ANALYTICS
+    - GET /api/settings publik (allowlist 9 key kontrak storefront) + PUT admin-only upsert parsial; tabel StoreSettings (migration 20261102000001).
+    - Alias mount /api/analytics di app.js: fix telemetri storefront yang selalu 404 (path lama /api/v1/analytics tetap ada).
+    - APP_ENDPOINTS + tests/setting.test.js (6 test lulus); spec tasks/specs/store-settings.md.
+
+Timestamp: 2026-11-02 22:10:00
+
 LATEST UPDATES - 30 Oktober 2026
 ===================================
 

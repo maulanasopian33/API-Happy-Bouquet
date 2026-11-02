@@ -88,6 +88,7 @@ const notificationRoutes = require('./routes/notificationRoutes');
 const mediaRoutes = require('./routes/mediaRoutes');
 const healthRoutes = require('./routes/healthRoutes');
 const cacheRoutes = require('./routes/cacheRoutes');
+const settingRoutes = require('./routes/settingRoutes');
 const path = require('path');
 
 // ─── Root API Info & Health Check ───────────────────────────────
@@ -113,12 +114,15 @@ app.use('/api/tiktok', tiktokRoutes);
 app.use('/api/google-business', googleBusinessRoutes);
 app.use('/api/google-business', googleBusinessProductRoutes);
 app.use('/api/v1/analytics', analyticsRoutes);
+// Alias: storefront memanggil /api/analytics/collect (kontrak docs/home-api-requirements.md)
+app.use('/api/analytics', analyticsRoutes);
 app.use('/api', resellerRoutes);
 app.use('/api/catalog', resellerCatalogRoutes);
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/media', mediaRoutes);
 app.use('/api/cache', cacheRoutes);
+app.use('/api/settings', settingRoutes);
 
 // ─── 404 Handler ────────────────────────────────────────────────
 app.use((req, res) => {

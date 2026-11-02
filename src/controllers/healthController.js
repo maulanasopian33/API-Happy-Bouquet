@@ -17,6 +17,8 @@ const APP_ENDPOINTS = [
   '/api/channels',
   '/api/tiktok',
   '/api/v1/analytics',
+  '/api/analytics',
+  '/api/settings',
   '/api/catalog',
   '/api/invoices',
   '/api/notifications',

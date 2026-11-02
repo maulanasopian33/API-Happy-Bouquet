@@ -15,6 +15,7 @@ const { initHeroBanner } = require('./HeroBanner');
 const { initOrderChannel } = require('./OrderChannel');
 const { initProductOrderChannel } = require('./ProductOrderChannel');
 const { initTiktokGlobalSetting } = require('./TiktokGlobalSetting');
+const { initStoreSetting } = require('./StoreSetting');
 
 // Reseller models
 const { initReseller } = require('./Reseller');
@@ -86,6 +87,9 @@ const Media = initMedia(sequelize);
 const GoogleBusinessSetting = initGoogleBusinessSetting(sequelize);
 const GoogleBusinessProduct = initGoogleBusinessProduct(sequelize);
 const PublicOrder = initPublicOrder(sequelize);
+
+// StoreSetting — key-value data toko (tanpa asosiasi)
+const StoreSetting = initStoreSetting(sequelize);
 
 // ─── ASOSIASI ────────────────────────────────────────────────────
 
@@ -242,6 +246,7 @@ const db = {
   GoogleBusinessSetting,
   GoogleBusinessProduct,
   PublicOrder,
+  StoreSetting,
 };
 
 module.exports = db;
