@@ -51,6 +51,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+const { requestLogger } = require('./middlewares/requestLogger');
+app.use(requestLogger);
+
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -140,6 +143,8 @@ app.use((req, res) => {
     error: {
       code: 'NOT_FOUND',
       message: `Endpoint ${req.method} ${req.originalUrl} tidak tersedia.`,
+      detail: null,
+      requestId: req.id || null,
     },
   });
 });

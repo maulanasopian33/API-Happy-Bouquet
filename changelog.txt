@@ -107,6 +107,21 @@ Timestamp: 2026-11-04 00:40:00
 
 Timestamp: 2026-11-04 01:10:00
 
+48. AUDIT & OPTIMALISASI SISTEM LOG (OBSERVABILITY)
+    - Temuan: tidak ada access log HTTP, tidak ada request-id, stack trace hilang pada `logger.error('...', err)`, tidak ada redaksi data sensitif, level terkunci `info`, error bercampur dengan log biasa, dan endpoint baca log memuat file 20 MB penuh tanpa filter.
+    - `src/utils/logger.js` dirombak: level dari `LOG_LEVEL` (debug di non-production), folder dari `LOG_DIR`, file harian gabungan + `error-YYYY-MM-DD.log` khusus error, `format.errors({stack:true})`, field dasar `service`/`env`, timestamp ISO, plus handler exception & unhandled rejection (nonaktif saat test). Console hanya di non-production.
+    - `src/utils/logSanitize.js` (baru): redaksi rekursif field sensitif (password, token, authorization, apiKey, cookie, secret, dsb) sebelum ditulis ke file.
+    - `src/middlewares/requestLogger.js` (baru): menghasilkan/meneruskan `X-Request-Id`, mencatat access log saat respons selesai (method, path, status, durationMs, ip, userId, role, bytes, userAgent). Level otomatis: 5xx=error, 4xx=warn.
+    - `src/middlewares/errorHandler.js`: logging terpusat `http_error` (requestId, method, path, status, userId, ip, code, stack) dan `error.requestId` ikut di respons agar user bisa melaporkan ID-nya.
+    - `src/utils/response.js`: `errorResponse` mencatat 4xx sebagai warn, 5xx sebagai error (mengurangi noise).
+    - `src/controllers/LogController.js`: whitelist nama file (`YYYY-MM-DD`/`error-YYYY-MM-DD`), baca tail 3 MB, filter `?level=` & `?q=`, `?limit=` (maks 5000, default 5000), log frontend menyertakan IP + requestId. Format respons tetap array agar panel lama tetap jalan.
+    - 404 handler `src/app.js` menyertakan `error.requestId`.
+    - `.env.example`: `LOG_LEVEL`, `LOG_DIR`, `LOG_MAX_FILES`.
+    - Test baru `tests/logging.test.js` (7 test) — PASS. Regresi `health`, `security_priority1`, `auth_cookie`, `cache` (22 test) — PASS.
+    - Spec: `.dev/specs/logging.md` (lokal, tidak ter-track).
+
+Timestamp: 2026-11-04 01:40:00
+
 LATEST UPDATES - 27 September 2026
 ===================================
 

@@ -18,7 +18,8 @@ const errorResponse = (res, message, error = null, statusCode = 400) => {
     data: null,
     error,
   };
-  logger.error(message, { error });
+  // 4xx = kesalahan pemakaian (warn), 5xx = gangguan server (error).
+  logger.log(statusCode >= 500 ? 'error' : 'warn', message, { statusCode, error });
   return res.status(statusCode).json(response);
 };
 

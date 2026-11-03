@@ -3,22 +3,45 @@ const { AppError, ErrorCodes } = require('../constants/errors');
 const logger = require('../utils/logger');
 const { applyCorsHeaders } = require('../utils/cors');
 
+const statusOf = (err) => {
+  if (err instanceof AppError) return err.statusCode;
+  if (err instanceof ZodError) return 400;
+  if (err.name === 'SequelizeValidationError' || err.name === 'SequelizeUniqueConstraintError') return 400;
+  if (err.name === 'JsonWebTokenError' || err.name === 'TokenExpiredError') return 401;
+  if (err.message && err.message.includes('CORS')) return 403;
+  return 500;
+};
+
+const sendError = (req, res, statusCode, message, code, details = null) =>
+  res.status(statusCode).json({
+    status: false,
+    message,
+    data: null,
+    error: { code, message, details, requestId: req.id || null },
+  });
+
 const errorHandler = (err, req, res, _next) => {
   // Terapkan CORS headers hanya jika origin diizinkan (mencegah arbitrary origin reflection)
   applyCorsHeaders(res, req.headers.origin);
 
+  const status = statusOf(err);
+  const level = status >= 500 ? 'error' : 'warn';
+
+  logger.log(level, 'http_error', {
+    requestId: req.id || null,
+    method: req.method,
+    path: req.originalUrl.split('?')[0],
+    status,
+    userId: req.user?.id || null,
+    ip: req.ip,
+    code: err.code || err.name || 'Error',
+    message: err.message,
+    stack: err.stack,
+  });
+
   // 1. AppError
   if (err instanceof AppError) {
-    return res.status(err.statusCode).json({
-      status: false,
-      message: err.message,
-      data: null,
-      error: {
-        code: err.code,
-        message: err.message,
-        details: err.details || null,
-      },
-    });
+    return sendError(req, res, err.statusCode, err.message, err.code, err.details || null);
   }
 
   // 2. Zod Validation Error
@@ -28,16 +51,14 @@ const errorHandler = (err, req, res, _next) => {
       issue: e.message,
     }));
 
-    return res.status(400).json({
-      status: false,
-      message: 'Input data gagal melewati validasi.',
-      data: null,
-      error: {
-        code: ErrorCodes.VALIDATION_ERROR,
-        message: 'Input data gagal melewati validasi.',
-        details,
-      },
-    });
+    return sendError(
+      req,
+      res,
+      400,
+      'Input data gagal melewati validasi.',
+      ErrorCodes.VALIDATION_ERROR,
+      details
+    );
   }
 
   // 3. Sequelize Validation Error
@@ -51,81 +72,38 @@ const errorHandler = (err, req, res, _next) => {
       ? 'Data sudah ada (duplikat).'
       : 'Validasi database gagal.';
 
-    return res.status(400).json({
-      status: false,
+    return sendError(
+      req,
+      res,
+      400,
       message,
-      data: null,
-      error: {
-        code: err.name === 'SequelizeUniqueConstraintError'
-          ? ErrorCodes.ALREADY_EXISTS
-          : ErrorCodes.VALIDATION_ERROR,
-        message,
-        details,
-      },
-    });
+      err.name === 'SequelizeUniqueConstraintError' ? ErrorCodes.ALREADY_EXISTS : ErrorCodes.VALIDATION_ERROR,
+      details
+    );
   }
 
   // 4. JWT Error
   if (err.name === 'JsonWebTokenError') {
-    const message = 'Token tidak valid.';
-    return res.status(401).json({
-      status: false,
-      message,
-      data: null,
-      error: {
-        code: ErrorCodes.TOKEN_INVALID,
-        message,
-      },
-    });
+    return sendError(req, res, 401, 'Token tidak valid.', ErrorCodes.TOKEN_INVALID);
   }
 
   if (err.name === 'TokenExpiredError') {
-    const message = 'Token sudah kedaluwarsa.';
-    return res.status(401).json({
-      status: false,
-      message,
-      data: null,
-      error: {
-        code: ErrorCodes.TOKEN_EXPIRED,
-        message,
-      },
-    });
+    return sendError(req, res, 401, 'Token sudah kedaluwarsa.', ErrorCodes.TOKEN_EXPIRED);
   }
 
   // 5. CORS Error (dari middleware CORS)
   if (err.message && err.message.includes('CORS')) {
-    logger.warn('CORS error', { origin: req.headers.origin, url: req.originalUrl });
-    return res.status(403).json({
-      status: false,
-      message: 'CORS: Origin tidak diizinkan.',
-      data: null,
-      error: {
-        code: ErrorCodes.FORBIDDEN,
-        message: 'CORS: Origin tidak diizinkan.',
-      },
+    return sendError(req, res, 403, 'CORS: Origin tidak diizinkan.', ErrorCodes.FORBIDDEN, {
+      origin: req.headers.origin,
     });
   }
 
-  // 6. Generic Error (fallback)
-  logger.error('Unhandled error', {
-    message: err.message,
-    stack: err.stack,
-    url: req.originalUrl,
-    method: req.method,
-  });
-
+  // 6. Generic Error (fallback) — detail disembunyikan di production.
   const message = process.env.NODE_ENV === 'production'
     ? 'Terjadi kesalahan pada server.'
     : err.message;
-  return res.status(500).json({
-    status: false,
-    message,
-    data: null,
-    error: {
-      code: ErrorCodes.INTERNAL_ERROR,
-      message,
-    },
-  });
+
+  return sendError(req, res, 500, message, ErrorCodes.INTERNAL_ERROR);
 };
 
 module.exports = { errorHandler };
