@@ -72,7 +72,16 @@ const buildPayload = ({ contents, systemInstruction, temperature, maxOutputToken
   return payload;
 };
 
-const callGemini = async (payload, { timeoutMs = 60000, model: requestedModel } = {}) => {
+// Model flash punya "thinking" yang membuat respons bisa sangat lambat (kerap >60s dan kena timeout proxy hosting).
+const withThinkingOff = (payload, model) => {
+  if (!/flash/i.test(model)) return payload;
+  return {
+    ...payload,
+    generationConfig: { ...(payload.generationConfig || {}), thinkingConfig: { thinkingBudget: 0 } },
+  };
+};
+
+const callGemini = async (payload, { timeoutMs = Number(process.env.GEMINI_TIMEOUT_MS) || 40000, model: requestedModel } = {}) => {
   const { apiKey, model: defaultModel } = getConfig();
   const model = requestedModel || defaultModel;
 
@@ -87,6 +96,8 @@ const callGemini = async (payload, { timeoutMs = 60000, model: requestedModel } 
   const startedAt = Date.now();
   let activeModel = model;
   let modelFallbackUsed = false;
+  let body = withThinkingOff(payload, activeModel);
+  let thinkingDisabled = /flash/i.test(activeModel);
 
   for (let attempt = 1; attempt <= 3; attempt += 1) {
     const url = `${API_BASE}/${encodeURIComponent(activeModel)}:generateContent`;
@@ -100,7 +111,7 @@ const callGemini = async (payload, { timeoutMs = 60000, model: requestedModel } 
           'Content-Type': 'application/json',
           'x-goog-api-key': apiKey,
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(body),
         signal: controller.signal,
       });
 
@@ -108,6 +119,14 @@ const callGemini = async (payload, { timeoutMs = 60000, model: requestedModel } 
 
       if (!response.ok) {
         const upstreamMessage = data?.error?.message || `Gemini HTTP ${response.status}`;
+
+        // Sebagian model menolak thinkingConfig -> ulangi tanpa itu.
+        if (response.status === 400 && thinkingDisabled && /thinking/i.test(upstreamMessage)) {
+          thinkingDisabled = false;
+          body = payload;
+          logger.warn('Model menolak thinkingConfig, mengulang tanpa thinking.');
+          continue;
+        }
 
         // Model bisa di-deprecate kapan saja (mis. gemini-2.5-flash) -> pindah sekali ke model tersedia.
         if (response.status === 404 && !modelFallbackUsed) {
@@ -118,6 +137,8 @@ const callGemini = async (payload, { timeoutMs = 60000, model: requestedModel } 
             modelFallbackUsed = true;
             logger.warn(`Model ${activeModel} tidak tersedia, fallback ke ${nextModel}`);
             activeModel = nextModel;
+            body = withThinkingOff(payload, activeModel);
+            thinkingDisabled = /flash/i.test(activeModel);
             continue;
           }
         }

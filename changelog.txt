@@ -87,6 +87,15 @@ Timestamp: 2026-11-03 23:40:00
 
 Timestamp: 2026-11-04 00:20:00
 
+46. AI GEMINI — ATASI 504 GATEWAY TIMEOUT (LAMBAT/PENDING)
+    - Gejala: request menggantung lama lalu 504 dari hosting, padahal Google AI mencatat panggilan sukses → respons Gemini lebih lambat daripada timeout proxy (Passenger/LiteSpeed).
+    - Penyebab utama: model flash mengaktifkan "thinking" secara default sehingga generasi bisa >60s.
+    - `callGemini` kini mengirim `generationConfig.thinkingConfig.thinkingBudget = 0` untuk model `*flash*` (memangkas waktu tunggu); bila model menolak (400 menyebut thinking), otomatis diulang tanpa `thinkingConfig`.
+    - Timeout default diturunkan 60s → 40s dan bisa diatur lewat `GEMINI_TIMEOUT_MS` (`.env.example`), supaya aplikasi mengembalikan JSON 504/502 sebelum gateway memutus koneksi.
+    - Test baru: 400 thinkingConfig → retry tanpa thinking; asersi `thinkingBudget: 0` pada request flash. Total `tests/ai.test.js`: 15/15 PASS.
+
+Timestamp: 2026-11-04 00:40:00
+
 LATEST UPDATES - 27 September 2026
 ===================================
 

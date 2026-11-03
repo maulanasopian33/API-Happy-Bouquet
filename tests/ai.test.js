@@ -120,6 +120,33 @@ describe('AI Gemini — /api/ai', () => {
     expect(options.headers['x-goog-api-key']).toBe('test-key');
     const payload = JSON.parse(options.body);
     expect(payload.systemInstruction.parts[0].text).toBe('Jawab singkat');
+    expect(payload.generationConfig.thinkingConfig).toEqual({ thinkingBudget: 0 });
+  });
+
+  it('POST /generate ulangi tanpa thinkingConfig bila model menolaknya (400)', async () => {
+    process.env.GEMINI_API_KEY = 'test-key';
+    let calls = 0;
+    global.fetch = jest.fn(async () => {
+      calls += 1;
+      if (calls === 1) {
+        return {
+          ok: false,
+          status: 400,
+          json: async () => ({ error: { code: 400, message: 'Unknown field thinkingConfig' } }),
+        };
+      }
+      return mockGeminiResponse('ok tanpa thinking');
+    });
+
+    const res = await request(app)
+      .post('/api/ai/generate')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ prompt: 'Halo', temperature: 0.5 });
+
+    expect(res.status).toBe(200);
+    expect(res.body.data.text).toBe('ok tanpa thinking');
+    const retryPayload = JSON.parse(global.fetch.mock.calls[1][1].body);
+    expect(retryPayload.generationConfig.thinkingConfig).toBeUndefined();
   });
 
   it('POST /generate mode JSON mem-parse hasil (termasuk code fence)', async () => {
