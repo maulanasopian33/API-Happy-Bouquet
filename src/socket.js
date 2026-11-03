@@ -98,11 +98,16 @@ const toTimeStr = (date) => date.toLocaleTimeString('id-ID', TIME_FORMAT);
 // ─── Data nyata (production): dibaca dari Redis ──────────────────
 const getRealActiveVisitors = async () => {
   const cutoff = Date.now() - ACTIVE_WINDOW_MS;
-  return redis.zcount('analytics:active_visitors', cutoff, '+inf');
+  return redis.zcount('analytics:active_visitors', cutoff, '+inf').catch(() => 0);
+};
+
+const getRealActiveBots = async () => {
+  const cutoff = Date.now() - ACTIVE_WINDOW_MS;
+  return redis.zcount('analytics:bot_active', cutoff, '+inf').catch(() => 0);
 };
 
 const getRealTopProducts = async () => {
-  const rows = await redis.zrevrange('analytics:top_urls', 0, 4, 'WITHSCORES');
+  const rows = await redis.zrevrange('analytics:top_urls', 0, 4, 'WITHSCORES').catch(() => []);
   const top = [];
   for (let i = 0; i + 1 < rows.length; i += 2) {
     top.push({ url: String(rows[i]), views: Number(rows[i + 1]) });
@@ -110,8 +115,17 @@ const getRealTopProducts = async () => {
   return top;
 };
 
+const getRealTopBotUrls = async () => {
+  const rows = await redis.zrevrange('analytics:bot_urls', 0, 4, 'WITHSCORES').catch(() => []);
+  const top = [];
+  for (let i = 0; i + 1 < rows.length; i += 2) {
+    top.push({ url: String(rows[i]), count: Number(rows[i + 1]) });
+  }
+  return top;
+};
+
 const getRealDeviceStats = async () => {
-  const raw = await redis.lrange('analytics:raw_logs', 0, 49);
+  const raw = await redis.lrange('analytics:raw_logs', 0, 49).catch(() => []);
   const counts = {};
   for (const entry of raw) {
     try {
@@ -126,9 +140,11 @@ const getRealDeviceStats = async () => {
 };
 
 const broadcastRealAnalytics = async () => {
-  const [activeVisitors, topProducts, deviceStats] = await Promise.all([
+  const [activeVisitors, activeBots, topProducts, topBotUrls, deviceStats] = await Promise.all([
     getRealActiveVisitors(),
+    getRealActiveBots(),
     getRealTopProducts(),
+    getRealTopBotUrls(),
     getRealDeviceStats(),
   ]);
 
@@ -137,62 +153,23 @@ const broadcastRealAnalytics = async () => {
 
   io.to('admin_analytics').emit('analytics_update', {
     activeVisitors,
+    activeBots,
     topProducts,
+    topBotUrls,
     trafficHistory,
     deviceStats,
     timestamp: Date.now(),
   });
 };
 
-// ─── Data mock (development only) ────────────────────────────────
-let mockActiveCount = 124;
-let mockTrafficHistory = Array.from({ length: HISTORY_POINTS }, (_, i) => ({
-  time: toTimeStr(new Date(Date.now() - (HISTORY_POINTS - 1 - i) * 5000)),
-  count: Math.floor(Math.random() * 50) + 100
-}));
-
-const broadcastMockAnalytics = () => {
-  // Generate Mock Data as requested by User
-  const fluctuation = Math.floor(Math.random() * 15) - 5; // -5 to +10
-  mockActiveCount = Math.max(10, mockActiveCount + fluctuation);
-
-  mockTrafficHistory.push({ time: toTimeStr(new Date()), count: mockActiveCount });
-  if (mockTrafficHistory.length > HISTORY_POINTS) mockTrafficHistory.shift();
-
-  const topProducts = [
-    { url: '/products/bunga-mawar-merah', views: mockActiveCount * 0.4 },
-    { url: '/products/buket-wisuda-premium', views: mockActiveCount * 0.25 },
-    { url: '/products/anggrek-bulan-putih', views: mockActiveCount * 0.15 },
-    { url: '/products/custom-bouquet', views: mockActiveCount * 0.1 },
-    { url: '/products/vas-bunga-kaca', views: mockActiveCount * 0.1 }
-  ].map(p => ({ ...p, views: Math.floor(p.views) }));
-
-  const deviceStats = [
-    { type: 'Mobile', count: Math.floor(mockActiveCount * 0.65) },
-    { type: 'Desktop', count: Math.floor(mockActiveCount * 0.30) },
-    { type: 'Tablet', count: Math.floor(mockActiveCount * 0.05) }
-  ];
-
-  io.to('admin_analytics').emit('analytics_update', {
-    activeVisitors: mockActiveCount,
-    topProducts: topProducts,
-    trafficHistory: mockTrafficHistory,
-    deviceStats: deviceStats,
-    timestamp: Date.now()
-  });
-};
-
 const broadcastActiveVisitors = async () => {
   try {
     if (!io) return;
-
-    if (isProduction) {
-      await broadcastRealAnalytics();
-    } else {
-      broadcastMockAnalytics();
-    }
+    await broadcastRealAnalytics();
   } catch (error) {
     logger.error('Error broadcasting analytics:', error);
+  }
+};
   }
 };
 

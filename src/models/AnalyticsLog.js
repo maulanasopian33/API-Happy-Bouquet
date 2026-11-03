@@ -26,8 +26,28 @@ const initAnalyticsLog = (sequelize) => {
         type: DataTypes.STRING(50),
         allowNull: false,
       },
+      event_name: {
+        type: DataTypes.STRING(100),
+        allowNull: true,
+      },
+      event_data: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
       scroll_depth: {
         type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+      duration_seconds: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+      screen_size: {
+        type: DataTypes.STRING(50),
+        allowNull: true,
+      },
+      language: {
+        type: DataTypes.STRING(20),
         allowNull: true,
       },
       ip_address: {
@@ -68,6 +88,23 @@ const initAnalyticsLog = (sequelize) => {
       },
       utm_campaign: {
         type: DataTypes.STRING(100),
+        allowNull: true,
+      },
+      is_bot: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
+      bot_name: {
+        type: DataTypes.STRING(100),
+        allowNull: true,
+      },
+      bot_category: {
+        type: DataTypes.STRING(50),
+        allowNull: true,
+      },
+      threat_level: {
+        type: DataTypes.STRING(20),
         allowNull: true,
       },
       timestamp: {

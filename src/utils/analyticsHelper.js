@@ -1,5 +1,6 @@
 const { UAParser } = require('ua-parser-js');
 const geoip = require('geoip-lite');
+const { detectBot } = require('./botDetector');
 
 const extractUTM = (url) => {
   try {
@@ -16,13 +17,14 @@ const extractUTM = (url) => {
   }
 };
 
-const parseVisitorData = (ip, uaString, url) => {
+const parseVisitorData = (ip, uaString, url, payload = {}) => {
   const parser = new UAParser(uaString);
   const device = parser.getDevice();
   const browser = parser.getBrowser();
   const os = parser.getOS();
 
   const geo = geoip.lookup(ip);
+  const botInfo = detectBot(uaString, payload);
 
   return {
     device_type: device.type || 'desktop',
@@ -30,7 +32,11 @@ const parseVisitorData = (ip, uaString, url) => {
     os: os.name || 'Unknown',
     country: geo ? geo.country : 'Unknown',
     city: geo ? geo.city : 'Unknown',
-    utm: extractUTM(url)
+    utm: extractUTM(url),
+    is_bot: botInfo.is_bot,
+    bot_name: botInfo.bot_name,
+    bot_category: botInfo.bot_category,
+    threat_level: botInfo.threat_level,
   };
 };
 
