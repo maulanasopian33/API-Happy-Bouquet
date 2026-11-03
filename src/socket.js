@@ -170,7 +170,5 @@ const broadcastActiveVisitors = async () => {
     logger.error('Error broadcasting analytics:', error);
   }
 };
-  }
-};
 
 module.exports = { initSocket, getIO, broadcastActiveVisitors };
