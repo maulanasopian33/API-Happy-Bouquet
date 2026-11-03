@@ -47,12 +47,13 @@ app.use((req, res, next) => {
 });
 
 app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
 
 const { requestLogger } = require('./middlewares/requestLogger');
 app.use(requestLogger);
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 // Rate limiting
 const limiter = rateLimit({
@@ -61,6 +62,12 @@ const limiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   validate: { trustProxy: false },
+  message: {
+    status: false,
+    message: 'Terlalu banyak permintaan. Coba lagi nanti.',
+    data: null,
+    error: { code: 'RATE_LIMIT', message: 'Terlalu banyak permintaan. Coba lagi nanti.' },
+  },
 });
 app.use(limiter);
 

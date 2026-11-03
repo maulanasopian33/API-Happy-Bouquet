@@ -56,6 +56,20 @@ const createPublicOrder = async (req, res) => {
 
     logger.info('Pesanan publik masuk dari web', { order_number, total_price });
 
+    // Broadcast realtime SSE ke Panel Admin (semua admin yang sedang aktif)
+    try {
+      const { broadcastSSE } = require('../services/notificationService');
+      broadcastSSE(null, 'notification', {
+        body: `Pesanan baru #${order_number} (${data.customer_name}) masuk via ${data.channel}!`,
+        order_number,
+        channel: data.channel,
+        customer_name: data.customer_name,
+        total_price,
+      });
+    } catch (notifErr) {
+      logger.warn('Gagal broadcast SSE pesanan baru publik:', notifErr.message);
+    }
+
     return successResponse(res, 'Pesanan berhasil diterima', { order_number }, 201);
   } catch (err) {
     if (err.name === 'ZodError') return validationErrorResponse(res, err, 'Data pesanan tidak valid', 422);

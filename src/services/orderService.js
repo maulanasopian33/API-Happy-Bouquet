@@ -72,7 +72,53 @@ const getAllOrders = async (page = 1, limit = 20, customerId) => {
     limit,
     offset,
   });
-  return { orders: rows, total: count, page, totalPages: Math.ceil(count / limit) };
+
+  const formattedOrders = rows.map((r) => {
+    const o = r.toJSON();
+    return {
+      ...o,
+      customer_name: o.customer ? o.customer.name : `Customer #${o.customer_id}`,
+      channel: o.channel || (o.order_type === 'reseller' ? 'Reseller' : 'Direct'),
+    };
+  });
+
+  // Jika tanpa filter customer khusus, sertakan juga pesanan publik storefront (Multi-Channel Ingestion)
+  let publicOrders = [];
+  if (!customerId && db.PublicOrder) {
+    try {
+      const pRows = await db.PublicOrder.findAll({
+        limit,
+        order: [['createdAt', 'DESC']],
+      });
+      publicOrders = pRows.map((p) => {
+        const rawItems = typeof p.items === 'string' ? JSON.parse(p.items) : (p.items || []);
+        return {
+          id: p.id,
+          order_code: p.order_number,
+          customer_id: null,
+          customer_name: p.customer_name,
+          customer_phone: p.customer_phone,
+          total_price: p.total_price,
+          status: p.status === 'pending_payment' ? 'pending' : p.status,
+          payment_status: p.status === 'pending_payment' ? 'unpaid' : 'paid',
+          channel: p.channel || 'Web',
+          notes: p.notes,
+          createdAt: p.createdAt,
+          is_public: true,
+          items: rawItems,
+        };
+      });
+    } catch (pErr) {
+      logger.warn('Gagal memuat PublicOrders di getAllOrders:', pErr.message);
+    }
+  }
+
+  const combined = [...publicOrders, ...formattedOrders]
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, limit);
+
+  const totalAll = count + publicOrders.length;
+  return { orders: combined, total: totalAll, page, totalPages: Math.ceil(totalAll / limit) };
 };
 
 const getOrderById = async (id) => {
@@ -83,7 +129,31 @@ const getOrderById = async (id) => {
       { model: OrderCostItem, as: 'costItems' },
     ],
   });
-  if (!order) throw new Error('Order tidak ditemukan');
+  if (!order) {
+    if (db.PublicOrder) {
+      const pub = await db.PublicOrder.findByPk(id);
+      if (pub) {
+        const rawItems = typeof pub.items === 'string' ? JSON.parse(pub.items) : (pub.items || []);
+        return {
+          id: pub.id,
+          order_code: pub.order_number,
+          customer_name: pub.customer_name,
+          customer_phone: pub.customer_phone,
+          delivery_address: pub.delivery_address,
+          total_price: pub.total_price,
+          status: pub.status === 'pending_payment' ? 'pending' : pub.status,
+          payment_status: pub.status === 'pending_payment' ? 'unpaid' : 'paid',
+          channel: pub.channel || 'Web',
+          notes: pub.notes,
+          createdAt: pub.createdAt,
+          is_public: true,
+          items: rawItems,
+          costItems: [],
+        };
+      }
+    }
+    throw new Error('Order tidak ditemukan');
+  }
   return order;
 };
 

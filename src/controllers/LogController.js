@@ -71,7 +71,7 @@ class LogController {
 
       // Validasi ketat nama file (whitelist) — mencegah path traversal.
       if (!FILE_NAME.test(date)) {
-        return errorResponse(res, 'Nama file log tidak valid. Gunakan YYYY-MM-DD atau error-YYYY-MM-DD.', null, 400);
+        return errorResponse(res, 'Format tanggal tidak valid. Gunakan YYYY-MM-DD atau error-YYYY-MM-DD.', null, 400);
       }
 
       const level = typeof req.query.level === 'string' ? req.query.level.toLowerCase() : null;

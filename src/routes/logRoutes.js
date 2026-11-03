@@ -17,6 +17,12 @@ const clientLogLimiter = rateLimit({
   max: 30,
   standardHeaders: true,
   legacyHeaders: false,
+  message: {
+    status: false,
+    message: 'Terlalu banyak log dikirim. Coba lagi sebentar.',
+    data: null,
+    error: { code: 'RATE_LIMIT', message: 'Terlalu banyak log dikirim. Coba lagi sebentar.' },
+  },
 });
 router.post('/', clientLogLimiter, LogController.createFrontEndLog);
 
