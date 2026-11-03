@@ -67,6 +67,18 @@ Timestamp: 2026-11-03 22:20:00
 
 Timestamp: 2026-11-03 23:05:00
 
+44. AI GEMINI — PILIH MODEL (MODEL LAMA DEPRECATED)
+    - Masalah: `gemini-2.5-flash` ditolak Google ("no longer available to new users"), request berakhir 502.
+    - Default model diganti ke `gemini-3.8-flash` (env `GEMINI_MODEL`), `.env.example` diperbarui.
+    - `geminiService.listModels()`: ambil daftar model langsung dari `GET /v1beta/models` (filter `generateContent`), cache in-memory 10 menit, degradasi aman (return cache/[] + warning) bila gagal.
+    - Semua fungsi AI menerima opsi `model` (override per request); URL tetap memakai model yang dipakai dan `result.model` mengikuti.
+    - `GET /api/ai/status` sekarang mengembalikan `models` (daftar model yang tersedia) di samping `model` default.
+    - `src/validators/aiValidator.js`: field `model` divalidasi regex nama model (mencegah path injection ke URL).
+    - Panel: dropdown model di halaman `/ai`, terisi dari status; model terpilih dikirim ke `/generate`.
+    - Test `tests/ai.test.js` bertambah 2 (model override + model invalid 400) → 13/13 PASS. Build panel sukses.
+
+Timestamp: 2026-11-03 23:40:00
+
 LATEST UPDATES - 27 September 2026
 ===================================
 

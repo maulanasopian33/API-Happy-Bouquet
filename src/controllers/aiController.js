@@ -3,11 +3,16 @@ const { successResponse } = require('../utils/response');
 const logger = require('../utils/logger');
 const { generateSchema, chatSchema } = require('../validators/aiValidator');
 
-const getStatus = (_req, res) => {
-  return successResponse(res, 'Status integrasi AI', {
-    configured: geminiService.isConfigured(),
-    model: geminiService.getModel(),
-  });
+const getStatus = async (_req, res, next) => {
+  try {
+    return successResponse(res, 'Status integrasi AI', {
+      configured: geminiService.isConfigured(),
+      model: geminiService.getModel(),
+      models: await geminiService.listModels(),
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
 const generate = async (req, res, next) => {

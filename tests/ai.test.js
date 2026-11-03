@@ -81,14 +81,26 @@ describe('AI Gemini — /api/ai', () => {
     expect(res.body.error.code).toBe('VALIDATION_ERROR');
   });
 
-  it('GET /status melaporkan configured + model', async () => {
+  it('GET /status melaporkan configured + daftar model', async () => {
     process.env.GEMINI_API_KEY = 'test-key';
+    global.fetch = jest.fn(async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        models: [
+          { name: 'models/gemini-3.8-flash', supportedGenerationMethods: ['generateContent'] },
+          { name: 'models/embedding-001', supportedGenerationMethods: ['embedContent'] },
+        ],
+      }),
+    }));
+
     const res = await request(app)
       .get('/api/ai/status')
       .set('Authorization', `Bearer ${adminToken}`);
     expect(res.status).toBe(200);
     expect(res.body.data.configured).toBe(true);
     expect(typeof res.body.data.model).toBe('string');
+    expect(res.body.data.models).toEqual(['gemini-3.8-flash']);
   });
 
   it('POST /generate sukses memakai fetch yang di-mock', async () => {
@@ -121,6 +133,31 @@ describe('AI Gemini — /api/ai', () => {
 
     expect(res.status).toBe(200);
     expect(res.body.data.json).toEqual({ judul: 'Buket' });
+  });
+
+  it('POST /generate memakai model pilihan dari request', async () => {
+    process.env.GEMINI_API_KEY = 'test-key';
+    global.fetch = jest.fn(async () => mockGeminiResponse('ok'));
+
+    const res = await request(app)
+      .post('/api/ai/generate')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ prompt: 'Halo', model: 'gemini-3.8-pro' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.data.model).toBe('gemini-3.8-pro');
+    expect(global.fetch.mock.calls[0][0]).toContain('/models/gemini-3.8-pro:generateContent');
+  });
+
+  it('POST /generate menolak nama model tidak valid -> 400', async () => {
+    process.env.GEMINI_API_KEY = 'test-key';
+    const res = await request(app)
+      .post('/api/ai/generate')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ prompt: 'Halo', model: '../../etc/passwd' });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error.code).toBe('VALIDATION_ERROR');
   });
 
   it('POST /chat sukses dengan riwayat pesan', async () => {

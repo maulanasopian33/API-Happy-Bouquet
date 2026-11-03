@@ -1,6 +1,10 @@
 const { z } = require('zod');
 
 const generationOptions = {
+  model: z
+    .string()
+    .regex(/^[a-zA-Z0-9][a-zA-Z0-9._-]{2,63}$/, 'Nama model tidak valid')
+    .optional(),
   systemInstruction: z.string().max(8000, 'System instruction terlalu panjang').optional(),
   temperature: z.number().min(0).max(2).optional(),
   maxOutputTokens: z.number().int().min(1).max(8192).optional(),

@@ -1,8 +1,11 @@
 const { AppError, ErrorCodes } = require('../constants/errors');
 const logger = require('../utils/logger');
 
-const DEFAULT_MODEL = 'gemini-2.5-flash';
+const DEFAULT_MODEL = 'gemini-3.8-flash';
 const API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
+const MODELS_TTL_MS = 10 * 60 * 1000;
+
+let modelCache = { at: 0, models: [] };
 
 // Env dibaca saat dipanggil agar mudah di-mock/di-set (test & runtime).
 const getConfig = () => ({
@@ -13,6 +16,37 @@ const getConfig = () => ({
 const isConfigured = () => Boolean(getConfig().apiKey);
 
 const getModel = () => getConfig().model;
+
+// Daftar model diambil dari Gemini (bukan hardcode) supaya tidak basi saat Google deprecate model.
+const listModels = async () => {
+  const { apiKey } = getConfig();
+  if (!apiKey) return [];
+
+  if (Date.now() - modelCache.at < MODELS_TTL_MS) return modelCache.models;
+
+  try {
+    const response = await fetch(`${API_BASE}?pageSize=100`, {
+      headers: { 'x-goog-api-key': apiKey },
+    });
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      logger.warn(`Gagal mengambil daftar model Gemini: ${data?.error?.message || response.status}`);
+      return modelCache.models;
+    }
+
+    const models = (data.models || [])
+      .filter((model) => (model.supportedGenerationMethods || []).includes('generateContent'))
+      .map((model) => String(model.name || '').replace(/^models\//, ''))
+      .filter(Boolean);
+
+    modelCache = { at: Date.now(), models };
+    return models;
+  } catch (error) {
+    logger.warn(`Gagal menghubungi Gemini untuk daftar model: ${error.message}`);
+    return modelCache.models;
+  }
+};
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -38,8 +72,9 @@ const buildPayload = ({ contents, systemInstruction, temperature, maxOutputToken
   return payload;
 };
 
-const callGemini = async (payload, { timeoutMs = 60000 } = {}) => {
-  const { apiKey, model } = getConfig();
+const callGemini = async (payload, { timeoutMs = 60000, model: requestedModel } = {}) => {
+  const { apiKey, model: defaultModel } = getConfig();
+  const model = requestedModel || defaultModel;
 
   if (!apiKey) {
     throw new AppError(
@@ -201,6 +236,7 @@ module.exports = {
   DEFAULT_MODEL,
   isConfigured,
   getModel,
+  listModels,
   generateText,
   generateJson,
   generateStructured,
