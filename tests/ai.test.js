@@ -160,6 +160,42 @@ describe('AI Gemini — /api/ai', () => {
     expect(res.body.error.code).toBe('VALIDATION_ERROR');
   });
 
+  it('POST /generate fallback otomatis saat model deprecated (404)', async () => {
+    process.env.GEMINI_API_KEY = 'test-key';
+    let generateCalls = 0;
+    global.fetch = jest.fn(async (url) => {
+      if (String(url).includes('generateContent')) {
+        generateCalls += 1;
+        if (generateCalls === 1) {
+          return {
+            ok: false,
+            status: 404,
+            json: async () => ({
+              error: { code: 404, message: 'no longer available', status: 'NOT_FOUND' },
+            }),
+          };
+        }
+        return mockGeminiResponse('ok dari model fallback');
+      }
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          models: [{ name: 'models/gemini-3.8-flash', supportedGenerationMethods: ['generateContent'] }],
+        }),
+      };
+    });
+
+    const res = await request(app)
+      .post('/api/ai/generate')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ prompt: 'Halo', model: 'gemini-2.5-flash' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.data.text).toBe('ok dari model fallback');
+    expect(res.body.data.model).toBe('gemini-3.8-flash');
+  });
+
   it('POST /chat sukses dengan riwayat pesan', async () => {
     process.env.GEMINI_API_KEY = 'test-key';
     global.fetch = jest.fn(async () => mockGeminiResponse('Baik, siap membantu'));

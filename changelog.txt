@@ -79,6 +79,14 @@ Timestamp: 2026-11-03 23:05:00
 
 Timestamp: 2026-11-03 23:40:00
 
+45. AI GEMINI — FALLBACK OTOMATIS SAAT MODEL DEPRECATED (404)
+    - `callGemini`: bila Gemini balas 404 (model tidak tersedia), ambil daftar model via `listModels()` lalu ulangi sekali dengan model pertama yang berbeda; `result.model` melaporkan model yang benar-benar dipakai.
+    - Loop percobaan 3x agar retry 429/5xx tetap jalan di samping fallback model.
+    - Ini membuat env `GEMINI_MODEL` yang sudah usang tidak lagi mematikan fitur (self-healing), tanpa perlu deploy ulang hanya untuk ganti nama model.
+    - Test baru: fallback 404 → 200 dengan model pengganti. Total `tests/ai.test.js`: 14/14 PASS.
+
+Timestamp: 2026-11-04 00:20:00
+
 LATEST UPDATES - 27 September 2026
 ===================================
 

@@ -84,10 +84,12 @@ const callGemini = async (payload, { timeoutMs = 60000, model: requestedModel } 
     );
   }
 
-  const url = `${API_BASE}/${encodeURIComponent(model)}:generateContent`;
   const startedAt = Date.now();
+  let activeModel = model;
+  let modelFallbackUsed = false;
 
-  for (let attempt = 1; attempt <= 2; attempt += 1) {
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    const url = `${API_BASE}/${encodeURIComponent(activeModel)}:generateContent`;
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -106,6 +108,20 @@ const callGemini = async (payload, { timeoutMs = 60000, model: requestedModel } 
 
       if (!response.ok) {
         const upstreamMessage = data?.error?.message || `Gemini HTTP ${response.status}`;
+
+        // Model bisa di-deprecate kapan saja (mis. gemini-2.5-flash) -> pindah sekali ke model tersedia.
+        if (response.status === 404 && !modelFallbackUsed) {
+          const available = await listModels();
+          const nextModel = available.find((item) => item !== activeModel);
+
+          if (nextModel) {
+            modelFallbackUsed = true;
+            logger.warn(`Model ${activeModel} tidak tersedia, fallback ke ${nextModel}`);
+            activeModel = nextModel;
+            continue;
+          }
+        }
+
         const retryable = response.status === 429 || response.status >= 500;
 
         if (retryable && attempt === 1) {
@@ -141,7 +157,7 @@ const callGemini = async (payload, { timeoutMs = 60000, model: requestedModel } 
       const usage = data?.usageMetadata || {};
       return {
         text,
-        model,
+        model: activeModel,
         finishReason: candidate?.finishReason || null,
         usage: {
           promptTokens: usage.promptTokenCount || 0,
