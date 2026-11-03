@@ -46,3 +46,4 @@ describe('botDetector', () => {
     expect(res.bot_name).toBeNull();
   });
 });
+
