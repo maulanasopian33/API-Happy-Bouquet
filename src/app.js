@@ -89,6 +89,7 @@ const mediaRoutes = require('./routes/mediaRoutes');
 const healthRoutes = require('./routes/healthRoutes');
 const cacheRoutes = require('./routes/cacheRoutes');
 const settingRoutes = require('./routes/settingRoutes');
+const aiRoutes = require('./routes/aiRoutes');
 const path = require('path');
 
 // ─── Root API Info & Health Check ───────────────────────────────
@@ -123,6 +124,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/media', mediaRoutes);
 app.use('/api/cache', cacheRoutes);
 app.use('/api/settings', settingRoutes);
+app.use('/api/ai', aiRoutes);
 
 // ─── 404 Handler ────────────────────────────────────────────────
 app.use((req, res) => {

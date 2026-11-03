@@ -54,6 +54,19 @@ LATEST UPDATES - 3 November 2026
 
 Timestamp: 2026-11-03 22:20:00
 
+43. INTEGRASI AI GEMINI — SERVICE REUSABLE + ENDPOINT /api/ai + TEST
+    - Service inti `src/services/geminiService.js` (REST `generativelanguage.googleapis.com`, pakai `fetch` bawaan Node, tanpa dependency baru): `isConfigured()`, `getModel()`, `generateText`, `generateJson`, `generateStructured(prompt, zodSchema)`, `chat`. Fitur lain cukup `require('../services/geminiService')`.
+    - Env baru: `GEMINI_API_KEY`, `GEMINI_MODEL` (default `gemini-2.5-flash`) — didokumentasikan di `.env.example`. Env dibaca lazily agar mudah di-mock.
+    - Endpoint admin-only: `GET /api/ai/status`, `POST /api/ai/generate` (prompt/systemInstruction/temperature/maxOutputTokens/json/timeoutMs), `POST /api/ai/chat` (multi-turn). Rate limit khusus 20 req/menit karena biaya per token.
+    - Tahan gangguan upstream: timeout AbortController (default 60s), retry sekali untuk 429/5xx, pemetaan error jelas.
+    - Error code baru di `src/constants/errors.js`: `AI_NOT_CONFIGURED` (503), `AI_UPSTREAM_ERROR` (502), `AI_INVALID_RESPONSE` (502), `AI_BLOCKED` (422).
+    - `src/validators/aiValidator.js` (Zod) + `src/controllers/aiController.js` + `src/routes/aiRoutes.js`; mount `/api/ai` di `src/app.js`.
+    - Test baru `tests/ai.test.js` (11 test, `fetch` di-mock): auth 401/403, validasi 400, status, generate, mode JSON (termasuk code fence), chat, 503 saat key kosong, `generateStructured` menolak skema. Hasil: 11/11 PASS.
+    - Spec: `.dev/specs/gemini-ai.md` (lokal, tidak ter-track).
+    - Panel: halaman `/ai` "Integrasi AI" (menu Integrasi) — status konfigurasi, playground + preset, temperature/max tokens/mode JSON, hasil + latency & token usage. Build panel sukses.
+
+Timestamp: 2026-11-03 23:05:00
+
 LATEST UPDATES - 27 September 2026
 ===================================
 
