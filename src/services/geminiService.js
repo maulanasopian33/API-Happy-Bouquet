@@ -48,8 +48,6 @@ const listModels = async () => {
   }
 };
 
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
 const buildContents = (messages) =>
   messages.map((message) => ({
     role: message.role === 'model' || message.role === 'assistant' ? 'model' : 'user',
@@ -81,7 +79,24 @@ const withThinkingOff = (payload, model) => {
   };
 };
 
-const callGemini = async (payload, { timeoutMs = Number(process.env.GEMINI_TIMEOUT_MS) || 40000, model: requestedModel } = {}) => {
+const ATTEMPT_TIMEOUT_MS = 20000;
+
+const buildCandidates = async (model) => {
+  const candidates = [model];
+  const available = await listModels();
+
+  for (const item of available) {
+    if (candidates.length >= 3) break;
+    if (!candidates.includes(item)) candidates.push(item);
+  }
+
+  return candidates;
+};
+
+const callGemini = async (
+  payload,
+  { timeoutMs = Number(process.env.GEMINI_TIMEOUT_MS) || 45000, model: requestedModel } = {}
+) => {
   const { apiKey, model: defaultModel } = getConfig();
   const model = requestedModel || defaultModel;
 
@@ -94,116 +109,120 @@ const callGemini = async (payload, { timeoutMs = Number(process.env.GEMINI_TIMEO
   }
 
   const startedAt = Date.now();
-  let activeModel = model;
-  let modelFallbackUsed = false;
-  let body = withThinkingOff(payload, activeModel);
-  let thinkingDisabled = /flash/i.test(activeModel);
+  const deadline = startedAt + timeoutMs;
+  const candidates = await buildCandidates(model);
 
-  for (let attempt = 1; attempt <= 3; attempt += 1) {
-    const url = `${API_BASE}/${encodeURIComponent(activeModel)}:generateContent`;
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeoutMs);
+  let lastError = null;
 
-    try {
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-goog-api-key': apiKey,
-        },
-        body: JSON.stringify(body),
-        signal: controller.signal,
-      });
+  for (const activeModel of candidates) {
+    let thinkingDisabled = false;
 
-      const data = await response.json().catch(() => ({}));
+    // Satu model bisa overload (503) atau deprecated (404) — jangan habiskan seluruh waktu di model yang sama.
+    while (true) {
+      const remaining = deadline - Date.now();
 
-      if (!response.ok) {
-        const upstreamMessage = data?.error?.message || `Gemini HTTP ${response.status}`;
+      if (remaining < 1500) {
+        lastError = new AppError('Permintaan ke AI melebihi batas waktu.', 504, ErrorCodes.AI_UPSTREAM_ERROR, {
+          timeoutMs,
+          model: activeModel,
+        });
+        break;
+      }
 
-        // Sebagian model menolak thinkingConfig -> ulangi tanpa itu.
-        if (response.status === 400 && thinkingDisabled && /thinking/i.test(upstreamMessage)) {
-          thinkingDisabled = false;
-          body = payload;
-          logger.warn('Model menolak thinkingConfig, mengulang tanpa thinking.');
-          continue;
-        }
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), Math.min(ATTEMPT_TIMEOUT_MS, remaining));
 
-        // Model bisa di-deprecate kapan saja (mis. gemini-2.5-flash) -> pindah sekali ke model tersedia.
-        if (response.status === 404 && !modelFallbackUsed) {
-          const available = await listModels();
-          const nextModel = available.find((item) => item !== activeModel);
+      try {
+        const url = `${API_BASE}/${encodeURIComponent(activeModel)}:generateContent`;
+        const body = thinkingDisabled ? payload : withThinkingOff(payload, activeModel);
 
-          if (nextModel) {
-            modelFallbackUsed = true;
-            logger.warn(`Model ${activeModel} tidak tersedia, fallback ke ${nextModel}`);
-            activeModel = nextModel;
-            body = withThinkingOff(payload, activeModel);
-            thinkingDisabled = /flash/i.test(activeModel);
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': apiKey,
+          },
+          body: JSON.stringify(body),
+          signal: controller.signal,
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          const upstreamMessage = data?.error?.message || `Gemini HTTP ${response.status}`;
+
+          // Sebagian model menolak thinkingConfig -> ulangi model yang sama tanpa itu.
+          if (response.status === 400 && !thinkingDisabled && /thinking/i.test(upstreamMessage)) {
+            thinkingDisabled = true;
             continue;
           }
+
+          lastError = new AppError('Permintaan ke AI gagal.', 502, ErrorCodes.AI_UPSTREAM_ERROR, {
+            upstreamStatus: response.status,
+            upstreamMessage,
+            model: activeModel,
+          });
+
+          if ([404, 429, 503].includes(response.status) || response.status >= 500) {
+            logger.warn(`Gemini ${activeModel} gagal (${response.status}), mencoba model lain...`);
+            break;
+          }
+
+          throw lastError;
         }
 
-        const retryable = response.status === 429 || response.status >= 500;
-
-        if (retryable && attempt === 1) {
-          logger.warn(`Gemini upstream ${response.status}, retrying once...`);
-          await sleep(500);
-          continue;
+        if (data?.promptFeedback?.blockReason) {
+          throw new AppError('Prompt diblokir oleh filter keamanan AI.', 422, ErrorCodes.AI_BLOCKED, {
+            blockReason: data.promptFeedback.blockReason,
+          });
         }
 
-        logger.error(`Gemini upstream error: ${upstreamMessage}`);
-        throw new AppError('Permintaan ke AI gagal.', 502, ErrorCodes.AI_UPSTREAM_ERROR, {
-          upstreamStatus: response.status,
-          upstreamMessage,
+        const candidate = data?.candidates?.[0];
+        const text = (candidate?.content?.parts || [])
+          .map((part) => part.text)
+          .filter(Boolean)
+          .join('')
+          .trim();
+
+        if (!text) {
+          throw new AppError('AI tidak mengembalikan teks.', 502, ErrorCodes.AI_INVALID_RESPONSE);
+        }
+
+        const usage = data?.usageMetadata || {};
+        return {
+          text,
+          model: activeModel,
+          finishReason: candidate?.finishReason || null,
+          usage: {
+            promptTokens: usage.promptTokenCount || 0,
+            candidateTokens: usage.candidatesTokenCount || 0,
+            totalTokens: usage.totalTokenCount || 0,
+          },
+          latencyMs: Date.now() - startedAt,
+        };
+      } catch (error) {
+        if (error instanceof AppError) throw error;
+
+        if (error.name === 'AbortError') {
+          lastError = new AppError('Permintaan ke AI melebihi batas waktu.', 504, ErrorCodes.AI_UPSTREAM_ERROR, {
+            timeoutMs,
+            model: activeModel,
+          });
+          logger.warn(`Gemini ${activeModel} timeout, mencoba model lain...`);
+          break;
+        }
+
+        logger.error('Gemini request failed:', error);
+        throw new AppError('Gagal menghubungi layanan AI.', 502, ErrorCodes.AI_UPSTREAM_ERROR, {
+          cause: error.message,
         });
+      } finally {
+        clearTimeout(timer);
       }
-
-      if (data?.promptFeedback?.blockReason) {
-        throw new AppError('Prompt diblokir oleh filter keamanan AI.', 422, ErrorCodes.AI_BLOCKED, {
-          blockReason: data.promptFeedback.blockReason,
-        });
-      }
-
-      const candidate = data?.candidates?.[0];
-      const text = (candidate?.content?.parts || [])
-        .map((part) => part.text)
-        .filter(Boolean)
-        .join('')
-        .trim();
-
-      if (!text) {
-        throw new AppError('AI tidak mengembalikan teks.', 502, ErrorCodes.AI_INVALID_RESPONSE);
-      }
-
-      const usage = data?.usageMetadata || {};
-      return {
-        text,
-        model: activeModel,
-        finishReason: candidate?.finishReason || null,
-        usage: {
-          promptTokens: usage.promptTokenCount || 0,
-          candidateTokens: usage.candidatesTokenCount || 0,
-          totalTokens: usage.totalTokenCount || 0,
-        },
-        latencyMs: Date.now() - startedAt,
-      };
-    } catch (error) {
-      if (error instanceof AppError) throw error;
-      if (error.name === 'AbortError') {
-        throw new AppError('Permintaan ke AI melebihi batas waktu.', 504, ErrorCodes.AI_UPSTREAM_ERROR, {
-          timeoutMs,
-        });
-      }
-      logger.error('Gemini request failed:', error);
-      throw new AppError('Gagal menghubungi layanan AI.', 502, ErrorCodes.AI_UPSTREAM_ERROR, {
-        cause: error.message,
-      });
-    } finally {
-      clearTimeout(timer);
     }
   }
 
-  throw new AppError('Permintaan ke AI gagal.', 502, ErrorCodes.AI_UPSTREAM_ERROR);
+  throw lastError || new AppError('Permintaan ke AI gagal.', 502, ErrorCodes.AI_UPSTREAM_ERROR);
 };
 
 const stripCodeFence = (text) =>

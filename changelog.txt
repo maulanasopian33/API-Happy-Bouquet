@@ -96,6 +96,17 @@ Timestamp: 2026-11-04 00:20:00
 
 Timestamp: 2026-11-04 00:40:00
 
+47. AI GEMINI — ROTASI MODEL SAAT OVERLOAD (503) DENGAN BATAS WAKTU TOTAL
+    - Temuan dari server: `gemini-3.8-flash` membalas `503 UNAVAILABLE "high demand"` setelah ~48s. Retry ke model yang sama membuat total >60s → 504 gateway.
+    - `callGemini` dirombak: kandidat = model diminta + hingga 2 model lain dari `listModels()`; tiap model dapat jatah maksimal 20s; total dibatasi `GEMINI_TIMEOUT_MS` (default 45s).
+    - Status 404/429/5xx (termasuk 503 overload) atau timeout → langsung pindah model berikutnya, bukan mengulang model yang sama.
+    - Error non-retryable (400/401/403 selain thinkingConfig) langsung dilempar tanpa mencoba model lain.
+    - Hasil akhir menyertakan `model` yang benar-benar dipakai; bila semua gagal, error JSON memuat `upstreamStatus`/`upstreamMessage`/`timeoutMs` + `model`.
+    - `sleep` helper dihapus (tidak dipakai lagi). `.env.example`: dokumentasi `GEMINI_TIMEOUT_MS=45000` sebagai budget total.
+    - Test baru: 503 model utama → sukses di model cadangan. Total `tests/ai.test.js`: 16/16 PASS.
+
+Timestamp: 2026-11-04 01:10:00
+
 LATEST UPDATES - 27 September 2026
 ===================================
 
