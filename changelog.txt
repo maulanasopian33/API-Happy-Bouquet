@@ -39,6 +39,21 @@ Timestamp: 2026-10-30 18:40:00
 
 Timestamp: 2026-10-30 18:05:00
 
+LATEST UPDATES - 3 November 2026
+================================
+
+42. FIX CACHE MANAGEMENT — SUMBER UPSTASH (CACHE NUXT) SELAIN LOCAL REDIS
+    - Masalah: panel hanya mendeteksi `analytics:top_urls` & `analytics:active_visitors` karena backend memakai `REDIS_URL=redis://localhost:6379/1` (Redis lokal), sedangkan cache Nuxt ada di Upstash dengan prefix `happybouquet:cache:`.
+    - Client baru `src/config/upstash.js`: REST API Upstash (fetch bawaan Node, tanpa dependency baru) + `dotenv.config()`.
+    - `src/services/cacheService.js` dirombak jadi adapter `local` (ioredis) & `upstash` (REST); default otomatis `upstash` bila `UPSTASH_REDIS_REST_URL`/`TOKEN` terisi.
+    - `source` (`local`|`upstash`) kini diterima di semua endpoint cache (query untuk GET/DELETE, body untuk POST) dan divalidasi Zod.
+    - `GET /api/cache/stats` mengembalikan `source` aktif & `upstashConfigured`.
+    - `src/validators/cacheValidator.js`: tambah field `source` + `sourceQuerySchema`.
+    - `.env.example`: tambah `UPSTASH_REDIS_REST_URL` & `UPSTASH_REDIS_REST_TOKEN`.
+    - Verifikasi: SCAN Upstash menemukan 17 key `happybouquet:cache:*`, GET key + stats (Redis 8.4.0) berhasil; source local tetap berfungsi.
+
+Timestamp: 2026-11-03 22:20:00
+
 LATEST UPDATES - 27 September 2026
 ===================================
 

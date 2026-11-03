@@ -5,136 +5,119 @@ const {
   setKeySchema,
   setExpirySchema,
   keyParamSchema,
-  listKeysQuerySchema
+  listKeysQuerySchema,
+  sourceQuerySchema,
 } = require('../validators/cacheValidator');
+
+const handleValidationError = (error, res, next) => {
+  if (error.name === 'ZodError') {
+    return validationErrorResponse(res, error, 'Validation error', 400);
+  }
+  return next(error);
+};
 
 const getKeys = async (req, res, next) => {
   try {
-    const validated = listKeysQuerySchema.parse({ query: req.query });
-    const { pattern = '*', limit = 100 } = validated.query;
-    const parsedLimit = Math.min(parseInt(limit, 10), 1000);
-    const result = await cacheService.getKeys(pattern, parsedLimit);
-    logger.info(`Admin ${req.user?.id} listed cache keys with pattern: ${pattern}`);
+    const { pattern, limit, source } = listKeysQuerySchema.parse(req.query);
+    const result = await cacheService.getKeys(pattern, limit, source);
+    logger.info(`Admin ${req.user?.id} listed cache keys (source=${source || cacheService.defaultSource}, pattern=${pattern})`);
     return successResponse(res, 'Daftar cache keys berhasil diambil', result);
   } catch (error) {
-    if (error.name === 'ZodError') {
-      return validationErrorResponse(res, error, 'Validation error', 400);
-    }
-    next(error);
+    return handleValidationError(error, res, next);
   }
 };
 
 const getKey = async (req, res, next) => {
   try {
-    const validated = keyParamSchema.parse({ params: req.params });
-    const { key } = validated.params;
-    const result = await cacheService.get(key);
+    const { params, source } = keyParamSchema.parse({ params: req.params, source: req.query.source });
+    const result = await cacheService.get(params.key, source);
     if (result.value === null && result.ttl === -2) {
       return errorResponse(res, 'Cache key tidak ditemukan', 404, 'KEY_NOT_FOUND');
     }
-    logger.info(`Admin ${req.user?.id} retrieved cache key: ${key}`);
-    return successResponse(res, 'Cache key berhasil diambil', { key, ...result });
+    logger.info(`Admin ${req.user?.id} retrieved cache key: ${params.key}`);
+    return successResponse(res, 'Cache key berhasil diambil', { key: params.key, ...result });
   } catch (error) {
-    if (error.name === 'ZodError') {
-      return validationErrorResponse(res, error, 'Validation error', 400);
-    }
-    next(error);
+    return handleValidationError(error, res, next);
   }
 };
 
 const setKey = async (req, res, next) => {
   try {
-    const validated = setKeySchema.parse({ body: req.body });
-    const { key, value, ttl } = validated.body;
-    const ttlSeconds = ttl ? parseInt(ttl, 10) : undefined;
-    const result = await cacheService.set(key, value, ttlSeconds);
-    logger.info(`Admin ${req.user?.id} set cache key: ${key} with TTL: ${ttlSeconds || 'none'}`);
+    const { key, value, ttl, source } = setKeySchema.parse(req.body);
+    const result = await cacheService.set(key, value, ttl, source);
+    logger.info(`Admin ${req.user?.id} set cache key: ${key} (source=${source || cacheService.defaultSource})`);
     return successResponse(res, 'Cache key berhasil disimpan', result);
   } catch (error) {
-    if (error.name === 'ZodError') {
-      return validationErrorResponse(res, error, 'Validation error', 400);
-    }
-    next(error);
+    return handleValidationError(error, res, next);
   }
 };
 
 const deleteKey = async (req, res, next) => {
   try {
-    const validated = keyParamSchema.parse({ params: req.params });
-    const { key } = validated.params;
-    const result = await cacheService.del(key);
+    const { params, source } = keyParamSchema.parse({ params: req.params, source: req.query.source });
+    const result = await cacheService.del(params.key, source);
     if (!result.deleted) {
       return errorResponse(res, 'Cache key tidak ditemukan', 404, 'KEY_NOT_FOUND');
     }
-    logger.info(`Admin ${req.user?.id} deleted cache key: ${key}`);
+    logger.info(`Admin ${req.user?.id} deleted cache key: ${params.key}`);
     return successResponse(res, 'Cache key berhasil dihapus', result);
   } catch (error) {
-    if (error.name === 'ZodError') {
-      return validationErrorResponse(res, error, 'Validation error', 400);
-    }
-    next(error);
+    return handleValidationError(error, res, next);
   }
 };
 
 const flushCache = async (req, res, next) => {
   try {
-    const result = await cacheService.flushAll();
-    logger.warn(`Admin ${req.user?.id} FLUSHED ALL CACHE`);
+    const { source } = sourceQuerySchema.parse({ source: req.query.source });
+    const result = await cacheService.flushAll(source);
+    logger.warn(`Admin ${req.user?.id} FLUSHED ALL CACHE (source=${source || cacheService.defaultSource})`);
     return successResponse(res, 'Semua cache berhasil dihapus (FLUSHALL)', result);
   } catch (error) {
-    next(error);
+    return handleValidationError(error, res, next);
   }
 };
 
 const getStats = async (req, res, next) => {
   try {
-    const stats = await cacheService.getStats();
-    logger.info(`Admin ${req.user?.id} retrieved Redis stats`);
-    return successResponse(res, 'Statistik Redis berhasil diambil', stats);
+    const { source } = sourceQuerySchema.parse({ source: req.query.source });
+    const stats = await cacheService.getStats(source);
+    return successResponse(res, 'Statistik Redis berhasil diambil', {
+      ...stats,
+      source: source || cacheService.defaultSource,
+      upstashConfigured: cacheService.isUpstashConfigured,
+    });
   } catch (error) {
-    next(error);
+    return handleValidationError(error, res, next);
   }
 };
 
 const getKeyTTL = async (req, res, next) => {
   try {
-    const validated = keyParamSchema.parse({ params: req.params });
-    const { key } = validated.params;
-    const result = await cacheService.getTTL(key);
+    const { params, source } = keyParamSchema.parse({ params: req.params, source: req.query.source });
+    const result = await cacheService.getTTL(params.key, source);
     if (result.ttl === -2) {
       return errorResponse(res, 'Cache key tidak ditemukan', 404, 'KEY_NOT_FOUND');
     }
-    logger.info(`Admin ${req.user?.id} retrieved TTL for key: ${key}`);
     return successResponse(res, 'TTL cache key berhasil diambil', result);
   } catch (error) {
-    if (error.name === 'ZodError') {
-      return validationErrorResponse(res, error, 'Validation error', 400);
-    }
-    next(error);
+    return handleValidationError(error, res, next);
   }
 };
 
 const setKeyExpiry = async (req, res, next) => {
   try {
-    const validated = setExpirySchema.parse({ params: req.params, body: req.body });
-    const { key } = validated.params;
-    const { ttl, ttlMs } = validated.body;
-    let result;
-    if (ttlMs) {
-      result = await cacheService.pexpire(key, parseInt(ttlMs, 10));
-    } else if (ttl) {
-      result = await cacheService.expire(key, parseInt(ttl, 10));
-    }
+    const { params, body } = setExpirySchema.parse({ params: req.params, body: req.body });
+    const result = body.ttlMs
+      ? await cacheService.pexpire(params.key, body.ttlMs, body.source)
+      : await cacheService.expire(params.key, body.ttl, body.source);
+
     if (!result.expired) {
       return errorResponse(res, 'Cache key tidak ditemukan atau gagal set expiry', 404, 'KEY_NOT_FOUND');
     }
-    logger.info(`Admin ${req.user?.id} set expiry for key: ${key}`);
+    logger.info(`Admin ${req.user?.id} set expiry for key: ${params.key}`);
     return successResponse(res, 'Expiry cache key berhasil diatur', result);
   } catch (error) {
-    if (error.name === 'ZodError') {
-      return validationErrorResponse(res, error, 'Validation error', 400);
-    }
-    next(error);
+    return handleValidationError(error, res, next);
   }
 };
 
@@ -146,5 +129,5 @@ module.exports = {
   flushCache,
   getStats,
   getKeyTTL,
-  setKeyExpiry
+  setKeyExpiry,
 };
