@@ -55,10 +55,41 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Rate limiting
-const limiter = rateLimit({
+// ─── Rate Limiting Granular ──────────────────────────────────────
+// 1. Auth Limiter: Mencegah serangan brute-force login
+const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { trustProxy: false },
+  message: {
+    status: false,
+    message: 'Terlalu banyak percobaan login. Silakan tunggu 15 menit.',
+    data: null,
+    error: { code: 'AUTH_RATE_LIMIT', message: 'Batas percobaan login terlampaui. Coba lagi dalam 15 menit.' },
+  },
+});
+
+// 2. Analytics Limiter: Melindungi endpoint pengumpulan telemetri
+const analyticsLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 400,
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { trustProxy: false },
+  message: {
+    status: false,
+    message: 'Batas pelaporan analitik tercapai.',
+    data: null,
+    error: { code: 'ANALYTICS_RATE_LIMIT', message: 'Rate limit pelaporan telemetri.' },
+  },
+});
+
+// 3. General Limiter: Browsing produk, katalog, dan operasional normal
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 600,
   standardHeaders: true,
   legacyHeaders: false,
   validate: { trustProxy: false },
@@ -69,7 +100,11 @@ const limiter = rateLimit({
     error: { code: 'RATE_LIMIT', message: 'Terlalu banyak permintaan. Coba lagi nanti.' },
   },
 });
-app.use(limiter);
+
+app.use('/api/auth/login', authLimiter);
+app.use('/api/analytics/collect', analyticsLimiter);
+app.use('/api/v1/analytics/collect', analyticsLimiter);
+app.use(generalLimiter);
 
 const { csrfGuard } = require('./middlewares/csrfMiddleware');
 app.use(csrfGuard);
