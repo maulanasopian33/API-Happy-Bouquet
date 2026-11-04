@@ -15,6 +15,16 @@ const ALLOWED_KEYS = [
   'tiktok_url',
   'shopee_url',
   'tiktok_shop_url',
+  // SEO & Webmaster Settings (CR-0006)
+  'seo_meta_title',
+  'seo_meta_description',
+  'seo_meta_keywords',
+  'seo_canonical_url',
+  'seo_og_image',
+  'seo_google_verification',
+  'seo_bing_verification',
+  'seo_robots_directive',
+  'seo_llms_summary',
 ];
 
 const getAllSettings = async () => {
