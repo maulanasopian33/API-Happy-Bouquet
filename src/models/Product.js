@@ -23,6 +23,13 @@ const initProduct = (sequelize) => {
       },
       preorder_duration: { type: DataTypes.INTEGER, allowNull: true },
       is_active: { type: DataTypes.BOOLEAN, defaultValue: true },
+      // Customization fields (Multi-image, Variants, Specs, Stock, Rating)
+      gallery_urls: { type: DataTypes.JSON, allowNull: true },
+      variants: { type: DataTypes.JSON, allowNull: true },
+      specifications: { type: DataTypes.JSON, allowNull: true },
+      stock: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 20 },
+      rating: { type: DataTypes.DECIMAL(3, 2), allowNull: false, defaultValue: 4.9 },
+      review_count: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
       gbp_posted: { type: DataTypes.BOOLEAN, defaultValue: false },
       gbp_posted_at: { type: DataTypes.DATE, allowNull: true },
       gbp_post_name: { type: DataTypes.STRING, allowNull: true },

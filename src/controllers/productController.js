@@ -10,6 +10,13 @@ const createProductSchema = z.object({
   category_id: z.number().optional(),
   type: z.enum(['ready', 'preorder']).optional(),
   preorder_duration: z.number().optional(),
+  photo_url: z.string().optional(),
+  gallery_urls: z.union([z.array(z.string()), z.string()]).optional(),
+  variants: z.union([z.record(z.any()), z.array(z.any()), z.string()]).optional(),
+  specifications: z.union([z.record(z.any()), z.string()]).optional(),
+  stock: z.number().optional(),
+  rating: z.number().optional(),
+  review_count: z.number().optional(),
 });
 
 const productChannelSchema = z.array(z.object({
@@ -76,13 +83,28 @@ const getProductBySlug = async (req, res) => {
   }
 };
 
+const parseJsonSafe = (val) => {
+  if (!val) return null;
+  if (typeof val === 'object') return val;
+  try {
+    return JSON.parse(val);
+  } catch {
+    return val;
+  }
+};
+
 const createProduct = async (req, res) => {
   try {
     const data = createProductSchema.parse(req.body);
-    const photo_url = req.file ? `/public/uploads/products/${req.file.filename}` : undefined;
+    const uploadedPhoto = req.file ? `/public/uploads/products/${req.file.filename}` : undefined;
+    const photo_url = uploadedPhoto || data.photo_url;
+
     const product = await productService.createProduct({
       ...data,
       photo_url,
+      gallery_urls: parseJsonSafe(data.gallery_urls),
+      variants: parseJsonSafe(data.variants),
+      specifications: parseJsonSafe(data.specifications),
       gbp_post: req.body.gbp_post === 'true' || req.body.gbp_post === true,
       gbp_location: req.body.gbp_location || null,
     });
@@ -95,10 +117,18 @@ const createProduct = async (req, res) => {
 
 const updateProduct = async (req, res) => {
   try {
-    const photo_url = req.file ? `/public/uploads/products/${req.file.filename}` : undefined;
+    const uploadedPhoto = req.file ? `/public/uploads/products/${req.file.filename}` : undefined;
+    const bodyData = { ...req.body };
+    if (uploadedPhoto) bodyData.photo_url = uploadedPhoto;
+
+    if (bodyData.gallery_urls !== undefined) bodyData.gallery_urls = parseJsonSafe(bodyData.gallery_urls);
+    if (bodyData.variants !== undefined) bodyData.variants = parseJsonSafe(bodyData.variants);
+    if (bodyData.specifications !== undefined) bodyData.specifications = parseJsonSafe(bodyData.specifications);
+    if (bodyData.stock !== undefined) bodyData.stock = Number(bodyData.stock);
+    if (bodyData.price !== undefined) bodyData.price = Number(bodyData.price);
+
     const product = await productService.updateProduct(Number(req.params.id), {
-      ...req.body,
-      ...(photo_url && { photo_url }),
+      ...bodyData,
       gbp_post: req.body.gbp_post === 'true' || req.body.gbp_post === true,
       gbp_location: req.body.gbp_location || null,
     });
