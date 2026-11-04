@@ -23,6 +23,19 @@ const settingsSchema = z.object({
   seo_bing_verification: z.string().max(255).optional(),
   seo_robots_directive: z.string().max(100).optional(),
   seo_llms_summary: z.string().max(5000).optional(),
+  // Dynamic Content & CMS Settings (CR-0007)
+  shipping_options: z.string().max(20000).optional(),
+  payment_methods_config: z.string().max(20000).optional(),
+  store_bank_accounts: z.string().max(20000).optional(),
+  home_trust_stats: z.string().max(20000).optional(),
+  home_trust_badges: z.string().max(20000).optional(),
+  home_testimonials: z.string().max(50000).optional(),
+  store_faqs: z.string().max(50000).optional(),
+  about_brand_story: z.string().max(50000).optional(),
+  about_values: z.string().max(50000).optional(),
+  page_shipping_content: z.string().max(100000).optional(),
+  page_terms_content: z.string().max(100000).optional(),
+  page_privacy_content: z.string().max(100000).optional(),
 });
 
 const getSettings = async (_req, res) => {

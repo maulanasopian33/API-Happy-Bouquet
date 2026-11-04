@@ -25,6 +25,19 @@ const ALLOWED_KEYS = [
   'seo_bing_verification',
   'seo_robots_directive',
   'seo_llms_summary',
+  // Dynamic Content & CMS Settings (CR-0007)
+  'shipping_options',
+  'payment_methods_config',
+  'store_bank_accounts',
+  'home_trust_stats',
+  'home_trust_badges',
+  'home_testimonials',
+  'store_faqs',
+  'about_brand_story',
+  'about_values',
+  'page_shipping_content',
+  'page_terms_content',
+  'page_privacy_content',
 ];
 
 const getAllSettings = async () => {
