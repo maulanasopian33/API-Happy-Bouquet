@@ -70,6 +70,15 @@ const getTemplates = async (req, res) => {
   }
 };
 
+const getTemplate = async (req, res) => {
+  try {
+    const template = await templateService.getTemplateById(Number(req.params.id));
+    return successResponse(res, 'Template berhasil diambil', template);
+  } catch (err) {
+    return fail(res, err);
+  }
+};
+
 const createTemplate = async (req, res) => {
   try {
     const payload = createTemplateSchema.parse(req.body);
@@ -181,6 +190,7 @@ const deleteOutput = async (req, res) => {
 
 module.exports = {
   getTemplates,
+  getTemplate,
   createTemplate,
   updateTemplate,
   deleteTemplate,

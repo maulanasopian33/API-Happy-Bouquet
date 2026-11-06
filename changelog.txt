@@ -4,10 +4,10 @@ LATEST UPDATES - 06 November 2026
 45. MEDIA KREATOR (TEMPLATE WATERMARK + GENERATE PNG MULTI-RASIO)
     - Dependensi baru: `jimp@0.22.12` (pure JS, tanpa binary native) untuk render PNG server-side.
     - Tabel baru: MediaCreatorTemplates, MediaCreatorProjects, MediaCreatorOutputs + 3 migrasi (20261106000001..3), asosiasi di src/models/index.js. `template_ids` JSON di project; `source_media_id` nullable ON DELETE SET NULL.
-    - Endpoint `/api/media-creator` (admin/super_admin): CRUD template (4), CRUD project (5), POST generate per template + DELETE output.
+    - Endpoint `/api/media-creator` (admin/super_admin): template (5: list, detail, create, update, delete), project (5), POST generate per template + DELETE output (total 12).
     - Render: `cover()` sesuai dimensi template, logo diskalakan % lebar kanvas, 9 posisi preset + custom X/Y % ruang sisa, opacity, margin, timeout 30 s, lock per project (409), rate limit generate 30/menit.
     - Output dicatat sebagai baris `Media` (muncul di Media Library) + snapshot config; generate ulang mengganti output lama; hapus output/project menghapus file + baris Media (sumber & logo tidak dihapus). Ganti foto sumber menghapus output lama dan reset status draft.
-    - Test `tests/mediaCreator.test.js` (10 lulus, `--runInBand --forceExit`); memakai kanvas 240 px karena Jimp sangat lambat di sandbox Jest (produksi 300 px ±215 ms).
+    - Test `tests/mediaCreator.test.js` (11 lulus, `--runInBand --forceExit`); memakai kanvas 240 px karena Jimp sangat lambat di sandbox Jest (produksi 300 px ±215 ms).
     - Spesifikasi: `../PanelHappyBouquet/docs/` (brief, PRD, arsitektur, API spec, roadmap).
 
 Timestamp: 2026-11-06 19:55:00

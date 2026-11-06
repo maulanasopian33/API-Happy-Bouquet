@@ -26,6 +26,7 @@ const generateLimiter = rateLimit({
 // Template
 router.get('/templates', ctrl.getTemplates);
 router.post('/templates', ctrl.createTemplate);
+router.get('/templates/:id', ctrl.getTemplate);
 router.put('/templates/:id', ctrl.updateTemplate);
 router.delete('/templates/:id', ctrl.deleteTemplate);
 

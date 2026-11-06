@@ -106,6 +106,15 @@ describe('Media Creator API', () => {
     templateId = res.body.data.id;
   });
 
+  it('mengambil detail template', async () => {
+    const res = await auth(request(app).get(`/api/media-creator/templates/${templateId}`));
+    expect(res.status).toBe(200);
+    expect(res.body.data.id).toBe(templateId);
+
+    const missing = await auth(request(app).get('/api/media-creator/templates/999999'));
+    expect(missing.status).toBe(404);
+  });
+
   it('membuat template tanpa watermark', async () => {
     const res = await post('/api/media-creator/templates', {
       name: 'Story 9:16',
