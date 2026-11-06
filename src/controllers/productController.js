@@ -63,16 +63,6 @@ const getAllProducts = async (req, res) => {
   }
 };
 
-const getProductById = async (req, res) => {
-  try {
-    const includeCosts = canViewCosts(req) && req.query.include_costs === 'true';
-    const product = await productService.getProductById(Number(req.params.id), includeCosts);
-    return successResponse(res, 'Produk berhasil diambil', product);
-  } catch (err) {
-    return errorResponse(res, err.message, null, 404);
-  }
-};
-
 const getProductBySlug = async (req, res) => {
   try {
     const includeCosts = canViewCosts(req) && req.query.include_costs === 'true';
@@ -189,7 +179,6 @@ const setProductChannels = async (req, res) => {
 
 module.exports = {
   getAllProducts,
-  getProductById,
   getProductBySlug,
   createProduct,
   updateProduct,

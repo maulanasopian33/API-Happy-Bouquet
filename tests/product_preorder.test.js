@@ -68,7 +68,7 @@ describe('Product Preorder & Channels API', () => {
   });
 
   it('should include order channels in product details', async () => {
-    const res = await request(app).get(`/api/products/${testProductId}`);
+    const res = await request(app).get('/api/products/slug/buket-preorder');
     expect(res.status).toBe(200);
     expect(res.body.data.orderChannels).toBeDefined();
     expect(res.body.data.orderChannels.length).toBe(1);

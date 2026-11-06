@@ -499,3 +499,14 @@ LATEST UPDATES - 27 Mei 2026
 
 Timestamp: 2026-05-27 15:00:00
 
+
+LATEST UPDATES - 06 November 2026
+=================================
+
+31. HAPUS ROUTE DETAIL PRODUK BERDASARKAN ID
+   - Menghapus GET /api/products/:id; detail produk hanya lewat GET /api/products/slug/:slug.
+   - Menghapus handler getProductById di productController (service tetap dipakai validasi internal).
+   - Menyesuaikan test product_public & product_preorder, client_api.http, dan docs/kb_routes_produk.md.
+
+Timestamp: 2026-11-06 10:00:00
+

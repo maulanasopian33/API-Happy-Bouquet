@@ -104,14 +104,7 @@ GET /api/products?active=true&category_id=1
 
 ---
 
-### 2.2 Ambil Detail Produk berdasarkan ID
-- **Method**: `GET`
-- **Endpoint**: `/api/products/:id` (ID harus numerik)
-- **Contoh**: `/api/products/1`
-
----
-
-### 2.3 Ambil Detail Produk berdasarkan Slug (Sangat Direkomendasikan untuk URL FE)
+### 2.2 Ambil Detail Produk berdasarkan Slug (Sangat Direkomendasikan untuk URL FE)
 Untuk SEO dan URL yang ramah pengguna, FE sebaiknya menggunakan endpoint berbasis slug untuk halaman detail produk.
 
 - **Method**: `GET`
@@ -123,7 +116,7 @@ Mengembalikan objek produk lengkap, termasuk asosiasi Kategori (`category`) dan 
 
 ---
 
-### 2.4 Sistem Pre-order & Jenis Produk
+### 2.3 Sistem Pre-order & Jenis Produk
 Setiap produk memiliki field `type` dan `preorder_duration`:
 - **`type` = `ready`**: Produk siap dikirim, stok fisik tersedia langsung.
 - **`type` = `preorder`**: Produk memerlukan perangkaian khusus. Field `preorder_duration` menunjukkan waktu pembuatan dalam satuan hari.
@@ -135,7 +128,7 @@ Setiap produk memiliki field `type` dan `preorder_duration`:
 
 ---
 
-### 2.5 Order Channels (WhatsApp / Shopee)
+### 2.4 Order Channels (WhatsApp / Shopee)
 Produk di Happy Bouquet tidak selalu dicheckout langsung di web API, namun bisa diarahkan ke link WhatsApp or Shopee. Relasi ini disimpan di array `orderChannels` produk.
 
 - **Cara Integrasi di FE**:

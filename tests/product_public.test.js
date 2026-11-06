@@ -47,7 +47,7 @@ describe('Product Public API', () => {
   });
 
   it('should return product details without costTemplates by default', async () => {
-    const res = await request(app).get(`/api/products/${testProductId}`);
+    const res = await request(app).get('/api/products/slug/test-product-public');
     expect(res.status).toBe(200);
     expect(res.body.data.costTemplates).toBeUndefined();
   });

@@ -37,11 +37,11 @@ GET {{baseUrl}}/products
 GET {{baseUrl}}/products?include_costs=true
 Authorization: {{authToken}}
 
-### Get Product Detail (ID)
-GET {{baseUrl}}/products/1
+### Get Product Detail (Slug)
+GET {{baseUrl}}/products/slug/buket-mawar-merah
 
-### Get Product Detail (ID with Costs)
-GET {{baseUrl}}/products/1?include_costs=true
+### Get Product Detail (Slug with Costs)
+GET {{baseUrl}}/products/slug/buket-mawar-merah?include_costs=true
 Authorization: {{authToken}}
 
 ### Get Product Detail (Slug)

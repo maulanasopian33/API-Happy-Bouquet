@@ -9,9 +9,6 @@ const adminOnly = authorizeRoles('admin', 'super_admin');
 // GET  /api/products          — daftar semua produk
 router.get('/', ctrl.getAllProducts);
 
-// GET  /api/products/:id      — detail produk
-router.get('/:id(\\d+)', ctrl.getProductById);
-
 // GET  /api/products/slug/:slug — detail produk berdasarkan slug
 router.get('/slug/:slug', ctrl.getProductBySlug);
 
