@@ -15,6 +15,7 @@
 - [RESOLVED] Modul panel reseller di frontend belum dibuat (baru diimplementasikan di backend API). (Phase F: halaman `/admin/resellers` sudah ada di panel.)
 - [RESOLVED] Detail error validasi hilang karena controller memakai `err.errors` (dihapus di Zod v4). (Diganti `err.issues` + kode `VALIDATION_ERROR` di 14 controller, commit `f20a7b2`.)
 - [ ] TikTok belum terintegrasi API resmi — masih mock, diblokir 403 di production (`bfa43f3`). Perlu integrasi OAuth/publish nyata bila fitur dipakai produksi.
+- [ ] Media Kreator: `jimp` belum diuji di Passenger/shared hosting produksi. Risiko RAM < 256 MB saat render 2048 px; uji setelah deploy dan turunkan batas ukuran bila perlu.
 - [RESOLVED] Mock analytics di `socket.ts` bocor ke production. (Kini produksi baca data nyata Redis, mock hanya dev, commit `878c03a`.)
 - [RESOLVED] Banyak `(req as any)` di controller. (Dihilangkan via `AuthRequest.reseller` + `req.reseller!.id`, commit `9a84a49`.)
 - [RESOLVED] `console.log` sisa di redis/tiktok/encryption. (Diganti logger winston, commit `3e25ec1`.)

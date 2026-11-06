@@ -16,6 +16,9 @@ const { initOrderChannel } = require('./OrderChannel');
 const { initProductOrderChannel } = require('./ProductOrderChannel');
 const { initTiktokGlobalSetting } = require('./TiktokGlobalSetting');
 const { initStoreSetting } = require('./StoreSetting');
+const { initMediaCreatorTemplate } = require('./MediaCreatorTemplate');
+const { initMediaCreatorProject } = require('./MediaCreatorProject');
+const { initMediaCreatorOutput } = require('./MediaCreatorOutput');
 
 // Reseller models
 const { initReseller } = require('./Reseller');
@@ -90,6 +93,11 @@ const PublicOrder = initPublicOrder(sequelize);
 
 // StoreSetting — key-value data toko (tanpa asosiasi)
 const StoreSetting = initStoreSetting(sequelize);
+
+// Media Kreator
+const MediaCreatorTemplate = initMediaCreatorTemplate(sequelize);
+const MediaCreatorProject = initMediaCreatorProject(sequelize);
+const MediaCreatorOutput = initMediaCreatorOutput(sequelize);
 
 // ─── ASOSIASI ────────────────────────────────────────────────────
 
@@ -211,6 +219,23 @@ Media.belongsTo(User, { foreignKey: 'uploadedById', as: 'uploader' });
 User.hasOne(GoogleBusinessSetting, { foreignKey: 'updated_by', as: 'googleBusinessSetting' });
 GoogleBusinessSetting.belongsTo(User, { foreignKey: 'updated_by', as: 'updater' });
 
+// Media Kreator: template, project, output
+MediaCreatorTemplate.belongsTo(Media, { foreignKey: 'watermark_media_id', as: 'watermark' });
+MediaCreatorProject.belongsTo(Media, { foreignKey: 'source_media_id', as: 'sourceMedia' });
+MediaCreatorProject.belongsTo(User, { foreignKey: 'created_by', as: 'creator' });
+MediaCreatorProject.hasMany(MediaCreatorOutput, {
+  foreignKey: 'project_id',
+  as: 'outputs',
+  onDelete: 'CASCADE',
+});
+MediaCreatorOutput.belongsTo(MediaCreatorProject, {
+  foreignKey: 'project_id',
+  as: 'project',
+  onDelete: 'CASCADE',
+});
+MediaCreatorOutput.belongsTo(MediaCreatorTemplate, { foreignKey: 'template_id', as: 'template' });
+MediaCreatorOutput.belongsTo(Media, { foreignKey: 'media_id', as: 'media', onDelete: 'CASCADE' });
+
 // ─────────────────────────────────────────────────────────────────
 
 const db = {
@@ -247,6 +272,9 @@ const db = {
   GoogleBusinessProduct,
   PublicOrder,
   StoreSetting,
+  MediaCreatorTemplate,
+  MediaCreatorProject,
+  MediaCreatorOutput,
 };
 
 module.exports = db;
