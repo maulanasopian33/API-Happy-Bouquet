@@ -1,3 +1,16 @@
+LATEST UPDATES - 07 November 2026
+===================================
+
+46. GOOGLE BUSINESS MEDIA — UPLOAD BYTES, DETAIL, EDIT KATEGORI, PAGING/FILTER
+    - `GET /api/google-business/locations/:loc/media` sekarang menerima `page`, `pageSize`, `category`, `source` (owner/customer), `q`, `sort` (newest/oldest/views/category), `refresh=1`. Server mengambil seluruh halaman Google (pageSize 100, maks 25 halaman / 2.500 item), cache mentah 10 menit, lalu memfilter/mengurutkan/mem-paginate; respons menyertakan `pagination`, `summary` (total, owner, customer, totalViews, byCategory), `truncated`, `fetchedAt`.
+    - `POST .../media` menerima multipart `file` ATAU `mediaId` (Media Library) ATAU `photoUrl`, plus `category` (enum resmi) dan `description` (diabaikan untuk COVER). File/Media Library memakai alur `media:startUpload` -> upload bytes ke `mybusiness.googleapis.com/upload/v1/media/{id}?uploadType=media` -> `media.create` dengan `dataRef`; URL tetap memakai `sourceUrl`.
+    - Endpoint baru: `GET /api/google-business/media/:mediaName` (detail + insights/dimensi/atribusi) dan `PATCH /api/google-business/media/:mediaName` (ubah kategori via `updateMask=locationAssociation.category`, menolak COVER/PROFILE).
+    - `GoogleBusinessClient` mendukung body Buffer/Uint8Array (upload bytes) tanpa di-JSON-stringify.
+    - Uploader memori baru `createMemoryUploader()` (JPG/PNG/WebP, maks 2 MB) + rate limit upload 10/menit. `mediaId` dibaca dari tabel Media dan path divalidasi agar tetap di `public/uploads/media` (cegah path traversal).
+    - Tanpa migrasi DB, tanpa dependensi baru. Test `tests/googleBusinessMedia.test.js` 12/12 lulus (`--runInBand`).
+
+Timestamp: 2026-11-07 10:15:00
+
 LATEST UPDATES - 06 November 2026
 ===================================
 

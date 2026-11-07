@@ -43,7 +43,9 @@ class GoogleBusinessClient {
         };
 
         if (body && method !== 'GET') {
-          fetchOptions.body = typeof body === 'string' ? body : JSON.stringify(body);
+          // Buffer/Uint8Array dipakai untuk upload bytes media (bukan JSON).
+          const isBinary = Buffer.isBuffer(body) || body instanceof Uint8Array;
+          fetchOptions.body = (typeof body === 'string' || isBinary) ? body : JSON.stringify(body);
         }
 
         const response = await fetch(url, fetchOptions);

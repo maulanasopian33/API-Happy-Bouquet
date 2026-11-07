@@ -40,4 +40,11 @@ const createUploader = (folderName, prefix) => {
   });
 };
 
-module.exports = { createUploader };
+/** Upload ke memori (tanpa menyimpan file) — dipakai upload bytes ke Google. */
+const createMemoryUploader = () => multer({
+  storage: multer.memoryStorage(),
+  fileFilter: fileFilter,
+  limits: { fileSize: 2 * 1024 * 1024 },
+});
+
+module.exports = { createUploader, createMemoryUploader };

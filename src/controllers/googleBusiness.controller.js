@@ -1,5 +1,5 @@
 const { GoogleAuthService } = require('../services/google-business/googleAuth.service');
-const { GoogleBusinessService } = require('../services/googleBusiness.service');
+const { GoogleBusinessService, MEDIA_CATEGORIES } = require('../services/googleBusiness.service');
 const { getQuotaStatus, resetQuota } = require('../services/google-business/googleQuota.service');
 const { successResponse, errorResponse } = require('../utils/response');
 const crypto = require('crypto');
@@ -240,9 +240,43 @@ class GoogleBusinessController {
   static async listMedia(req, res) {
     try {
       const { locationV4Name } = req.params;
-      const data = await GoogleBusinessService.listMedia(locationV4Name);
+      const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+      const pageSize = Math.min(100, Math.max(1, parseInt(req.query.pageSize, 10) || 24));
+      const category = req.query.category || undefined;
+      const source = req.query.source || undefined;
+      const sort = ['newest', 'oldest', 'views', 'category'].includes(req.query.sort)
+        ? req.query.sort
+        : 'newest';
+
+      if (category && !MEDIA_CATEGORIES.includes(category)) {
+        return errorResponse(res, 'Kategori foto tidak valid', null, 400);
+      }
+      if (source && !['owner', 'customer'].includes(source)) {
+        return errorResponse(res, 'Sumber foto tidak valid', null, 400);
+      }
+
+      const data = await GoogleBusinessService.listMedia(locationV4Name, {
+        page,
+        pageSize,
+        category,
+        source,
+        q: req.query.q,
+        sort,
+        refresh: req.query.refresh === '1',
+      });
       if (data.error) return errorResponse(res, data.error.message, data.error, data.error.status);
       successResponse(res, 'Daftar foto berhasil diambil', data);
+    } catch (error) {
+      errorResponse(res, error.message, null, 500);
+    }
+  }
+
+  static async getMedia(req, res) {
+    try {
+      const { mediaName } = req.params;
+      const data = await GoogleBusinessService.getMedia(mediaName);
+      if (data.error) return errorResponse(res, data.error.message, data.error, data.error.status);
+      successResponse(res, 'Detail foto berhasil diambil', data);
     } catch (error) {
       errorResponse(res, error.message, null, 500);
     }
@@ -251,17 +285,65 @@ class GoogleBusinessController {
   static async uploadPhoto(req, res) {
     try {
       const { locationV4Name } = req.params;
-      const { photoUrl, category } = req.body;
+      const { photoUrl, mediaId, category = 'ADDITIONAL', description } = req.body || {};
 
-      if (!photoUrl) {
-        return errorResponse(res, 'URL foto wajib diisi', null, 400);
+      if (!MEDIA_CATEGORIES.includes(category)) {
+        return errorResponse(res, 'Kategori foto tidak valid', null, 400);
+      }
+      if (category === 'COVER' && description) {
+        return errorResponse(res, 'Foto cover tidak mendukung deskripsi', null, 400);
       }
 
-      const data = await GoogleBusinessService.uploadPhoto(locationV4Name, { photoUrl, category });
+      let data;
+      if (req.file) {
+        data = await GoogleBusinessService.uploadPhoto(locationV4Name, {
+          category,
+          description,
+          buffer: req.file.buffer,
+          mimeType: req.file.mimetype,
+        });
+      } else if (mediaId) {
+        data = await GoogleBusinessService.uploadPhotoFromMedia(locationV4Name, mediaId, {
+          category,
+          description,
+        });
+      } else if (photoUrl) {
+        if (!/^https?:\/\//i.test(photoUrl)) {
+          return errorResponse(res, 'URL foto harus diawali http:// atau https://', null, 400);
+        }
+        data = await GoogleBusinessService.uploadPhoto(locationV4Name, {
+          category,
+          description,
+          photoUrl,
+        });
+      } else {
+        return errorResponse(res, 'Pilih file, media library, atau URL foto', null, 400);
+      }
+
       if (data.error) return errorResponse(res, data.error.message, data.error, data.error.status);
-      successResponse(res, 'Foto berhasil diunggah ke profil bisnis', data);
+      successResponse(res, 'Foto berhasil diunggah ke profil bisnis', data, 201);
     } catch (error) {
-      errorResponse(res, error.message, null, 500);
+      errorResponse(res, error.message, null, 400);
+    }
+  }
+
+  static async updateMedia(req, res) {
+    try {
+      const { mediaName } = req.params;
+      const { category } = req.body || {};
+
+      if (!MEDIA_CATEGORIES.includes(category)) {
+        return errorResponse(res, 'Kategori foto tidak valid', null, 400);
+      }
+      if (category === 'COVER' || category === 'PROFILE') {
+        return errorResponse(res, 'Kategori COVER/PROFILE tidak bisa diubah lewat sini', null, 400);
+      }
+
+      const data = await GoogleBusinessService.updateMediaCategory(mediaName, category);
+      if (data.error) return errorResponse(res, data.error.message, data.error, data.error.status);
+      successResponse(res, 'Kategori foto berhasil diperbarui', data);
+    } catch (error) {
+      errorResponse(res, error.message, null, 400);
     }
   }
 

@@ -1,8 +1,37 @@
 const { Router } = require('express');
+const rateLimit = require('express-rate-limit');
 const { GoogleBusinessController } = require('../controllers/googleBusiness.controller');
 const { authenticateToken, authorizeRoles } = require('../middlewares/authMiddleware');
+const { createMemoryUploader } = require('../middlewares/uploadMiddleware');
+const { errorResponse } = require('../utils/response');
 
 const router = Router();
+const photoUpload = createMemoryUploader();
+
+// Upload menyentuh kuota Google — batasi agar tidak boros.
+const uploadLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  validate: { trustProxy: false },
+  message: {
+    status: false,
+    message: 'Terlalu banyak upload foto. Coba lagi sebentar.',
+    data: null,
+    error: { code: 'RATE_LIMIT', message: 'Terlalu banyak upload foto. Coba lagi sebentar.' },
+  },
+});
+
+const handlePhotoUpload = (req, res, next) => {
+  photoUpload.single('file')(req, res, (err) => {
+    if (!err) return next();
+    const message = err.code === 'LIMIT_FILE_SIZE'
+      ? 'Ukuran file maksimal 2 MB'
+      : err.message || 'File tidak valid';
+    return errorResponse(res, message, null, 400);
+  });
+};
 
 // Semua endpoint GBP butuh login
 router.use(authenticateToken);
@@ -33,7 +62,9 @@ router.delete('/posts/:postName', adminOnly, GoogleBusinessController.deletePost
 
 // ─── MEDIA (PHOTOS) ───────────────────────────────────────────
 router.get('/locations/:locationV4Name/media', adminOnly, GoogleBusinessController.listMedia);
-router.post('/locations/:locationV4Name/media', adminOnly, GoogleBusinessController.uploadPhoto);
+router.post('/locations/:locationV4Name/media', adminOnly, uploadLimiter, handlePhotoUpload, GoogleBusinessController.uploadPhoto);
+router.get('/media/:mediaName', adminOnly, GoogleBusinessController.getMedia);
+router.patch('/media/:mediaName', adminOnly, GoogleBusinessController.updateMedia);
 router.delete('/media/:mediaName', adminOnly, GoogleBusinessController.deleteMedia);
 
 // ─── PERFORMANCE ───────────────────────────────────────────────
