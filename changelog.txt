@@ -6,10 +6,11 @@ LATEST UPDATES - 07 November 2026
     - `POST .../media` menerima multipart `file` ATAU `mediaId` (Media Library) ATAU `photoUrl`, plus `category` (enum resmi) dan `description` (diabaikan untuk COVER). File/Media Library memakai alur `media:startUpload` -> upload bytes ke `mybusiness.googleapis.com/upload/v1/media/{id}?uploadType=media` -> `media.create` dengan `dataRef`; URL tetap memakai `sourceUrl`.
     - Endpoint baru: `GET /api/google-business/media/:mediaName` (detail + insights/dimensi/atribusi) dan `PATCH /api/google-business/media/:mediaName` (ubah kategori via `updateMask=locationAssociation.category`, menolak COVER/PROFILE).
     - `GoogleBusinessClient` mendukung body Buffer/Uint8Array (upload bytes) tanpa di-JSON-stringify.
-    - Uploader memori baru `createMemoryUploader()` (JPG/PNG/WebP, maks 2 MB) + rate limit upload 10/menit. `mediaId` dibaca dari tabel Media dan path divalidasi agar tetap di `public/uploads/media` (cegah path traversal).
+    - Uploader memori baru `createMemoryUploader()` (JPG/PNG/WebP, maks 2 MB) + rate limit upload 10/menit. `mediaId` dibaca dari tabel Media dan path divalidasi agar tetap di `public/uploads` (mencakup output Media Kreator di `media-creator`; cegah path traversal).
     - Tanpa migrasi DB, tanpa dependensi baru. Test `tests/googleBusinessMedia.test.js` 12/12 lulus (`--runInBand`).
+    - Perbaikan: guard path Media Library diperluas ke `public/uploads` — foto hasil Media Kreator (`media-creator/`) sebelumnya gagal dengan "Path media tidak valid". Test guard ditambah untuk kedua folder.
 
-Timestamp: 2026-11-07 10:15:00
+Timestamp: 2026-11-07 10:45:00
 
 LATEST UPDATES - 06 November 2026
 ===================================

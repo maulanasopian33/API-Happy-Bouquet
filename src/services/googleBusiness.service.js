@@ -9,7 +9,7 @@ const V4_BASE = 'https://mybusiness.googleapis.com/v4';
 const MEDIA_PAGE_SIZE = 100;
 const MEDIA_MAX_PAGES = 25; // 2.500 item; sisanya ditandai truncated
 const MEDIA_CACHE_TTL_MS = 10 * 60 * 1000;
-const MEDIA_ROOT = path.resolve(__dirname, '../../public/uploads/media');
+const MEDIA_ROOT = path.resolve(__dirname, '../../public/uploads');
 
 // Enum resmi Google My Business Media API (v4).
 const MEDIA_CATEGORIES = [
@@ -109,7 +109,8 @@ function sortMedia(items, sort) {
 
 /**
  * Ubah path relatif Media Library menjadi path absolut yang dijamin
- * tetap berada di dalam public/uploads/media (cegah path traversal).
+ * tetap berada di dalam public/uploads (cegah path traversal). Mencakup
+ * upload manual maupun output Media Kreator (public/uploads/media-creator).
  */
 function resolveMediaPath(mediaPath) {
   const absolute = path.resolve(__dirname, '../..', mediaPath || '');

@@ -198,8 +198,9 @@ describe('Google Business Media — edit & path', () => {
     ).rejects.toThrow('COVER/PROFILE');
   });
 
-  test('resolveMediaPath menolak path traversal', () => {
+  test('resolveMediaPath menerima semua folder Media Library dan menolak traversal', () => {
     expect(resolveMediaPath('public/uploads/media/foto.jpg')).toContain('public');
+    expect(resolveMediaPath('public/uploads/media-creator/hasil.png')).toContain('media-creator');
     expect(() => resolveMediaPath('../../.env')).toThrow('Path media tidak valid');
   });
 });
